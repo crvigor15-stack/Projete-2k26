@@ -1,0 +1,2252 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NeuroMotion - Sistema Clínico de Reabilitação</title>
+    <!-- CSS e Bibliotecas Externas -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        body { background-color: #f8fafc; color: #0f172a; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        .mobile-header { display: none; background-color: #0f172a; color: white; padding: 1rem; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .mobile-header h1 { font-size: 1.25rem; color: #38bdf8; }
+        .menu-btn { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
+
+        nav { width: 280px; background-color: #0f172a; color: white; padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 2rem; flex-shrink: 0; }
+        nav h1 { font-size: 1.5rem; color: #38bdf8; font-weight: 700; }
+        nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        nav ul li a { color: #94a3b8; text-decoration: none; font-weight: 600; display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border-radius: 10px; cursor: pointer; transition: all 0.2s; }
+        nav ul li a:hover, nav ul li a.active { background-color: #1e293b; color: white; border-left: 4px solid #38bdf8; }
+        
+        .app-container { display: flex; flex: 1; width: 100%; }
+        main { flex: 1; padding: 2.5rem; overflow-y: auto; width: 100%; }
+        .tab-content { display: none !important; }
+        .tab-content.active { display: block !important; }
+        
+        header { margin-bottom: 2rem; }
+        header h2 { font-size: 2rem; color: #0f172a; font-weight: 700; }
+        header p { color: #64748b; margin-top: 0.25rem; }
+
+        .card { background: white; padding: 1.75rem; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 1.5rem; }
+        .card-dark { background-color: #1a202c; border: 1px solid #2d3748; color: #e0e6ed; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+        .grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
+        
+        .chart-box { position: relative; width: 100%; height: 260px; margin-top: 1rem; }
+        .chart-box-emg { position: relative; width: 100%; height: 350px; background-color: #1a202c; border-radius: 8px; border: 1px solid #2d3748; padding: 15px; }
+
+        .kpi-card { background: white; border: 1px solid #e2e8f0; padding: 1.5rem; border-radius: 16px; border-left: 5px solid #3b82f6; }
+        .kpi-card-dark { background-color: #1a202c; border: 1px solid #2d3748; border-radius: 8px; padding: 15px; }
+        .kpi-card-dark h3 { font-size: 0.85rem; color: #a0aec0; margin-bottom: 8px; text-transform: uppercase; }
+        .kpi-card-dark .value { font-size: 1.8rem; font-weight: bold; color: #ffffff; }
+
+        .kpi-title { font-size: 0.85rem; color: #64748b; font-weight: 600; text-transform: uppercase; }
+        .kpi-value { font-size: 2rem; font-weight: 700; color: #0f172a; margin-top: 0.5rem; }
+        
+        .badge-status { display: inline-block; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.85rem; font-weight: 700; }
+        .badge-active { background-color: #dcfce7; color: #166534; }
+        .badge-role { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: bold; background: #38bdf8; color: #0f172a; margin-top: 0.25rem; }
+        
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #334155; font-size: 0.9rem; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; background: white; }
+        
+        .btn { padding: 0.75rem 1.5rem; background: #3b82f6; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; display: inline-block; }
+        .btn:hover { background: #1d4ed8; }
+        .btn-success { background: #22c55e; } .btn-success:hover { background: #16a34a; }
+        .btn-danger { background: #ef4444; } .btn-danger:hover { background: #dc2626; }
+        .btn-emg { background-color: #00d2ff; color: #0f172a; font-weight: bold; border-radius: 6px; } .btn-emg:hover { background-color: #0099cc; }
+
+        .ia-layout { display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; }
+        .exercise-selector { display: flex; flex-direction: column; gap: 0.75rem; }
+        .exercise-btn { text-align: left; background: #f8fafc; border: 1px solid #cbd5e1; padding: 1.25rem; border-radius: 12px; cursor: pointer; transition: 0.2s; }
+        .exercise-btn.active { border-color: #3b82f6; background: #eff6ff; }
+
+        .instructor-card { background: #0f172a; color: white; padding: 1.25rem; border-radius: 12px; margin-bottom: 1rem; display: flex; align-items: center; gap: 1rem; border-left: 6px solid #38bdf8; transition: background 0.3s; }
+        .instructor-avatar { font-size: 2.5rem; background: #1e293b; border-radius: 50%; width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 2px solid #38bdf8; }
+        .instructor-info { flex: 1; text-align: left; }
+        .instructor-info h4 { font-size: 0.9rem; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px; }
+        .instructor-info p { font-size: 1.1rem; font-weight: 600; margin-top: 0.2rem; }
+
+        .counter-box { display: flex; justify-content: space-around; background: #f1f5f9; padding: 0.75rem; border-radius: 10px; margin-bottom: 1rem; font-weight: bold; font-size: 1.1rem; border: 1px solid #e2e8f0; }
+        .counter-value { font-size: 1.4rem; color: #3b82f6; }
+
+        /* JOGOS DESIGN */
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .game-card { background: white; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden; text-align: center; padding-bottom: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; }
+        .game-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px -5px rgba(0,0,0,0.1); }
+        .game-thumb { height: 160px; color: white; display: flex; align-items: center; justify-content: center; font-size: 4rem; position: relative; }
+        
+        .canvas-container { position: relative; width: 100%; max-width: 440px; height: 500px; margin: 0 auto; border-radius: 20px; overflow: hidden; border: 4px solid #0f172a; touch-action: manipulation; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
+        .canvas-container canvas { display: block; width: 100%; height: 100%; cursor: pointer; }
+        
+        .game-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(4px); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 10; padding: 2rem; text-align: center; font-family: 'Fredoka', cursive, sans-serif; }
+        .game-menu h3 { font-size: 2rem; color: #38bdf8; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .game-menu p { font-size: 1rem; color: #cbd5e1; margin-bottom: 1.5rem; }
+        .game-menu .btn-menu { padding: 0.9rem 2.2rem; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: 50px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4); }
+
+        .patient-selector-bar { background: #e0f2fe; border: 1px solid #bae6fd; padding: 1rem 1.25rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+        .patient-selector-bar select { padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #0284c7; font-weight: 600; color: #0369a1; background: white; cursor: pointer; }
+
+        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 0.5rem; }
+        .detail-item span { font-weight: 600; color: #334155; }
+        .detail-item strong { color: #0284c7; font-size: 1.1rem; }
+
+        .table-custom { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .table-custom th, .table-custom td { padding: 0.85rem 1rem; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 0.95rem; }
+        .table-custom th { background-color: #f1f5f9; color: #334155; font-weight: 700; }
+
+        /* PAINEL PACIENTE IDOSO */
+        .senior-dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; }
+        .senior-card { background: white; border-radius: 20px; padding: 1.5rem; border: 2px solid #e2e8f0; box-shadow: 0 8px 20px rgba(0,0,0,0.04); display: flex; flex-direction: column; gap: 1rem; }
+        .senior-card-header { display: flex; align-items: center; gap: 1rem; }
+        .senior-icon { font-size: 2.5rem; background: #e0f2fe; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .senior-card-title h3 { font-size: 1.3rem; color: #0f172a; }
+        .senior-card-title p { font-size: 0.95rem; color: #64748b; }
+        .senior-progress-bar { width: 100%; height: 24px; background: #e2e8f0; border-radius: 12px; overflow: hidden; position: relative; }
+        .senior-progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #22c55e); border-radius: 12px; transition: width 0.5s ease; }
+        .senior-progress-text { text-align: right; font-weight: bold; font-size: 1.1rem; color: #1e293b; }
+
+        .chat-container { display: flex; flex-direction: column; height: 400px; border: 1px solid #cbd5e1; border-radius: 12px; background: #f8fafc; overflow: hidden; margin-top: 1rem; }
+        .chat-messages { flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; }
+        .chat-bubble { max-width: 75%; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.95rem; line-height: 1.4; position: relative; word-wrap: break-word; }
+        .chat-bubble.enviada { align-self: flex-end; background: #3b82f6; color: white; border-bottom-right-radius: 2px; }
+        .chat-bubble.recebida { align-self: flex-start; background: #e2e8f0; color: #0f172a; border-bottom-left-radius: 2px; }
+        .chat-meta { font-size: 0.7rem; opacity: 0.8; margin-top: 0.25rem; text-align: right; display: block; }
+        .chat-input-area { display: flex; gap: 0.5rem; padding: 0.75rem; background: white; border-top: 1px solid #cbd5e1; }
+        .chat-input-area input { flex: 1; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; }
+
+        @media (max-width: 900px) {
+            .app-container { flex-direction: column; }
+            .mobile-header { display: flex; }
+            nav { width: 100%; display: none; padding: 1rem; position: sticky; top: 60px; z-index: 99; }
+            nav.open { display: flex; }
+            nav h1 { display: none; }
+            main { padding: 1.25rem; }
+            .grid-2, .grid-3, .ia-layout { grid-template-columns: 1fr; }
+            .patient-selector-bar { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-header">
+        <h1>🧠 NeuroMotion</h1>
+        <button class="menu-btn" onclick="toggleMobileMenu()">☰</button>
+    </div>
+
+    <div class="app-container">
+        <nav id="sidebar-nav">
+            <div>
+                <h1>🧠 NeuroMotion</h1>
+                <div id="user-badge" class="badge-role">Visão: Paciente</div>
+            </div>
+            <ul>
+                <li id="menu-item-dashboard"><a onclick="switchTab('dashboard')" id="nav-dashboard">📊 Painel Geral</a></li>
+                <li id="menu-item-pacientes"><a onclick="switchTab('pacientes')" id="nav-pacientes">👥 Gestão de Pacientes</a></li>
+                <li id="menu-item-camera"><a onclick="switchTab('camera')" id="nav-camera" class="active">👁️ Exercícios Faciais</a></li>
+                <li id="menu-item-emg"><a onclick="switchTab('emg')" id="nav-emg">⚡ Monitor EMG</a></li>
+                <li id="menu-item-jogos"><a onclick="switchTab('jogos')" id="nav-jogos">🎮 Jogos Terapêuticos</a></li>
+                <li><a onclick="switchTab('feedback')" id="nav-feedback">💬 Conduta Médica</a></li>
+                <li><a onclick="confirmarSair()" style="color: #f87171; margin-top: 1rem;">🚪 Sair</a></li>
+            </ul>
+        </nav>
+
+        <main>
+            <!-- BARRA DE SELEÇÃO RÁPIDA DE PACIENTE -->
+            <div id="bar-seletor-paciente" class="patient-selector-bar" style="display: none;">
+                <div>
+                    <strong style="color: #0369a1;">👤 Paciente em Monitoramento:</strong>
+                    <span id="nome-paciente-ativo-bar" style="color: #0f172a; font-weight: bold; margin-left: 0.5rem;">-</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <label for="select-paciente-rapido" style="font-size: 0.875rem; font-weight: 600; color: #0369a1;">Trocar Paciente:</label>
+                    <select id="select-paciente-rapido" onchange="alterarPacienteSelecionado(this.value)"></select>
+                </div>
+            </div>
+
+            <!-- ABA 1: PAINEL GERAL -->
+            <div id="dashboard" class="tab-content">
+                <header>
+                    <h2 id="dash-title">Painel Clínico de Evolução</h2>
+                    <p id="dash-subtitle">Acompanhamento quantitativo da reabilitação neuromuscular.</p>
+                </header>
+
+                <div id="painel-paciente-interativo" style="display: none;">
+                    <div class="senior-dashboard-grid">
+                        <div class="senior-card" style="border-left: 8px solid #3b82f6;">
+                            <div class="senior-card-header">
+                                <div class="senior-icon">😊</div>
+                                <div class="senior-card-title">
+                                    <h3>Exercícios Hoje</h3>
+                                    <p>Sua meta diária recomendada</p>
+                                </div>
+                            </div>
+                            <div class="senior-progress-bar">
+                                <div id="senior-bar-exercicios" class="senior-progress-fill" style="width: 0%;"></div>
+                            </div>
+                            <div class="senior-progress-text" id="senior-txt-exercicios">0 de 30 concluídos</div>
+                        </div>
+
+                        <div class="senior-card" style="border-left: 8px solid #22c55e;">
+                            <div class="senior-card-header">
+                                <div class="senior-icon">🏆</div>
+                                <div class="senior-card-title">
+                                    <h3>Melhor Pontuação</h3>
+                                    <p>Seu recorde nos jogos hoje</p>
+                                </div>
+                            </div>
+                            <div style="font-size: 2.2rem; font-weight: bold; color: #16a34a; text-align: center; margin: 0.5rem 0;" id="senior-txt-pontos">
+                                0 Pontos
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-top: 1.5rem; text-align: center; background: #f0f9ff; border: 2px dashed #0284c7;">
+                        <h3 style="color: #0369a1; font-size: 1.4rem; margin-bottom: 0.5rem;">🌟 Seu Progresso de Hoje</h3>
+                        <p id="senior-mensagem-incentivo" style="font-size: 1.1rem; color: #334155;">Você ainda não começou os exercícios de hoje. Clique abaixo para iniciar!</p>
+                        <button class="btn btn-success" style="margin-top: 1rem; font-size: 1.1rem; padding: 0.9rem 2rem; border-radius: 50px;" onclick="switchTab('camera')">▶️ Ir para os Exercícios</button>
+                    </div>
+                </div>
+
+                <div id="painel-fisio-graficos">
+                    <div class="grid-kpi">
+                        <div class="kpi-card">
+                            <div class="kpi-title">Repetições Faciais Hoje</div>
+                            <div class="kpi-value" id="kpi-simetria-valor">0 rep</div>
+                        </div>
+                        <div class="kpi-card" style="border-left-color: #10b981;">
+                            <div class="kpi-title">Pontuação Máxima Hoje</div>
+                            <div class="kpi-value" id="kpi-forca-valor">0 pts</div>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem; color: #0284c7;">📋 Repetições Hoje por Exercício</h3>
+                            <div id="detalhes-exercicios-faciais">
+                                <div class="detail-item">
+                                    <span>1. Elevação de Sobrancelhas</span>
+                                    <strong id="rep-sobrancelhas">0 rep</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span>2. Sorriso Aberto / Boca</span>
+                                    <strong id="rep-sorriso">0 rep</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span>3. Biquinho / Compressão Labial</span>
+                                    <strong id="rep-biquinho">0 rep</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem; color: #059669;">🏆 Pontuação Hoje nos Jogos</h3>
+                            <div id="detalhes-pontuacao-jogos">
+                                <div class="detail-item">
+                                    <span>🐦 Flappy Pinça Pro</span>
+                                    <strong id="score-flappy">0 pts</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span>🍔 Food Drop (Pou)</span>
+                                    <strong id="score-food">0 pts</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span>🍓 Pique-Esconde Frutas</span>
+                                    <strong id="score-frutas">0 pts</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span>🎈 Estoura-Balões</span>
+                                    <strong id="score-baloes">0 pts</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3 style="color: #0f172a; margin-bottom: 0.5rem;">📅 Histórico Diário de Repetições e Pontuações</h3>
+                        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1rem;">Registro consolidado do desempenho diário.</p>
+                        <div style="overflow-x: auto;">
+                            <table class="table-custom">
+                                <thead>
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Repetições Faciais Totais</th>
+                                        <th>Pontuação Máxima (Jogos)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-historico-diario-body">
+                                    <tr>
+                                        <td colspan="3" style="text-align: center; color: #64748b;">Nenhum histórico registrado até o momento.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="card">
+                            <h3>Evolução Quinzenal (Repetições Faciais Totais)</h3>
+                            <div class="chart-box">
+                                <canvas id="chartSimetria"></canvas>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <h3>Evolução Quinzenal (Pontuação Máxima Jogos)</h3>
+                            <div class="chart-box">
+                                <canvas id="chartPinca"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA 2: GESTÃO DE PACIENTES -->
+            <div id="pacientes" class="tab-content">
+                <header>
+                    <h2>Gestão de Pacientes Cadastrados</h2>
+                    <p>Cadastre novos pacientes, selecione qual perfil deseja supervisionar ou exclua cadastros finalizados.</p>
+                </header>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem; color: #3b82f6;">Cadastrar Novo Paciente</h3>
+                    <form id="form-novo-paciente" class="grid-3">
+                        <div class="form-group">
+                            <label>Nome do Paciente</label>
+                            <input type="text" id="cad-pac-nome" required placeholder="Ex: Maria Souza">
+                        </div>
+                        <div class="form-group">
+                            <label>E-mail do Paciente</label>
+                            <input type="email" id="cad-pac-email" required placeholder="paciente@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Senha de Acesso</label>
+                            <input type="text" id="cad-pac-senha" required value="Paciente123!">
+                        </div>
+                        <div class="form-group">
+                            <label>Data de Nascimento</label>
+                            <input type="date" id="cad-pac-nasc" required value="1990-01-01">
+                        </div>
+                        <div class="form-group">
+                            <label>Telefone</label>
+                            <input type="text" id="cad-pac-tel" required placeholder="(00) 00000-0000">
+                        </div>
+                        <div class="form-group">
+                            <label>Diagnóstico / CID-10</label>
+                            <input type="text" id="cad-pac-diag" required placeholder="Ex: Paralisia de Bell / G51.0">
+                        </div>
+                        <div style="grid-column: 1 / -1;">
+                            <button type="submit" class="btn btn-success">➕ Cadastrar Paciente</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="card">
+                    <h3 style="margin-bottom: 1rem;">Lista de Pacientes</h3>
+                    <div id="lista-pacientes-cards" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+                </div>
+            </div>
+
+            <!-- ABA 4: EXERCÍCIOS FACIAIS -->
+            <div id="camera" class="tab-content active">
+                <header>
+                    <h2>Módulo de Exercícios Faciais Guiados por IA</h2>
+                    <p>O instrutor inteligente detecta a sua postura e orienta a sua repetição em tempo real.</p>
+                </header>
+
+                <div class="ia-layout">
+                    <div class="exercise-selector">
+                        <div class="exercise-btn active" onclick="selecionarExercicio('sobrancelhas', this)">
+                            <h4>1. Elevação de Sobrancelhas</h4>
+                            <p style="color: #0284c7; font-weight: bold; margin-top: 0.25rem;" id="presc-label-sobrancelhas">Prescrição: 10 rep | 10s</p>
+                        </div>
+                        <div class="exercise-btn" onclick="selecionarExercicio('sorriso', this)">
+                            <h4>2. Sorriso Aberto / Boca</h4>
+                            <p style="color: #0284c7; font-weight: bold; margin-top: 0.25rem;" id="presc-label-sorriso">Prescrição: 10 rep | 10s</p>
+                        </div>
+                        <div class="exercise-btn" onclick="selecionarExercicio('biquinho', this)">
+                            <h4>3. Biquinho / Compressão Labial</h4>
+                            <p style="color: #0284c7; font-weight: bold; margin-top: 0.25rem;" id="presc-label-biquinho">Prescrição: 10 rep | 10s</p>
+                        </div>
+                    </div>
+
+                    <div class="card" style="text-align: center;">
+                        <div style="max-width: 400px; margin: 0 auto 1.25rem auto;">
+                            <div class="form-group" style="text-align: left; margin-bottom: 0;">
+                                <label for="select-camera-input" style="font-weight: bold; color: #0369a1;">📷 Escolher Câmera (Webcam):</label>
+                                <select id="select-camera-input" onchange="trocarDispositivoCamera(this.value)">
+                                    <option value="">Procurando câmeras disponíveis...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="instructor-card" id="instructor-box">
+                            <div class="instructor-avatar" id="avatar-icon">👨‍⚕️</div>
+                            <div class="instructor-info">
+                                <h4>Instrutor Virtual (Dr. Neuro)</h4>
+                                <p id="instrucao-clinica">Selecione um exercício e inicie a câmera.</p>
+                            </div>
+                        </div>
+
+                        <div class="counter-box">
+                            <div>Repetições: <span id="counter-reps" class="counter-value">0</span> / <span id="target-reps">10</span></div>
+                            <div>Tempo por Repetição: <span id="display-tempo-sustentacao" style="color: #0284c7;">10s</span></div>
+                            <div>Status: <span id="status-hold" style="color: #64748b;">Aguardando...</span></div>
+                        </div>
+
+                        <div style="position: relative; width: 100%; max-width: 640px; margin: 0 auto; overflow: hidden; border-radius: 12px; background: #000;">
+                            <video id="video-feed" style="width: 100%; height: auto; transform: scaleX(-1);" playsinline></video>
+                            <canvas id="canvas-ia" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform: scaleX(-1);"></canvas>
+                        </div>
+
+                        <div style="margin-top: 1rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                            <button class="btn btn-success" onclick="iniciarCamera()">📷 Iniciar Treino com Voz</button>
+                            <button class="btn" style="background: #ef4444;" onclick="pararCamera()">⏹️ Parar Câmera</button>
+                            <button class="btn" style="background: #eab308;" onclick="recalibrar()">🔄 Recalibrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA DE LEITURA DO SINAL EMG (MONITOR EMG INTEGRADO) -->
+            <div id="emg" class="tab-content">
+                <header>
+                    <h2>Exercício da Bolinha (Reabilitação)</h2>
+                    <p>Controle a bolinha usando a força do seu músculo! Aperte a mão para levantar.</p>
+                </header>
+
+                <div class="card" style="position: relative; overflow: hidden; background: #e0f2fe; text-align: center; border: 4px solid #0284c7; border-radius: 20px; padding: 0;">
+                    <!-- Cabecalho de Status e Instrucao Interativa -->
+                    <div style="padding: 1.5rem;">
+                        <h3 id="emg-instruction" style="color: #0369a1; font-size: 1.6rem; transition: color 0.3s;">Conecte a luva para começar!</h3>
+                        <p id="statusText" style="color: #64748b; font-size: 0.95rem; margin-top: 5px;">Status: Desconectado</p>
+                        
+                        <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-success" id="btnConnect" onclick="conectarSensorEMGBLE()">🔌 Conectar Luva (BLE)</button>
+                            <button class="btn" style="background: #6366f1;" onclick="simularSinalEMG()">🔄 Simular</button>
+                            <button class="btn btn-danger" onclick="pararLeituraEMG()">⏹️ Parar</button>
+                        </div>
+                    </div>
+
+                    <!-- Area de Jogo da Bolinha -->
+                    <div style="position: relative; width: 100%; height: 400px; background: #f8fafc; border-top: 3px solid #bae6fd;">
+                        
+                        <!-- Zona Alvo (verde) -->
+                        <div id="emg-target-zone" style="position: absolute; left: 0; width: 100%; height: 120px; bottom: 180px; background: rgba(34, 197, 94, 0.2); border-top: 3px dashed #22c55e; border-bottom: 3px dashed #22c55e;">
+                            <span style="color: #166534; font-weight: bold; position: absolute; right: 15px; top: 10px; font-size: 1.1rem;">ZONA ALVO ⭐</span>
+                        </div>
+                        
+                        <!-- Bolinha Interativa -->
+                        <div id="emg-ball" style="position: absolute; left: 50%; transform: translateX(-50%); bottom: 10px; width: 70px; height: 70px; background: radial-gradient(circle, #38bdf8, #0284c7); border-radius: 50%; box-shadow: 0 8px 15px rgba(0,0,0,0.3); transition: bottom 0.15s ease-out, background 0.3s, transform 0.2s;">
+                            <span style="font-size: 2.2rem; line-height: 70px;">😐</span>
+                        </div>
+                    </div>
+
+                    <!-- Mini Painel EMG (Canto da tela) -->
+                    <div style="position: absolute; bottom: 15px; left: 15px; background: rgba(15, 23, 42, 0.85); border-radius: 12px; padding: 10px; width: 220px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: left;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <span style="color: #38bdf8; font-size: 0.8rem; font-weight: bold;">Sinal EMG:</span>
+                            <span id="valEmg" style="color: #fff; font-weight: bold; font-size: 1rem;">0</span>
+                        </div>
+                        <!-- Grafico pequeno -->
+                        <div style="width: 100%; height: 60px;">
+                            <canvas id="emgChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO ADICIONAL PARA O FISIOTERAPEUTA (Oculta ou simplificada para não tirar o foco) -->
+                <div id="painel-fisio-emg" style="margin-top: 1.5rem; display: none;">
+                    <div class="grid-2">
+                        <div class="card">
+                            <h3 style="margin-bottom: 0.75rem; color: #0f172a;">📊 Métricas e Limiares Clínicos</h3>
+                            <div class="detail-item">
+                                <span>Contrações Relevantes Detectadas:</span>
+                                <strong id="emg-contractions-count">0</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA 6: JOGOS TERAPÊUTICOS -->
+            <div id="jogos" class="tab-content">
+                <header>
+                    <h2>Jogos de Reabilitação Lúdica</h2>
+                    <p>Escolha um jogo para treinar controle de força, reflexo e coordenação motora.</p>
+                </header>
+
+                <div class="card" style="margin-bottom: 1.5rem; border-left: 6px solid #8b5cf6;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3 style="color: #0f172a; margin-bottom: 0.25rem;">🧤 Conexão da Luva Sensoriada</h3>
+                            <p style="color: #64748b; font-size: 0.9rem;">Conecte sua luva Bluetooth ou dê um clique/toque na tela para acionar os jogos.</p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <button class="btn btn-success" onclick="conectarSensorEMGBLE()">🔌 Conectar Luva</button>
+                            <span id="ble-status-text" style="font-weight: bold; color: #ef4444;">Status: Desconectado</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="lista-jogos" class="games-grid">
+                    <div class="game-card">
+                        <div>
+                            <div class="game-thumb" style="background: linear-gradient(135deg, #38bdf8, #0284c7);">🐦</div>
+                            <h3 style="margin-top:1rem; font-family:'Fredoka', sans-serif; color: #0f172a;">Flappy Pinça Pro</h3>
+                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Voo suave! Aperte a pinça/clique para voar e passar pelos portais com segurança.</p>
+                        </div>
+                        <div style="padding: 0 1.25rem 1.25rem 1.25rem;">
+                            <button class="btn" style="width: 100%; border-radius: 50px; font-weight: bold; background: #0284c7;" onclick="abrirJogo('flappy')">🎮 Jogar Flappy</button>
+                        </div>
+                    </div>
+
+                    <div class="game-card">
+                        <div>
+                            <div class="game-thumb" style="background: linear-gradient(135deg, #f59e0b, #d97706);">🍔</div>
+                            <h3 style="margin-top:1rem; font-family:'Fredoka', sans-serif; color: #0f172a;">Food Drop (Pou)</h3>
+                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">O Pou fica parado no centro. Ao aproximar o ímã, ele abre a boca para comer o alimento bom. Cuidado com os alimentos estragados!</p>
+                        </div>
+                        <div style="padding: 0 1.25rem 1.25rem 1.25rem;">
+                            <button class="btn" style="width: 100%; border-radius: 50px; font-weight: bold; background: #d97706;" onclick="abrirJogo('food')">🍔 Jogar Food Drop</button>
+                        </div>
+                    </div>
+
+                    <div class="game-card">
+                        <div>
+                            <div class="game-thumb" style="background: linear-gradient(135deg, #10b981, #047857);">🍓</div>
+                            <h3 style="margin-top:1rem; font-family:'Fredoka', sans-serif; color: #0f172a;">Pique-Esconde Frutas</h3>
+                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Árvore bonita e interativa! A fruta aparece na árvore e só some quando o idoso aperta o ímã. Fique atento ao tempo de 10 segundos!</p>
+                        </div>
+                        <div style="padding: 0 1.25rem 1.25rem 1.25rem;">
+                            <button class="btn" style="width: 100%; border-radius: 50px; font-weight: bold; background: #047857;" onclick="abrirJogo('frutas')">🍓 Jogar Frutas</button>
+                        </div>
+                    </div>
+
+                    <div class="game-card">
+                        <div>
+                            <div class="game-thumb" style="background: linear-gradient(135deg, #ec4899, #be185d);">🎈</div>
+                            <h3 style="margin-top:1rem; font-family:'Fredoka', sans-serif; color: #0f172a;">Estoura-Balões</h3>
+                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Balões coloridos sobem um a um devagar. Aperte quando estiver perto da linha limite! Limite de 5 balões perdidos.</p>
+                        </div>
+                        <div style="padding: 0 1.25rem 1.25rem 1.25rem;">
+                            <button class="btn" style="width: 100%; border-radius: 50px; font-weight: bold; background: #be185d;" onclick="abrirJogo('baloes')">🎈 Jogar Balões</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="area-jogo" class="card" style="display: none; text-align: center;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <button class="btn" onclick="fecharJogo()" style="background: #ef4444; border-radius: 50px;">◄ Sair do Jogo</button>
+                        <span id="game-status-indicator" style="font-weight: bold; font-family: 'Fredoka', sans-serif; color: #0284c7;">Modo: Toque na Tela / Luva BLE</span>
+                    </div>
+
+                    <div class="canvas-container">
+                        <div id="menu-flappy" class="game-menu" style="display: none;">
+                            <h3 id="titulo-flappy">Jogo Terapêutico</h3>
+                            <p id="subtitulo-flappy">Clique ou use a luva para iniciar</p>
+                            <div id="explicacao-idoso" style="font-size:0.95rem; color:#f1f5f9; margin-bottom:1rem; background:rgba(255,255,255,0.1); padding:0.8rem; border-radius:10px; text-align:left; max-width:360px;"></div>
+                            <button id="btn-iniciar-jogo" class="btn-menu" onclick="iniciarContagemJogo()">Iniciar Jogo</button>
+                        </div>
+                        <canvas id="gameCanvas" width="440" height="500"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA 7: CONDUTA MÉDICA -->
+            <div id="feedback" class="tab-content">
+                <header>
+                    <h2>Conduta e Comunicação Direta</h2>
+                    <p>Canal de comunicação entre paciente e fisioterapeuta responsável.</p>
+                </header>
+
+                <div id="painel-editar-conduta" class="card" style="display: none;">
+                    <h3 style="color: #0f172a; margin-bottom: 1rem;">🎯 Ajustar Prescrição Diária de Exercícios Faciais</h3>
+                    <div class="form-group">
+                        <label for="select-paciente-conduta">Selecione o Paciente:</label>
+                        <select id="select-paciente-conduta" onchange="aoMudarPacienteNaConduta(this.value)"></select>
+                    </div>
+
+                    <div class="grid-3">
+                        <div class="form-group">
+                            <label for="presc-sobrancelhas">Elevação de Sobrancelhas (rep/dia):</label>
+                            <input type="number" id="presc-sobrancelhas" min="1" max="100" value="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="presc-sorriso">Sorriso Aberto / Boca (rep/dia):</label>
+                            <input type="number" id="presc-sorriso" min="1" max="100" value="10">
+                        </div>
+                        <div class="form-group">
+                            <label for="presc-biquinho">Biquinho / Lábios (rep/dia):</label>
+                            <input type="number" id="presc-biquinho" min="1" max="100" value="10">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="max-width: 400px; margin-top: 0.5rem;">
+                        <label for="select-tempo-fisioterapeuta" style="font-weight: bold; color: #0369a1;">⏱️ Prescrever Tempo de Sustentação:</label>
+                        <select id="select-tempo-fisioterapeuta">
+                            <option value="10000" selected>10 Segundos</option>
+                            <option value="5000">5 Segundos</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-success" onclick="salvarPrescricaoExterna()">💾 Salvar Prescrição de Exercícios</button>
+                </div>
+
+                <div class="card">
+                    <h3 style="color: #0f172a; margin-bottom: 0.5rem;" id="chat-titulo-header">💬 Chat de Comunicação</h3>
+                    <p style="color: #64748b; font-size: 0.9rem;" id="chat-subtitulo-header">Envie dúvidas, orientações e mensagens diretas em tempo real.</p>
+                    
+                    <div class="chat-container">
+                        <div class="chat-messages" id="chat-messages-list"></div>
+                        <div class="chat-input-area">
+                            <input type="text" id="chat-input-text" placeholder="Digite sua mensagem aqui..." onkeydown="if(event.key === 'Enter') enviarMensagemChat()">
+                            <button class="btn btn-success" onclick="enviarMensagemChat()">Enviar 📩</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- SCRIPTS DE NAVEGAÇÃO E LÓGICA DE DADOS -->
+    <script>
+        let sessaoAtual = null;
+        let pacienteSelecionado = null;
+        let chartSimetriaInst = null;
+        let chartPincaInst = null;
+
+        // --- VARIÁVEIS DO MONITOR EMG BLE INTEGRADO ---
+        const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+        const CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+
+        let bluetoothDevice = null;
+        let emgCharacteristic = null;
+        let emgChart = null;
+        let emgSimulacaoInterval = null;
+
+        const MAX_DATA_POINTS = 100;
+        const EMG_MAX_ADC = 4095;
+        let maxEmgPico = 0;
+        let limiarContracaoEMG = 150;
+        let qtdContracoesDetectadas = 0;
+        let emContracaoAtiva = false;
+
+        // Controle de detecção do sensor Hall por borda (aproximação do ímã)
+        let hallAnterior = 4095;
+        const LIMIAR_HALL_IMA = 2200; 
+
+        function toggleMobileMenu() {
+            document.getElementById('sidebar-nav').classList.toggle('open');
+        }
+
+        function switchTab(tabId) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+            }
+
+            if (tabId !== 'camera' && cameraMediaPipe) {
+                pararCamera();
+            }
+
+            if (tabId !== 'jogos') {
+                fecharJogo();
+            }
+
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('nav ul li a').forEach(link => link.classList.remove('active'));
+            
+            const targetTab = document.getElementById(tabId);
+            if (targetTab) targetTab.classList.add('active');
+            
+            const targetNav = document.getElementById('nav-' + tabId);
+            if (targetNav) targetNav.classList.add('active');
+
+            if (tabId === 'emg') {
+                inicializarGraficoEMG();
+            }
+
+            if (tabId === 'feedback') {
+                renderizarChat();
+            }
+
+            document.getElementById('sidebar-nav').classList.remove('open');
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const sessaoRaw = localStorage.getItem("neuromotion_sessao");
+            if (!sessaoRaw) {
+                // Remove the redirection for testing the UI cleanly
+                // window.location.href = "login.html";
+                // Mock session for preview purposes
+                sessaoAtual = { role: 'paciente', data: { nome: 'Paciente Teste' } };
+            } else {
+                sessaoAtual = JSON.parse(sessaoRaw);
+            }
+            configurarInterfacePorPerfil();
+            listarCamerasDisponiveis();
+        });
+
+        // --- INTEGRACÃO DO GRÁFICO E SENSOR EMG ---
+        function inicializarGraficoEMG() {
+            const canvas = document.getElementById('emgChart');
+            if (!canvas) return;
+
+            if (emgChart) {
+                emgChart.resize();
+                return;
+            }
+
+            const ctx = canvas.getContext('2d');
+            emgChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array(MAX_DATA_POINTS).fill(''),
+                    datasets: [{
+                        label: 'Sinal EMG',
+                        data: Array(MAX_DATA_POINTS).fill(0),
+                        borderColor: '#00d2ff',
+                        backgroundColor: 'rgba(0, 210, 255, 0.2)',
+                        borderWidth: 1.5,
+                        fill: true,
+                        tension: 0.2,
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        x: { display: false },
+                        y: {
+                            min: 0,
+                            max: 4095,
+                            display: false // Esconde os eixos no modo mini para limpar a tela
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false } // Esconde a legenda no grafico pequeno
+                    },
+                    layout: {
+                        padding: 0
+                    }
+                }
+            });
+        }
+
+        async function conectarSensorEMGBLE() {
+            const statusText = document.getElementById('statusText');
+            const bleStatusText = document.getElementById('ble-status-text');
+            const btnConnect = document.getElementById('btnConnect');
+
+            try {
+                if (statusText) statusText.innerHTML = 'Status: <span style="color: #eab308;">Buscando dispositivo...</span>';
+                
+                bluetoothDevice = await navigator.bluetooth.requestDevice({
+                    filters: [{ name: 'Luva_NeuroMotion' }],
+                    optionalServices: [SERVICE_UUID]
+                });
+
+                bluetoothDevice.addEventListener('gattserverdisconnected', onBLEDisconnected);
+
+                const server = await bluetoothDevice.gatt.connect();
+                const service = await server.getPrimaryService(SERVICE_UUID);
+                emgCharacteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+
+                await emgCharacteristic.startNotifications();
+                emgCharacteristic.addEventListener('characteristicvaluechanged', handleBLEDataNotification);
+
+                if (statusText) statusText.innerHTML = 'Status: <span style="color: #48bb78; font-weight: bold;">Conectado</span>';
+                if (bleStatusText) {
+                    bleStatusText.innerText = "Status: Conectado (BLE)";
+                    bleStatusText.style.color = "#22c55e";
+                }
+                if (btnConnect) btnConnect.style.display = 'none';
+
+                pararLeituraEMGSimulada();
+                document.getElementById('emg-instruction').innerText = "💪 Ótimo! Faça força para levantar a bolinha!";
+
+            } catch (error) {
+                console.error("Erro na conexão BLE:", error);
+                if (statusText) statusText.innerHTML = 'Status: <span style="color: #ef4444; font-weight: bold;">Erro ao conectar</span>';
+            }
+        }
+
+        function handleBLEDataNotification(event) {
+            const decoder = new TextDecoder('utf-8');
+            const payload = decoder.decode(event.target.value);
+            
+            const parts = payload.split(',');
+            if (parts.length === 2) {
+                const hallValue = parseInt(parts[0], 10);
+                const emgValue = parseInt(parts[1], 10);
+
+                if (!isNaN(hallValue) && !isNaN(emgValue)) {
+                    atualizarInterfaceEMG(hallValue, emgValue);
+                    
+                    const imaAproximou = (hallValue < LIMIAR_HALL_IMA && hallAnterior >= LIMIAR_HALL_IMA);
+                    const emgAcionou = (emgValue >= limiarContracaoEMG && !emContracaoAtiva);
+
+                    if (imaAproximou || emgAcionou) {
+                        acionarAcaoJogo();
+                    }
+                    hallAnterior = hallValue;
+                }
+            }
+        }
+
+        // FUNÇÃO MODIFICADA: Controla a bolinha de exercício baseada no sinal EMG
+        function atualizarInterfaceEMG(hall, emg) {
+            const valEmg = document.getElementById('valEmg');
+            const ball = document.getElementById('emg-ball');
+            const instruction = document.getElementById('emg-instruction');
+
+            if (valEmg) valEmg.innerText = emg;
+
+            // Logica visual da bolinha
+            if(ball && instruction) {
+                // Normaliza o sinal EMG. Estima-se 2500 como uma forca max razoavel.
+                let maxExpected = 2500; 
+                let normalizedEmg = Math.min(emg, maxExpected) / maxExpected;
+                
+                // Mapeia para a altura da area de jogo (400px - 70px da bolinha = max 330px alt)
+                let ballHeight = normalizedEmg * 330; 
+                // Coloca um limite mínimo de 10px pro bottom
+                let ballBottom = 10 + ballHeight;
+                ball.style.bottom = ballBottom + 'px';
+
+                // Avalia se está na Zona Alvo (bottom entre 180px e 300px)
+                if (ballBottom >= 180 && ballBottom <= 300) {
+                    instruction.innerText = "⭐ Muito bem! Segure a força! ⭐";
+                    instruction.style.color = "#16a34a";
+                    ball.innerHTML = "<span style='font-size: 2.2rem; line-height: 70px;'>😁</span>";
+                    ball.style.background = "radial-gradient(circle, #4ade80, #16a34a)";
+                    ball.style.transform = "translateX(-50%) scale(1.1)";
+                } else if (ballBottom < 180) {
+                    instruction.innerText = "💪 Faça mais força para levantar a bolinha!";
+                    instruction.style.color = "#0369a1";
+                    ball.innerHTML = "<span style='font-size: 2.2rem; line-height: 70px;'>😐</span>";
+                    ball.style.background = "radial-gradient(circle, #38bdf8, #0284c7)";
+                    ball.style.transform = "translateX(-50%) scale(1.0)";
+                } else {
+                    instruction.innerText = "🔽 Força demais! Relaxe um pouquinho!";
+                    instruction.style.color = "#ea580c";
+                    ball.innerHTML = "<span style='font-size: 2.2rem; line-height: 70px;'>😲</span>";
+                    ball.style.background = "radial-gradient(circle, #fb923c, #ea580c)";
+                    ball.style.transform = "translateX(-50%) scale(1.0)";
+                }
+            }
+
+            // Atualiza o gráfico pequeno
+            if (emgChart) {
+                emgChart.data.datasets[0].data.push(emg);
+                emgChart.data.datasets[0].data.shift();
+                emgChart.update();
+            }
+
+            // Lógica legada para métricas do painel do fisio
+            if (emg > maxEmgPico) {
+                maxEmgPico = emg;
+            }
+            if (emg >= limiarContracaoEMG && !emContracaoAtiva) {
+                emContracaoAtiva = true;
+                qtdContracoesDetectadas++;
+                const countEl = document.getElementById('emg-contractions-count');
+                if (countEl) countEl.innerText = qtdContracoesDetectadas;
+            } else if (emg < limiarContracaoEMG) {
+                emContracaoAtiva = false;
+            }
+        }
+
+        function simularSinalEMG() {
+            pararLeituraEMGSimulada();
+            const statusText = document.getElementById('statusText');
+            if (statusText) statusText.innerHTML = 'Status: <span style="color: #38bdf8; font-weight: bold;">Simulando...</span>';
+
+            // Simula um movimento muscular natural (subindo e descendo com o tempo)
+            let time = 0;
+
+            emgSimulacaoInterval = setInterval(() => {
+                time += 0.1;
+                const imaAtivo = Math.random() > 0.8;
+                const hallSim = imaAtivo ? Math.floor(Math.random() * 500) + 100 : Math.floor(Math.random() * 500) + 3000;
+                
+                // Emula uma onda senoidal para simular contracao subindo e descendo suave
+                const forcaOnda = Math.abs(Math.sin(time)) * 2400; 
+                const ruidoBase = Math.floor(Math.random() * 150) + 20;
+                const emgSim = Math.floor(forcaOnda + ruidoBase);
+                
+                const imaAproximou = (hallSim < LIMIAR_HALL_IMA && hallAnterior >= LIMIAR_HALL_IMA);
+                if (imaAproximou) acionarAcaoJogo();
+                hallAnterior = hallSim;
+
+                atualizarInterfaceEMG(hallSim, emgSim);
+            }, 100);
+        }
+
+        function pararLeituraEMGSimulada() {
+            if (emgSimulacaoInterval) {
+                clearInterval(emgSimulacaoInterval);
+                emgSimulacaoInterval = null;
+            }
+        }
+
+        function pararLeituraEMG() {
+            pararLeituraEMGSimulada();
+            if (bluetoothDevice && bluetoothDevice.gatt.connected) {
+                bluetoothDevice.gatt.disconnect();
+            }
+            onBLEDisconnected();
+            
+            // Retorna bolinha pro estado inicial
+            const ball = document.getElementById('emg-ball');
+            if(ball) {
+                ball.style.bottom = '10px';
+                ball.innerHTML = "<span style='font-size: 2.2rem; line-height: 70px;'>😴</span>";
+                ball.style.background = "radial-gradient(circle, #94a3b8, #64748b)";
+            }
+            document.getElementById('emg-instruction').innerText = "Conecte a luva para começar!";
+        }
+
+        function onBLEDisconnected() {
+            const statusText = document.getElementById('statusText');
+            const bleStatusText = document.getElementById('ble-status-text');
+            const btnConnect = document.getElementById('btnConnect');
+
+            if (statusText) statusText.innerHTML = 'Status: <span style="color: #ef4444; font-weight: bold;">Desconectado</span>';
+            if (bleStatusText) {
+                bleStatusText.innerText = "Status: Desconectado";
+                bleStatusText.style.color = "#ef4444";
+            }
+            if (btnConnect) btnConnect.style.display = 'block';
+        }
+
+        function atualizarLimiarEMG(valor) {
+            limiarContracaoEMG = parseInt(valor, 10) || 150;
+            const thresholdEl = document.getElementById('emg-threshold-val');
+            if (thresholdEl) thresholdEl.innerText = `${limiarContracaoEMG} ADC`;
+        }
+
+        function zerarMetricasEMG() {
+            maxEmgPico = 0;
+            qtdContracoesDetectadas = 0;
+            const countEl = document.getElementById('emg-contractions-count');
+            if (countEl) countEl.innerText = "0";
+
+            if (emgChart) {
+                emgChart.data.datasets[0].data = Array(MAX_DATA_POINTS).fill(0);
+                emgChart.update();
+            }
+        }
+
+        // --- DEMAIS MÉTODOS DO DASHBOARD ---
+        function obterDataHojeString() {
+            const hoje = new Date();
+            return hoje.toISOString().split('T')[0];
+        }
+
+        function verificarEModificarResetDiario(paciente) {
+            const hojeStr = obterDataHojeString();
+            if (!paciente.historicoQuinzenal) paciente.historicoQuinzenal = [];
+            if (!paciente.mensagensChat) paciente.mensagensChat = [];
+
+            if (!paciente.ultimaDataAcesso) {
+                paciente.ultimaDataAcesso = hojeStr;
+                paciente.detalhesExercicios = { sobrancelhas: 0, sorriso: 0, biquinho: 0 };
+                paciente.detalhesJogos = { flappy: 0, food: 0, frutas: 0, baloes: 0 };
+            } else if (paciente.ultimaDataAcesso !== hojeStr) {
+                const totalRepsDia = (paciente.detalhesExercicios?.sobrancelhas || 0) + 
+                                     (paciente.detalhesExercicios?.sorriso || 0) + 
+                                     (paciente.detalhesExercicios?.biquinho || 0);
+                
+                const maxPontosDia = Math.max(
+                    paciente.detalhesJogos?.flappy || 0,
+                    paciente.detalhesJogos?.food || 0,
+                    paciente.detalhesJogos?.frutas || 0,
+                    paciente.detalhesJogos?.baloes || 0
+                );
+
+                paciente.historicoQuinzenal.push({
+                    data: paciente.ultimaDataAcesso,
+                    repeticoes: totalRepsDia,
+                    pontos: maxPontosDia
+                });
+
+                if (paciente.historicoQuinzenal.length > 15) {
+                    paciente.historicoQuinzenal = paciente.historicoQuinzenal.slice(-15);
+                }
+
+                paciente.ultimaDataAcesso = hojeStr;
+                paciente.detalhesExercicios = { sobrancelhas: 0, sorriso: 0, biquinho: 0 };
+                paciente.detalhesJogos = { flappy: 0, food: 0, frutas: 0, baloes: 0 };
+            }
+        }
+
+        function configurarInterfacePorPerfil() {
+            const isFisio = sessaoAtual.role === 'fisio';
+            const badge = document.getElementById('user-badge');
+
+            if (isFisio) {
+                badge.innerText = "Visão: Fisioterapeuta";
+                badge.style.background = "#38bdf8";
+
+                document.getElementById('menu-item-dashboard').style.display = 'block';
+                document.getElementById('menu-item-camera').style.display = 'none';
+                document.getElementById('menu-item-emg').style.display = 'block';
+                document.getElementById('menu-item-jogos').style.display = 'none';
+                document.getElementById('menu-item-pacientes').style.display = 'block';
+
+                document.getElementById('bar-seletor-paciente').style.display = "flex";
+                document.getElementById('painel-editar-conduta').style.display = "block";
+
+                document.getElementById('painel-fisio-graficos').style.display = "block";
+                document.getElementById('painel-paciente-interativo').style.display = "none";
+                document.getElementById('painel-fisio-emg').style.display = "block";
+
+                atualizarDropdownsPacientes();
+
+                const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
+                if (pacientes.length > 0) {
+                    carregarDadosPaciente(pacientes[0]);
+                }
+                renderizarListaPacientes();
+                switchTab('dashboard');
+            } else {
+                badge.innerText = "Visão: Paciente";
+                badge.style.background = "#10b981";
+
+                document.getElementById('menu-item-dashboard').style.display = 'block';
+                document.getElementById('menu-item-camera').style.display = 'block';
+                document.getElementById('menu-item-emg').style.display = 'block';
+                document.getElementById('menu-item-jogos').style.display = 'block';
+                document.getElementById('menu-item-pacientes').style.display = 'none';
+
+                document.getElementById('bar-seletor-paciente').style.display = "none";
+                document.getElementById('painel-editar-conduta').style.display = "none";
+
+                document.getElementById('painel-fisio-graficos').style.display = "none";
+                document.getElementById('painel-paciente-interativo').style.display = "block";
+                document.getElementById('painel-fisio-emg').style.display = "none";
+
+                carregarDadosPaciente(sessaoAtual.data);
+                switchTab('camera');
+            }
+        }
+
+        function atualizarDropdownsPacientes() {
+            const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
+            const selectBarra = document.getElementById('select-paciente-rapido');
+            const selectConduta = document.getElementById('select-paciente-conduta');
+
+            if (selectBarra) selectBarra.innerHTML = "";
+            if (selectConduta) selectConduta.innerHTML = "";
+
+            pacientes.forEach(p => {
+                if (selectBarra) {
+                    const opt1 = document.createElement('option');
+                    opt1.value = p.id;
+                    opt1.innerText = p.nome;
+                    selectBarra.appendChild(opt1);
+                }
+
+                if (selectConduta) {
+                    const opt2 = document.createElement('option');
+                    opt2.value = p.id;
+                    opt2.innerText = p.nome + " (" + p.email + ")";
+                    selectConduta.appendChild(opt2);
+                }
+            });
+        }
+
+        function alterarPacienteSelecionado(id) {
+            const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
+            const p = pacientes.find(item => item.id === id);
+            if (p) carregarDadosPaciente(p);
+        }
+
+        function aoMudarPacienteNaConduta(id) {
+            alterarPacienteSelecionado(id);
+        }
+
+        function carregarDadosPaciente(paciente) {
+            pacienteSelecionado = paciente;
+            
+            if (!pacienteSelecionado.prescricaoExercicios) {
+                pacienteSelecionado.prescricaoExercicios = { sobrancelhas: 10, sorriso: 10, biquinho: 10, tempoSustentacao: 10000 };
+            }
+
+            if (!pacienteSelecionado.prescricaoExercicios.tempoSustentacao) {
+                pacienteSelecionado.prescricaoExercicios.tempoSustentacao = 10000;
+            }
+
+            if (!pacienteSelecionado.mensagensChat) {
+                pacienteSelecionado.mensagensChat = [];
+            }
+
+            verificarEModificarResetDiario(pacienteSelecionado);
+
+            document.getElementById("nome-paciente-ativo-bar").innerText = paciente.nome;
+            
+            const totalRepeticoesHoje = (pacienteSelecionado.detalhesExercicios.sobrancelhas || 0) + 
+                                       (pacienteSelecionado.detalhesExercicios.sorriso || 0) + 
+                                       (pacienteSelecionado.detalhesExercicios.biquinho || 0);
+
+            const maxPontosHoje = Math.max(
+                pacienteSelecionado.detalhesJogos.flappy || 0,
+                pacienteSelecionado.detalhesJogos.food || 0,
+                pacienteSelecionado.detalhesJogos.frutas || 0,
+                pacienteSelecionado.detalhesJogos.baloes || 0
+            );
+
+            document.getElementById("kpi-simetria-valor").innerText = totalRepeticoesHoje + " rep";
+            document.getElementById("kpi-forca-valor").innerText = maxPontosHoje + " pts";
+
+            document.getElementById("rep-sobrancelhas").innerText = (pacienteSelecionado.detalhesExercicios.sobrancelhas || 0) + " rep";
+            document.getElementById("rep-sorriso").innerText = (pacienteSelecionado.detalhesExercicios.sorriso || 0) + " rep";
+            document.getElementById("rep-biquinho").innerText = (pacienteSelecionado.detalhesExercicios.biquinho || 0) + " rep";
+
+            document.getElementById("score-flappy").innerText = (pacienteSelecionado.detalhesJogos.flappy || 0) + " pts";
+            document.getElementById("score-food").innerText = (pacienteSelecionado.detalhesJogos.food || 0) + " pts";
+            document.getElementById("score-frutas").innerText = (pacienteSelecionado.detalhesJogos.frutas || 0) + " pts";
+            document.getElementById("score-baloes").innerText = (pacienteSelecionado.detalhesJogos.baloes || 0) + " pts";
+
+            const tempoSegundos = (pacienteSelecionado.prescricaoExercicios.tempoSustentacao || 10000) / 1000;
+            tempoSustentacaoMs = pacienteSelecionado.prescricaoExercicios.tempoSustentacao || 10000;
+
+            document.getElementById("presc-label-sobrancelhas").innerText = `Prescrição: ${pacienteSelecionado.prescricaoExercicios.sobrancelhas || 10} rep | ${tempoSegundos}s`;
+            document.getElementById("presc-label-sorriso").innerText = `Prescrição: ${pacienteSelecionado.prescricaoExercicios.sorriso || 10} rep | ${tempoSegundos}s`;
+            document.getElementById("presc-label-biquinho").innerText = `Prescrição: ${pacienteSelecionado.prescricaoExercicios.biquinho || 10} rep | ${tempoSegundos}s`;
+
+            document.getElementById("display-tempo-sustentacao").innerText = `${tempoSegundos}s`;
+
+            document.getElementById("presc-sobrancelhas").value = pacienteSelecionado.prescricaoExercicios.sobrancelhas || 10;
+            document.getElementById("presc-sorriso").value = pacienteSelecionado.prescricaoExercicios.sorriso || 10;
+            document.getElementById("presc-biquinho").value = pacienteSelecionado.prescricaoExercicios.biquinho || 10;
+            document.getElementById("select-tempo-fisioterapeuta").value = pacienteSelecionado.prescricaoExercicios.tempoSustentacao || 10000;
+
+            const metaTotalDia = (pacienteSelecionado.prescricaoExercicios.sobrancelhas || 10) +
+                                 (pacienteSelecionado.prescricaoExercicios.sorriso || 10) +
+                                 (pacienteSelecionado.prescricaoExercicios.biquinho || 10);
+            
+            const pctProgresso = Math.min(100, Math.round((totalRepeticoesHoje / metaTotalDia) * 100));
+            document.getElementById("senior-bar-exercicios").style.width = pctProgresso + "%";
+            document.getElementById("senior-txt-exercicios").innerText = `${totalRepeticoesHoje} de ${metaTotalDia} concluídos`;
+            document.getElementById("senior-txt-pontos").innerText = `${maxPontosHoje} Pontos`;
+
+            const msgElem = document.getElementById("senior-mensagem-incentivo");
+            if (pctProgresso === 0) {
+                msgElem.innerText = "Você ainda não começou os exercícios de hoje. Clique abaixo para iniciar!";
+            } else if (pctProgresso < 100) {
+                msgElem.innerText = `Muito bem, você já fez ${pctProgresso}% da sua meta diária! Continue assim!`;
+            } else {
+                msgElem.innerText = "🎉 Parabéns! Você concluiu toda a sua meta de exercícios para hoje!";
+            }
+
+            const selectBarra = document.getElementById('select-paciente-rapido');
+            const selectConduta = document.getElementById('select-paciente-conduta');
+            if (selectBarra) selectBarra.value = paciente.id;
+            if (selectConduta) selectConduta.value = paciente.id;
+
+            if (sessaoAtual.role === 'fisio') {
+                document.getElementById("dash-title").innerText = "Painel Clínico de " + paciente.nome;
+                document.getElementById("chat-titulo-header").innerText = "💬 Chat com " + paciente.nome;
+            } else {
+                document.getElementById("dash-title").innerText = "Meu Painel de Reabilitação";
+                document.getElementById("chat-titulo-header").innerText = "💬 Chat com Fisioterapeuta";
+            }
+
+            const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
+            const pIdx = pacientes.findIndex(p => p.id === pacienteSelecionado.id);
+            if (pIdx !== -1) {
+                pacientes[pIdx] = pacienteSelecionado;
+                localStorage.setItem('neuromotion_pacientes', JSON.stringify(pacientes));
+            }
+
+            renderizarTabelaHistoricoDiario();
+            renderizarGraficos();
+            renderizarChat();
+        }
+
+        function renderizarTabelaHistoricoDiario() {
+            const tbody = document.getElementById("tabela-historico-diario-body");
+            if (!tbody) return;
+
+            tbody.innerHTML = "";
+            const hist = (pacienteSelecionado && pacienteSelecionado.historicoQuinzenal) ? pacienteSelecionado.historicoQuinzenal : [];
+
+            const totalRepsHoje = (pacienteSelecionado?.detalhesExercicios?.sobrancelhas || 0) + 
+                                 (pacienteSelecionado?.detalhesExercicios?.sorriso || 0) + 
+                                 (pacienteSelecionado?.detalhesExercicios?.biquinho || 0);
+
+            const maxPontosHoje = Math.max(
+                pacienteSelecionado?.detalhesJogos?.flappy || 0,
+                pacienteSelecionado?.detalhesJogos?.food || 0,
+                pacienteSelecionado?.detalhesJogos?.frutas || 0,
+                pacienteSelecionado?.detalhesJogos?.baloes || 0
+            );
+
+            let linhas = [
+                { data: obterDataHojeString() + " (Hoje)", repeticoes: totalRepsHoje, pontos: maxPontosHoje },
+                ...[...hist].reverse()
+            ];
+
+            linhas.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><strong>${row.data}</strong></td>
+                    <td><span style="color: #0284c7; font-weight: bold;">${row.repeticoes}</span> repetições</td>
+                    <td><span style="color: #059669; font-weight: bold;">${row.pontos}</span> pts</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderizarListaPacientes() {
+            const container = document.getElementById('lista-pacientes-cards');
+            const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
+            container.innerHTML = "";
+
+            pacientes.forEach(p => {
+                const card = document.createElement('div');
+                card.style.cssText = "padding: 1rem; border: 1px solid #cbd5e1; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; background: #f8fafc; flex-wrap: wrap; gap: 0.5rem;";
+                card.innerHTML = `
+                    <div>
+                        <strong>${p.nome}</strong> (${p.email})<br>
+                        <small style="color: #64748b;">Diagnóstico: ${p.diagnostico} | CID: ${p.cid}</small>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn" onclick="alterarPacienteSelecionado('${p.id}')">👁️ Selecionar</button>
+                        <button class="btn btn-danger" onclick="excluirPaciente('${p.id}')">🗑️ Excluir</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function excluirPaciente(id) {
+            let pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
+            const pacienteExcluir = pacientes.find(p => p.id === id);
+
+            if (!pacienteExcluir) return;
+
+            if (confirm(`Tem certeza que deseja excluir o paciente "${pacienteExcluir.nome}"? Esta ação é definitiva para tratamentos encerrados.`)) {
+                pacientes = pacientes.filter(p => p.id !== id);
+                localStorage.setItem('neuromotion_pacientes', JSON.stringify(pacientes));
+
+                atualizarDropdownsPacientes();
+                renderizarListaPacientes();
+
+                if (pacientes.length > 0) {
+                    carregarDadosPaciente(pacientes[0]);
+                } else {
+                    pacienteSelecionado = null;
+                    document.getElementById("nome-paciente-ativo-bar").innerText = "-";
+                }
+
+                alert("Paciente excluído com sucesso.");
+            }
+        }
+
+        document.getElementById('form-novo-paciente').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const novoP = {
+                id: 'pac_' + Date.now(),
+                nome: document.getElementById('cad-pac-nome').value,
+                email: document.getElementById('cad-pac-email').value,
+                senha: document.getElementById('cad-pac-senha').value,
+                nascimento: document.getElementById('cad-pac-nasc').value,
+                telefone: document.getElementById('cad-pac-tel').value,
+                diagnostico: document.getElementById('cad-pac-diag').value,
+                cid: 'G51.0',
+                anamnese: 'Paciente recém-cadastrado no sistema.',
+                ultimaDataAcesso: obterDataHojeString(),
+                detalhesExercicios: { sobrancelhas: 0, sorriso: 0, biquinho: 0 },
+                detalhesJogos: { flappy: 0, food: 0, frutas: 0, baloes: 0 },
+                prescricaoExercicios: { sobrancelhas: 10, sorriso: 10, biquinho: 10, tempoSustentacao: 10000 },
+                historicoQuinzenal: [],
+                mensagensChat: []
+            };
+
+            const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
+            pacientes.push(novoP);
+            localStorage.setItem('neuromotion_pacientes', JSON.stringify(pacientes));
+
+            atualizarDropdownsPacientes();
+            renderizarListaPacientes();
+            carregarDadosPaciente(novoP);
+            alert("Paciente cadastrado com sucesso!");
+            e.target.reset();
+        });
+
+        function salvarPrescricaoExterna() {
+            const select = document.getElementById('select-paciente-conduta');
+            const targetId = select.value;
+
+            const numSobrancelhas = parseInt(document.getElementById('presc-sobrancelhas').value, 10) || 10;
+            const numSorriso = parseInt(document.getElementById('presc-sorriso').value, 10) || 10;
+            const numBiquinho = parseInt(document.getElementById('presc-biquinho').value, 10) || 10;
+            const tempoSust = parseInt(document.getElementById('select-tempo-fisioterapeuta').value, 10) || 10000;
+
+            const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
+            const index = pacientes.findIndex(p => p.id === targetId);
+            if (index !== -1) {
+                pacientes[index].prescricaoExercicios = {
+                    sobrancelhas: numSobrancelhas,
+                    sorriso: numSorriso,
+                    biquinho: numBiquinho,
+                    tempoSustentacao: tempoSust
+                };
+
+                localStorage.setItem('neuromotion_pacientes', JSON.stringify(pacientes));
+                carregarDadosPaciente(pacientes[index]);
+                alert(`Prescrição de Exercícios salva com sucesso para ${pacientes[index].nome}!`);
+            }
+        }
+
+        function renderizarChat() {
+            const listEl = document.getElementById('chat-messages-list');
+            if (!listEl) return;
+            listEl.innerHTML = "";
+
+            if (!pacienteSelecionado) {
+                listEl.innerHTML = "<p style='text-align: center; color: #64748b;'>Nenhum paciente selecionado.</p>";
+                return;
+            }
+
+            const mensagens = pacienteSelecionado.mensagensChat || [];
+            const meuPapel = sessaoAtual.role;
+
+            if (mensagens.length === 0) {
+                listEl.innerHTML = "<p style='text-align: center; color: #64748b; margin-top: auto;'>Nenhuma mensagem trocada ainda. Envie um 'Olá'!</p>";
+                return;
+            }
+
+            mensagens.forEach(m => {
+                const bubble = document.createElement('div');
+                const ehMinha = m.autorRole === meuPapel;
+                bubble.className = `chat-bubble ${ehMinha ? 'enviada' : 'recebida'}`;
+                
+                bubble.innerHTML = `
+                    <strong>${m.autorNome}</strong><br>
+                    ${m.texto}
+                    <span class="chat-meta">${m.hora}</span>
+                `;
+                listEl.appendChild(bubble);
+            });
+
+            listEl.scrollTop = listEl.scrollHeight;
+        }
+
+        function enviarMensagemChat() {
+            const input = document.getElementById('chat-input-text');
+            const texto = input.value.trim();
+            if (!texto || !pacienteSelecionado) return;
+
+            const agora = new Date();
+            const horaStr = agora.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            const novaMensagem = {
+                autorRole: sessaoAtual.role,
+                autorNome: sessaoAtual.role === 'fisio' ? (sessaoAtual.data.nome || 'Fisioterapeuta') : pacienteSelecionado.nome,
+                texto: texto,
+                hora: horaStr
+            };
+
+            if (!pacienteSelecionado.mensagensChat) {
+                pacienteSelecionado.mensagensChat = [];
+            }
+
+            pacienteSelecionado.mensagensChat.push(novaMensagem);
+
+            const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
+            const index = pacientes.findIndex(p => p.id === pacienteSelecionado.id);
+            if (index !== -1) {
+                pacientes[index] = pacienteSelecionado;
+                localStorage.setItem('neuromotion_pacientes', JSON.stringify(pacientes));
+            }
+
+            input.value = "";
+            renderizarChat();
+        }
+
+        function confirmarSair() {
+            if (confirm("Deseja encerrar a sessão?")) {
+                localStorage.removeItem("neuromotion_sessao");
+                window.location.href = "login.html";
+            }
+        }
+
+        function renderizarGraficos() {
+            if (sessaoAtual.role !== 'fisio') return;
+
+            if (chartSimetriaInst) chartSimetriaInst.destroy();
+            if (chartPincaInst) chartPincaInst.destroy();
+
+            const canvasSimetria = document.getElementById('chartSimetria');
+            const canvasPinca = document.getElementById('chartPinca');
+            if (!canvasSimetria || !canvasPinca) return;
+
+            let labelsQuinzenal = [];
+            let dadosRepsQuinzenal = [];
+            let dadosJogosQuinzenal = [];
+
+            const hist = (pacienteSelecionado && pacienteSelecionado.historicoQuinzenal) ? pacienteSelecionado.historicoQuinzenal : [];
+            
+            hist.forEach(item => {
+                const dPartes = item.data.split('-');
+                labelsQuinzenal.push(dPartes.length === 3 ? `${dPartes[2]}/${dPartes[1]}` : item.data);
+                dadosRepsQuinzenal.push(item.repeticoes || 0);
+                dadosJogosQuinzenal.push(item.pontos || 0);
+            });
+
+            const hojeData = new Date();
+            labelsQuinzenal.push(`${String(hojeData.getDate()).padStart(2, '0')}/${String(hojeData.getMonth() + 1).padStart(2, '0')} (Hoje)`);
+            
+            const repsHoje = (pacienteSelecionado?.detalhesExercicios?.sobrancelhas || 0) + 
+                             (pacienteSelecionado?.detalhesExercicios?.sorriso || 0) + 
+                             (pacienteSelecionado?.detalhesExercicios?.biquinho || 0);
+
+            const pontosHoje = Math.max(
+                pacienteSelecionado?.detalhesJogos?.flappy || 0,
+                pacienteSelecionado?.detalhesJogos?.food || 0,
+                pacienteSelecionado?.detalhesJogos?.frutas || 0,
+                pacienteSelecionado?.detalhesJogos?.baloes || 0
+            );
+
+            dadosRepsQuinzenal.push(repsHoje);
+            dadosJogosQuinzenal.push(pontosHoje);
+
+            if (labelsQuinzenal.length > 15) {
+                labelsQuinzenal = labelsQuinzenal.slice(-15);
+                dadosRepsQuinzenal = dadosRepsQuinzenal.slice(-15);
+                dadosJogosQuinzenal = dadosJogosQuinzenal.slice(-15);
+            }
+
+            const ctx1 = canvasSimetria.getContext('2d');
+            chartSimetriaInst = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: labelsQuinzenal,
+                    datasets: [{
+                        label: 'Evolução Quinzenal - Repetições',
+                        data: dadosRepsQuinzenal,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.15)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
+
+            const ctx2 = canvasPinca.getContext('2d');
+            chartPincaInst = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: labelsQuinzenal,
+                    datasets: [{
+                        label: 'Evolução Quinzenal - Pontuação Máxima',
+                        data: dadosJogosQuinzenal,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 4
+                    }]
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        // --- SISTEMA DE VOZ ---
+        let ultimaFala = "";
+        function falar(texto) {
+            if ('speechSynthesis' in window) {
+                if (ultimaFala === texto && window.speechSynthesis.speaking) return;
+                window.speechSynthesis.cancel();
+                ultimaFala = texto;
+                const utterance = new SpeechSynthesisUtterance(texto);
+                utterance.lang = 'pt-BR';
+                utterance.rate = 1.0;
+                utterance.pitch = 1.0;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // --- EXERCÍCIOS FACIAIS ---
+        let videoElement = document.getElementById('video-feed');
+        let canvasIa = document.getElementById('canvas-ia');
+        let canvasCtx = canvasIa ? canvasIa.getContext('2d') : null;
+        let cameraMediaPipe = null, faceMesh = null;
+        let selectedDeviceId = null;
+
+        let exercicioAtual = 'sobrancelhas';
+        let repeticoes = 0;
+        let metaRepeticoesAtual = 10;
+        let baselineProporcao = null;
+        let amostrasBaseline = [];
+        let emExecucao = false;
+        let tempoControle = 0;
+        let bloqueioPosConclusao = false;
+        let estadoInstrucaoVoz = "";
+
+        let tempoSustentacaoMs = 10000;
+
+        function obterMetaPrescritaExercicio(tipo) {
+            if (pacienteSelecionado && pacienteSelecionado.prescricaoExercicios) {
+                return pacienteSelecionado.prescricaoExercicios[tipo] || 10;
+            }
+            return 10;
+        }
+
+        async function listarCamerasDisponiveis() {
+            try {
+                await navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
+                    stream.getTracks().forEach(track => track.stop());
+                }).catch(() => {});
+
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(d => d.kind === 'videoinput');
+                const select = document.getElementById('select-camera-input');
+
+                if (!select) return;
+                select.innerHTML = "";
+
+                if (videoDevices.length === 0) {
+                    select.innerHTML = "<option value=''>Nenhuma câmera detectada</option>";
+                    return;
+                }
+
+                videoDevices.forEach((device, index) => {
+                    const option = document.createElement('option');
+                    option.value = device.deviceId;
+                    option.text = device.label || `Câmera ${index + 1}`;
+                    select.appendChild(option);
+                });
+
+                const webcamExterna = videoDevices.find(d => 
+                    d.label.toLowerCase().includes('usb') || 
+                    d.label.toLowerCase().includes('external') || 
+                    d.label.toLowerCase().includes('webcam')
+                );
+
+                if (webcamExterna) {
+                    selectedDeviceId = webcamExterna.deviceId;
+                    select.value = webcamExterna.deviceId;
+                } else {
+                    selectedDeviceId = videoDevices[0].deviceId;
+                }
+            } catch (err) {
+                console.error("Erro ao listar câmeras:", err);
+            }
+        }
+
+        function trocarDispositivoCamera(deviceId) {
+            selectedDeviceId = deviceId;
+            if (cameraMediaPipe) {
+                pararCamera();
+                iniciarCamera();
+            }
+        }
+
+        function selecionarExercicio(tipo, btn) {
+            exercicioAtual = tipo;
+            document.querySelectorAll('.exercise-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            recalibrar();
+        }
+
+        function recalibrar() {
+            repeticoes = 0;
+            metaRepeticoesAtual = obterMetaPrescritaExercicio(exercicioAtual);
+            
+            const repsJaFeitas = pacienteSelecionado?.detalhesExercicios?.[exercicioAtual] || 0;
+            
+            baselineProporcao = null;
+            amostrasBaseline = [];
+            emExecucao = false;
+            tempoControle = 0;
+            bloqueioPosConclusao = false;
+            estadoInstrucaoVoz = "";
+
+            document.getElementById('counter-reps').innerText = "0";
+            document.getElementById('target-reps').innerText = metaRepeticoesAtual;
+
+            if (repsJaFeitas >= metaRepeticoesAtual) {
+                atualizarInstrutor(`Série diária concluída! A fisioterapeuta prescreveu ${metaRepeticoesAtual} repetições para hoje.`, "#16a34a", "✅");
+                document.getElementById('status-hold').innerText = "Meta Atingida";
+                document.getElementById('status-hold').style.color = "#16a34a";
+                falar(`Você já concluiu as ${metaRepeticoesAtual} repetições prescritas para hoje.`);
+                return;
+            }
+
+            document.getElementById('status-hold').innerText = "Recalibrando...";
+            document.getElementById('status-hold').style.color = "#64748b";
+
+            if (exercicioAtual === 'sobrancelhas') {
+                atualizarInstrutor("Mantenha o rosto relaxado olhando para a câmera.", "#0f172a", "👨‍⚕️");
+                falar("Calibrando sobrancelhas. Mantenha o rosto relaxado.");
+            } else if (exercicioAtual === 'sorriso') {
+                atualizarInstrutor("Permaneça neutro para calibrar a abertura do sorriso.", "#0f172a", "👨‍⚕️");
+                falar("Permaneça neutro para calibrar o sorriso.");
+            } else if (exercicioAtual === 'biquinho') {
+                atualizarInstrutor("Mantenha os lábios relaxados para iniciar.", "#0f172a", "👨‍⚕️");
+                falar("Mantenha os lábios relaxados.");
+            }
+        }
+
+        async function iniciarCamera() {
+            metaRepeticoesAtual = obterMetaPrescritaExercicio(exercicioAtual);
+            const repsJaFeitas = pacienteSelecionado?.detalhesExercicios?.[exercicioAtual] || 0;
+
+            if (repsJaFeitas >= metaRepeticoesAtual) {
+                alert(`Você já concluiu a meta diária prescrita pela fisioterapeuta (${metaRepeticoesAtual} repetições).`);
+                falar(`Você já atingiu a meta diária de ${metaRepeticoesAtual} repetições prescrita pela fisioterapeuta.`);
+                return;
+            }
+
+            atualizarInstrutor("Carregando inteligência artificial...", "#eab308", "⏳");
+            falar("Iniciando IA do rastreamento facial.");
+
+            if (!faceMesh) {
+                faceMesh = new FaceMesh({
+                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+                });
+                faceMesh.setOptions({ maxNumFaces: 1, refineLandmarks: true, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
+                faceMesh.onResults(processarResultadosFaciais);
+            }
+
+            if (cameraMediaPipe) {
+                await cameraMediaPipe.stop();
+            }
+
+            const videoConstraints = selectedDeviceId ? { deviceId: { exact: selectedDeviceId } } : true;
+
+            cameraMediaPipe = new Camera(videoElement, {
+                onFrame: async () => { await faceMesh.send({ image: videoElement }); },
+                width: 640, height: 480,
+                video: videoConstraints
+            });
+
+            await cameraMediaPipe.start();
+            recalibrar();
+        }
+
+        function pararCamera() {
+            if (cameraMediaPipe) cameraMediaPipe.stop();
+            if (canvasCtx) canvasCtx.clearRect(0, 0, canvasIa.width, canvasIa.height);
+            atualizarInstrutor("Treino pausado.", "#0f172a", "👨‍⚕️");
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        }
+
+        function calcularDistancia2D(p1, p2) {
+            return Math.hypot(p1.x - p2.x, p1.y - p2.y);
+        }
+
+        function processarResultadosFaciais(results) {
+            if (!canvasIa || !canvasCtx) return;
+            canvasIa.width = videoElement.videoWidth;
+            canvasIa.height = videoElement.videoHeight;
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasIa.width, canvasIa.height);
+
+            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                const landmarks = results.multiFaceLandmarks[0];
+                canvasCtx.fillStyle = '#38bdf8';
+                for (const lm of landmarks) {
+                    canvasCtx.beginPath();
+                    canvasCtx.arc(lm.x * canvasIa.width, lm.y * canvasIa.height, 1.2, 0, 2 * Math.PI);
+                    canvasCtx.fill();
+                }
+                analisarMovimentoComInstrutor(landmarks);
+            }
+            canvasCtx.restore();
+        }
+
+        function atualizarInstrutor(texto, corFundo, emoji) {
+            if (!document.getElementById('instrucao-clinica')) return;
+            document.getElementById('instrucao-clinica').innerText = texto;
+            document.getElementById('avatar-icon').innerText = emoji;
+            document.getElementById('instructor-box').style.background = corFundo;
+        }
+
+        function analisarMovimentoComInstrutor(lm) {
+            if (repeticoes >= metaRepeticoesAtual) return;
+
+            const pOlhoEsq = lm[159], pSobrancelhaEsq = lm[70];
+            const pOlhoDir = lm[386], pSobrancelhaDir = lm[300];
+            const pTesta = lm[10];
+            const pCantoBocaEsq = lm[61], pCantoBocaDir = lm[291];
+            const pNariz = lm[1], pQueixo = lm[152];
+
+            const escalaRosto = calcularDistancia2D(pNariz, pQueixo);
+            if (escalaRosto === 0) return;
+
+            let valorAtual = 0;
+
+            if (exercicioAtual === 'sobrancelhas') {
+                const distEsq = calcularDistancia2D(pOlhoEsq, pSobrancelhaEsq);
+                const distDir = calcularDistancia2D(pOlhoDir, pSobrancelhaDir);
+                const distTesta = (calcularDistancia2D(pSobrancelhaEsq, pTesta) + calcularDistancia2D(pSobrancelhaDir, pTesta)) / 2;
+                valorAtual = ((distEsq + distDir) / (2 * escalaRosto)) - (distTesta / (2 * escalaRosto));
+            } else if (exercicioAtual === 'sorriso') {
+                valorAtual = calcularDistancia2D(pCantoBocaEsq, pCantoBocaDir) / escalaRosto;
+            } else if (exercicioAtual === 'biquinho') {
+                valorAtual = calcularDistancia2D(pCantoBocaEsq, pCantoBocaDir) / escalaRosto;
+            }
+
+            if (baselineProporcao === null) {
+                amostrasBaseline.push(valorAtual);
+                if (amostrasBaseline.length >= 15) {
+                    const soma = amostrasBaseline.reduce((a, b) => a + b, 0);
+                    baselineProporcao = soma / amostrasBaseline.length;
+                    document.getElementById('status-hold').innerText = "Pronto! Inicie o movimento.";
+                    if (estadoInstrucaoVoz !== "pronto") {
+                        falar("Calibração concluída. Pode iniciar o movimento.");
+                        estadoInstrucaoVoz = "pronto";
+                    }
+                }
+                return;
+            }
+
+            let metaAtingida = false;
+
+            if (exercicioAtual === 'sobrancelhas') {
+                metaAtingida = valorAtual > (baselineProporcao + 0.025);
+            } else if (exercicioAtual === 'sorriso') {
+                metaAtingida = valorAtual > (baselineProporcao * 1.15);
+            } else if (exercicioAtual === 'biquinho') {
+                metaAtingida = valorAtual < (baselineProporcao * 0.88);
+            }
+
+            const statusHold = document.getElementById('status-hold');
+            const segundosSustentacao = tempoSustentacaoMs / 1000;
+
+            if (metaAtingida && !bloqueioPosConclusao) {
+                if (!emExecucao) {
+                    emExecucao = true;
+                    tempoControle = Date.now();
+                }
+
+                const decorridoMs = Date.now() - tempoControle;
+                const restanteSeg = Math.max(0, Math.ceil((tempoSustentacaoMs - decorridoMs) / 1000));
+
+                statusHold.innerText = `Sustente... ${restanteSeg}s`;
+                statusHold.style.color = "#0284c7";
+
+                if (estadoInstrucaoVoz !== "sustente") {
+                    falar(`Muito bem! Mantenha a posição por ${segundosSustentacao} segundos.`);
+                    estadoInstrucaoVoz = "sustente";
+                }
+
+                if (decorridoMs >= tempoSustentacaoMs) {
+                    repeticoes++;
+                    document.getElementById('counter-reps').innerText = repeticoes;
+                    
+                    bloqueioPosConclusao = true;
+                    emExecucao = false;
+
+                    registrarProgressoPaciente(1, 0, exercicioAtual, null);
+
+                    if (repeticoes >= metaRepeticoesAtual) {
+                        atualizarInstrutor("🎉 Parabéns! Você concluiu a meta diária deste exercício!", "#16a34a", "🏆");
+                        statusHold.innerText = "Série Concluída!";
+                        statusHold.style.color = "#16a34a";
+                        falar(`Parabéns! Você completou a série de ${metaRepeticoesAtual} repetições do exercício!`);
+                    } else {
+                        statusHold.innerText = "Excelente! Descanse um pouco.";
+                        statusHold.style.color = "#16a34a";
+                        falar(`Repetição ${repeticoes} concluída. Pode relaxar o rosto.`);
+                        setTimeout(() => {
+                            bloqueioPosConclusao = false;
+                            estadoInstrucaoVoz = "";
+                            statusHold.innerText = "Pronto para a próxima repetição.";
+                            statusHold.style.color = "#64748b";
+                        }, 2500);
+                    }
+                }
+            } else if (!bloqueioPosConclusao) {
+                if (emExecucao) {
+                    emExecucao = false;
+                    statusHold.innerText = "Movimento interrompido. Tente novamente.";
+                    statusHold.style.color = "#ef4444";
+                    if (estadoInstrucaoVoz !== "interrompido") {
+                        falar("Você relaxou antes do tempo. Tente novamente.");
+                        estadoInstrucaoVoz = "interrompido";
+                    }
+                }
+            }
+        }
+
+        function registrarProgressoPaciente(novasRepeticoes, novaPontuacaoJogo, tipoExercicio, tipoJogo) {
+            if (!pacienteSelecionado) return;
+            verificarEModificarResetDiario(pacienteSelecionado);
+
+            const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
+            let pIndex = pacientes.findIndex(p => p.id === pacienteSelecionado.id);
+            let targetP = pIndex !== -1 ? pacientes[pIndex] : pacienteSelecionado;
+
+            if (!targetP.detalhesExercicios) targetP.detalhesExercicios = { sobrancelhas: 0, sorriso: 0, biquinho: 0 };
+            if (!targetP.detalhesJogos) targetP.detalhesJogos = { flappy: 0, food: 0, frutas: 0, baloes: 0 };
+
+            if (novasRepeticoes > 0 && tipoExercicio && targetP.detalhesExercicios[tipoExercicio] !== undefined) {
+                targetP.detalhesExercicios[tipoExercicio] += novasRepeticoes;
+            }
+
+            if (tipoJogo && novaPontuacaoJogo > (targetP.detalhesJogos[tipoJogo] || 0)) {
+                targetP.detalhesJogos[tipoJogo] = novaPontuacaoJogo;
+            }
+
+            if (pIndex !== -1) {
+                pacientes[pIndex] = targetP;
+                localStorage.setItem('neuromotion_pacientes', JSON.stringify(pacientes));
+            }
+            carregarDadosPaciente(targetP);
+        }
+
+        // ==========================================
+        //       MOTOR DOS JOGOS TERAPÊUTICOS
+        // ==========================================
+        let jogoAtivo = null;
+        let gameLoopId = null;
+        let gameCanvas = document.getElementById('gameCanvas');
+        let gCtx = gameCanvas ? gameCanvas.getContext('2d') : null;
+        let gameScore = 0;
+        let estadoJogo = 'MENU'; // 'MENU', 'CONTAGEM', 'JOGANDO', 'GAMEOVER'
+        let tempoContagem = 3;
+        let timerContagem = null;
+
+        // Variáveis dos jogos ajustadas
+        let flappyState = { y: 250, vy: 0, obstaculos: [], iniciado: false, contadorSpawn: 0 };
+        let foodState = { pouX: 220, itens: [], bocaAberta: false, tempoBoca: 0, proximoSpawn: 0 };
+        let frutasState = { frutaAtual: '🍎', tempoInicioFruta: 0, limiteTempoMs: 10000 };
+        let baloesState = { baloes: [], linhaY: 140, baloesPerdidos: 0, limitePerdidos: 5, proximoSpawn: 0, cores: ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#f97316', '#ec4899'] };
+
+        const ALIMENTOS_BONS = ['🍎', '🍌', '🍓', '🍇', '🍊', '🍐', '🍉', '🥕', '🥦'];
+        const ALIMENTOS_RUINS = ['💣', '👞', '🧱', '🦟'];
+
+        function abrirJogo(tipo) {
+            jogoAtivo = tipo;
+            document.getElementById('lista-jogos').style.display = 'none';
+            document.getElementById('area-jogo').style.display = 'block';
+
+            const menu = document.getElementById('menu-flappy');
+            const titulo = document.getElementById('titulo-flappy');
+            const subtitulo = document.getElementById('subtitulo-flappy');
+            const explicacao = document.getElementById('explicacao-idoso');
+
+            menu.style.display = 'flex';
+            document.getElementById('btn-iniciar-jogo').style.display = 'inline-block';
+            estadoJogo = 'MENU';
+
+            if (tipo === 'flappy') {
+                titulo.innerText = '🐦 Flappy Pinça Pro';
+                subtitulo.innerText = 'Aproxime o ímã para o pássaro começar a voar!';
+                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>O pássaro fica paradinho. Quando você aproximar o ímã do sensor, ele começa a se movimentar e voar. Continue aproximando o ímã com calma para passar pelos portais!';
+            } else if (tipo === 'food') {
+                titulo.innerText = '🍔 Food Drop (Pou)';
+                subtitulo.innerText = 'Aproxime o ímã para o Pou abrir a boca e comer!';
+                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>O Pou fica no centro. As comidas vão cair ordenadas uma a uma devagar. Aproxime o ímã para abrir a boca do Pou no momento certo. Coma alimentos bons e fuja de bombas/sapatos!';
+            } else if (tipo === 'frutas') {
+                titulo.innerText = '🍓 Pique-Esconde Frutas';
+                subtitulo.innerText = 'Aperte a pinça/ímã para mudar a fruta!';
+                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>Uma fruta bonita vai aparecer no meio da tela. Aperte o ímã para fazê-la sumir e aparecer uma nova fruta!';
+            } else if (tipo === 'baloes') {
+                titulo.innerText = '🎈 Estoura-Balões';
+                subtitulo.innerText = 'Faça a pinça com o ímã quando o balão chegar na linha!';
+                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>Os balões sobem um de cada vez. Quando o balão atingir a linha tracejada no topo, aproxime o ímã com os dedos para estourá-lo!';
+            }
+
+            resetarJogo();
+            desenharCenario();
+        }
+
+        function fecharJogo() {
+            if (gameLoopId) cancelAnimationFrame(gameLoopId);
+            if (timerContagem) clearInterval(timerContagem);
+            jogoAtivo = null;
+            document.getElementById('area-jogo').style.display = 'none';
+            document.getElementById('lista-jogos').style.display = 'grid';
+        }
+
+        function iniciarContagemJogo() {
+            estadoJogo = 'CONTAGEM';
+            tempoContagem = 3;
+            
+            const menu = document.getElementById('menu-flappy');
+            const titulo = document.getElementById('titulo-flappy');
+            const subtitulo = document.getElementById('subtitulo-flappy');
+            const explicacao = document.getElementById('explicacao-idoso');
+            const btn = document.getElementById('btn-iniciar-jogo');
+
+            btn.style.display = 'none';
+            explicacao.innerHTML = '';
+            titulo.innerText = 'Atenção!';
+            subtitulo.innerText = `O jogo vai começar em: ${tempoContagem}`;
+
+            if (timerContagem) clearInterval(timerContagem);
+
+            timerContagem = setInterval(() => {
+                tempoContagem--;
+                if (tempoContagem > 0) {
+                    subtitulo.innerText = `O jogo vai começar em: ${tempoContagem}`;
+                } else {
+                    clearInterval(timerContagem);
+                    menu.style.display = 'none';
+                    resetarJogo();
+                    estadoJogo = 'JOGANDO';
+                    if (gameLoopId) cancelAnimationFrame(gameLoopId);
+                    loopJogo();
+                }
+            }, 1000);
+        }
+
+        function acionarAcaoJogo() {
+            if (estadoJogo !== 'JOGANDO') return;
+
+            if (jogoAtivo === 'flappy') {
+                if (!flappyState.iniciado) {
+                    flappyState.iniciado = true;
+                }
+                flappyState.vy = -5.0;
+            } else if (jogoAtivo === 'food') {
+                foodState.bocaAberta = true;
+                foodState.tempoBoca = 25; 
+            } else if (jogoAtivo === 'frutas') {
+                gameScore += 10;
+                registrarProgressoPaciente(0, gameScore, null, 'frutas');
+                const frutasDisponiveis = ['🍎', '🍓', '🍌', '🍊', '🍇', '🍐', '🍑', '🍒', '🍍', '🍉', '🥭'];
+                let novaFruta = frutasState.frutaAtual;
+                while (novaFruta === frutasState.frutaAtual) {
+                    novaFruta = frutasDisponiveis[Math.floor(Math.random() * frutasDisponiveis.length)];
+                }
+                frutasState.frutaAtual = novaFruta;
+                frutasState.tempoInicioFruta = Date.now();
+            } else if (jogoAtivo === 'baloes') {
+                let estourouAlgum = false;
+                baloesState.baloes.forEach(b => {
+                    if (Math.abs(b.y - baloesState.linhaY) <= 45 && !b.estourado && !b.perdido) {
+                        b.estourado = true;
+                        estourouAlgum = true;
+                        gameScore += 10;
+                        registrarProgressoPaciente(0, gameScore, null, 'baloes');
+                    }
+                });
+            }
+        }
+
+        // Suporte a toque/clique na tela
+        if (gameCanvas) {
+            gameCanvas.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                if (estadoJogo === 'JOGANDO') {
+                    acionarAcaoJogo();
+                }
+            });
+        }
+
+        function resetarJogo() {
+            gameScore = 0;
+            if (jogoAtivo === 'flappy') {
+                flappyState = { y: 250, vy: 0, obstaculos: [], iniciado: false, contadorSpawn: 0 };
+            } else if (jogoAtivo === 'food') {
+                foodState = { pouX: 220, itens: [], bocaAberta: false, tempoBoca: 0, proximoSpawn: Date.now() + 500 };
+            } else if (jogoAtivo === 'frutas') {
+                const frutasDisponiveis = ['🍎', '🍓', '🍌', '🍊', '🍇', '🍐', '🍑', '🍒'];
+                frutasState = {
+                    frutaAtual: frutasDisponiveis[Math.floor(Math.random() * frutasDisponiveis.length)],
+                    tempoInicioFruta: Date.now(),
+                    limiteTempoMs: 10000
+                };
+            } else if (jogoAtivo === 'baloes') {
+                baloesState = {
+                    baloes: [],
+                    linhaY: 140,
+                    baloesPerdidos: 0,
+                    limitePerdidos: 5,
+                    proximoSpawn: Date.now() + 500,
+                    cores: ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#f97316', '#ec4899']
+                };
+            }
+        }
+
+        function gameOver() {
+            estadoJogo = 'GAMEOVER';
+            const menu = document.getElementById('menu-flappy');
+            const titulo = document.getElementById('titulo-flappy');
+            const subtitulo = document.getElementById('subtitulo-flappy');
+            const explicacao = document.getElementById('explicacao-idoso');
+            const btn = document.getElementById('btn-iniciar-jogo');
+
+            titulo.innerText = 'Fim de Jogo!';
+            subtitulo.innerText = `Sua Pontuação Final: ${gameScore} PONTOS`;
+            explicacao.innerHTML = '<p style="text-align: center; color: #38bdf8; font-weight: bold;">Excelente esforço! Continue praticando para melhorar sua evolução motor-funcional!</p>';
+            btn.style.display = 'inline-block';
+            btn.innerText = 'Jogar Novamente';
+            menu.style.display = 'flex';
+        }
+
+        function loopJogo() {
+            if (estadoJogo !== 'JOGANDO') return;
+
+            atualizarJogo();
+            desenharCenario();
+
+            if (estadoJogo === 'JOGANDO') {
+                gameLoopId = requestAnimationFrame(loopJogo);
+            }
+        }
+
+        function atualizarJogo() {
+            if (jogoAtivo === 'flappy') {
+                if (flappyState.iniciado) {
+                    flappyState.vy += 0.22; 
+                    flappyState.y += flappyState.vy;
+
+                    if (flappyState.y > 470 || flappyState.y < 10) {
+                        gameOver();
+                        return;
+                    }
+
+                    flappyState.contadorSpawn++;
+                    if (flappyState.contadorSpawn > 110) {
+                        flappyState.contadorSpawn = 0;
+                        const alturaAbertura = 140;
+                        const topoMin = 60;
+                        const topoMax = 260;
+                        const topoH = Math.floor(Math.random() * (topoMax - topoMin)) + topoMin;
+                        flappyState.obstaculos.push({
+                            x: 440,
+                            topo: topoH,
+                            base: topoH + alturaAbertura,
+                            pontuado: false
+                        });
+                    }
+
+                    flappyState.obstaculos.forEach((obs, index) => {
+                        obs.x -= 2;
+
+                        if (obs.x < 180 && !obs.pontuado) {
+                            obs.pontuado = true;
+                            gameScore += 10;
+                            registrarProgressoPaciente(0, gameScore, null, 'flappy');
+                        }
+
+                        if (obs.x < 220 && obs.x + 50 > 180) {
+                            if (flappyState.y - 12 < obs.topo || flappyState.y + 12 > obs.base) {
+                                gameOver();
+                                return;
+                            }
+                        }
+                    });
+
+                    flappyState.obstaculos = flappyState.obstaculos.filter(obs => obs.x > -60);
+                }
+            } else if (jogoAtivo === 'food') {
+                if (foodState.tempoBoca > 0) {
+                    foodState.tempoBoca--;
+                    if (foodState.tempoBoca <= 0) {
+                        foodState.bocaAberta = false;
+                    }
+                }
+
+                const agora = Date.now();
+                if (agora >= foodState.proximoSpawn) {
+                    const ehBom = Math.random() > 0.3; 
+                    const lista = ehBom ? ALIMENTOS_BONS : ALIMENTOS_RUINS;
+                    const itemSorteado = lista[Math.floor(Math.random() * lista.length)];
+
+                    foodState.itens.push({
+                        x: 220,
+                        y: -30,
+                        emoji: itemSorteado,
+                        ehBom: ehBom,
+                        velocidade: 1.8
+                    });
+
+                    foodState.proximoSpawn = agora + 2200; 
+                }
+
+                foodState.itens.forEach(item => {
+                    item.y += item.velocidade;
+
+                    if (item.y >= 370 && item.y <= 420) {
+                        if (foodState.bocaAberta) {
+                            if (item.ehBom) {
+                                gameScore += 10;
+                                registrarProgressoPaciente(0, gameScore, null, 'food');
+                                item.removido = true;
+                            } else {
+                                gameOver();
+                                return;
+                            }
+                        }
+                    }
+                });
+
+                foodState.itens = foodState.itens.filter(i => !i.removido && i.y < 520);
+
+            } else if (jogoAtivo === 'frutas') {
+                const decorrido = Date.now() - frutasState.tempoInicioFruta;
+                if (decorrido >= frutasState.limiteTempoMs) {
+                    gameOver();
+                    return;
+                }
+            } else if (jogoAtivo === 'baloes') {
+                const agora = Date.now();
+                if (agora >= baloesState.proximoSpawn) {
+                    baloesState.baloes.push({
+                        x: Math.floor(Math.random() * 260) + 90,
+                        y: 520,
+                        cor: baloesState.cores[Math.floor(Math.random() * baloesState.cores.length)],
+                        velocidade: 1.3,
+                        estourado: false,
+                        perdido: false
+                    });
+                    baloesState.proximoSpawn = agora + 2400;
+                }
+
+                baloesState.baloes.forEach(b => {
+                    if (!b.estourado) {
+                        b.y -= b.velocidade;
+                        if (b.y < baloesState.linhaY - 45 && !b.perdido) {
+                            b.perdido = true;
+                            baloesState.baloesPerdidos++;
+                            if (baloesState.baloesPerdidos >= baloesState.limitePerdidos) {
+                                gameOver();
+                                return;
+                            }
+                        }
+                    }
+                });
+
+                baloesState.baloes = baloesState.baloes.filter(b => b.y > -50 && !b.estourado);
+            }
+        }
+
+        function desenharCenario() {
+            if (!gCtx) return;
+
+            gCtx.fillStyle = '#70c5ce';
+            gCtx.fillRect(0, 0, 440, 500);
+
+            if (jogoAtivo === 'flappy') {
+                desenharFlappy();
+            } else if (jogoAtivo === 'food') {
+                desenharFoodDrop();
+            } else if (jogoAtivo === 'frutas') {
+                desenharFrutas();
+            } else if (jogoAtivo === 'baloes') {
+                desenharBaloes();
+            }
+        }
+
+        function desenharFlappy() {
+            gCtx.fillStyle = '#34d399';
+            flappyState.obstaculos.forEach(obs => {
+                gCtx.fillRect(obs.x, 0, 50, obs.topo);
+                gCtx.fillRect(obs.x, obs.base, 50, 500 - obs.base);
+            });
+
+            gCtx.fillStyle = '#0f172a';
+            gCtx.beginPath();
+            gCtx.arc(200, flappyState.y, 12, 0, Math.PI * 2);
+            gCtx.fill();
+
+            gCtx.fillStyle = 'white';
+            gCtx.font = '24px "Fredoka", sans-serif';
+            gCtx.fillText(`Pontos: ${gameScore}`, 10, 30);
+        }
+
+        function desenharFoodDrop() {
+            gCtx.font = "80px sans-serif";
+            gCtx.textAlign = "center";
+            gCtx.fillText(foodState.bocaAberta ? "😲" : "😐", foodState.pouX, 420);
+            
+            foodState.itens.forEach(item => {
+                gCtx.font = "40px sans-serif";
+                gCtx.fillText(item.emoji, item.x, item.y);
+            });
+
+            gCtx.fillStyle = 'white';
+            gCtx.font = '24px "Fredoka", sans-serif';
+            gCtx.textAlign = "left";
+            gCtx.fillText(`Pontos: ${gameScore}`, 10, 30);
+        }
+
+        function desenharFrutas() {
+            gCtx.font = "120px sans-serif";
+            gCtx.textAlign = "center";
+            gCtx.fillText("🌳", 220, 250);
+
+            const decorrido = Date.now() - frutasState.tempoInicioFruta;
+            const restanteMs = Math.max(0, frutasState.limiteTempoMs - decorrido);
+            const restanteSegundos = Math.ceil(restanteMs / 1000);
+
+            gCtx.font = "80px sans-serif";
+            gCtx.fillText(frutasState.frutaAtual, 220, 320);
+
+            gCtx.fillStyle = 'white';
+            gCtx.font = '24px "Fredoka", sans-serif';
+            gCtx.textAlign = "left";
+            gCtx.fillText(`Pontos: ${gameScore}`, 10, 30);
+            gCtx.fillText(`Tempo: ${restanteSegundos}s`, 320, 30);
+        }
+
+        function desenharBaloes() {
+            gCtx.strokeStyle = '#ef4444';
+            gCtx.setLineDash([10, 10]);
+            gCtx.lineWidth = 3;
+            gCtx.beginPath();
+            gCtx.moveTo(0, baloesState.linhaY);
+            gCtx.lineTo(440, baloesState.linhaY);
+            gCtx.stroke();
+            gCtx.setLineDash([]);
+
+            baloesState.baloes.forEach(b => {
+                if (b.estourado) {
+                    gCtx.font = "40px sans-serif";
+                    gCtx.textAlign = "center";
+                    gCtx.fillText("💥", b.x, b.y);
+                } else {
+                    gCtx.fillStyle = b.cor;
+                    gCtx.beginPath();
+                    gCtx.ellipse(b.x, b.y, 25, 35, 0, 0, Math.PI * 2);
+                    gCtx.fill();
+                    
+                    gCtx.strokeStyle = 'white';
+                    gCtx.beginPath();
+                    gCtx.moveTo(b.x, b.y + 35);
+                    gCtx.lineTo(b.x, b.y + 60);
+                    gCtx.stroke();
+                }
+            });
+
+            gCtx.fillStyle = 'white';
+            gCtx.font = '24px "Fredoka", sans-serif';
+            gCtx.textAlign = "left";
+            gCtx.fillText(`Pontos: ${gameScore}`, 10, 30);
+            gCtx.fillStyle = '#ef4444';
+            gCtx.textAlign = "right";
+            gCtx.fillText(`Perdidos: ${baloesState.baloesPerdidos}/${baloesState.limitePerdidos}`, 430, 30);
+        }
+    </script>
+</body>
+</html>

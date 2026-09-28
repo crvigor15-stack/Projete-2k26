@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroMotion - Autenticação</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem;
+        }
+        .login-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2.5rem;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+            color: white;
+        }
+        .brand { text-align: center; margin-bottom: 2rem; }
+        .brand h1 { color: #38bdf8; font-size: 2.2rem; font-weight: 700; }
+        .brand p { color: #94a3b8; font-size: 0.9rem; margin-top: 0.4rem; }
+        
+        .form-box { display: none; }
+        .form-box.active { display: block; }
+
+        .input-group { margin-bottom: 1.25rem; }
+        .input-group label { display: block; margin-bottom: 0.5rem; color: #cbd5e1; font-weight: 500; font-size: 0.9rem; }
+        .input-group input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: white;
+            font-size: 0.95rem;
+            transition: 0.3s;
+        }
+        .input-group input:focus { border-color: #38bdf8; outline: none; box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25); }
+        
+        .notice-banner {
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 4px solid #38bdf8;
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            color: #93c5fd;
+            margin-bottom: 1.25rem;
+            line-height: 1.4;
+        }
+
+        .utilities { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; font-size: 0.85rem; color: #cbd5e1; }
+        .utilities a { color: #38bdf8; text-decoration: none; cursor: pointer;}
+        .utilities a:hover { text-decoration: underline; }
+        
+        .btn-submit {
+            width: 100%;
+            padding: 0.85rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-submit:hover { background: #1d4ed8; transform: translateY(-1px); }
+        .toggle-link { text-align: center; margin-top: 1.5rem; font-size: 0.875rem; color: #94a3b8; }
+        .toggle-link a { color: #38bdf8; text-decoration: none; font-weight: 600; cursor: pointer; }
+        .toggle-link a:hover { text-decoration: underline; }
+
+        .message-box {
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            display: none;
+            text-align: center;
+            font-weight: 500;
+        }
+        .message-box.error { display: block; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; color: #fca5a5; }
+        .message-box.success { display: block; background: rgba(34, 197, 94, 0.2); border: 1px solid #22c55e; color: #bbf7d0; }
+
+        .password-rules { font-size: 0.75rem; color: #94a3b8; margin-top: 0.5rem; list-style: none; padding-left: 0.2rem; }
+        .password-rules li::before { content: "• "; color: #64748b; }
+        .password-rules li.valid { color: #4ade80; }
+        .password-rules li.valid::before { content: "✓ "; color: #4ade80; }
+
+        .dev-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .dev-mode-btn {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #38bdf8;
+            color: #38bdf8;
+            padding: 10px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        .dev-mode-btn:hover { background: #38bdf8; color: #0f172a; }
+        .dev-mode-btn.patient { border-color: #10b981; color: #10b981; }
+        .dev-mode-btn.patient:hover { background: #10b981; color: #0f172a; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="brand">
+            <h1>🧠 NeuroMotion</h1>
+            <p>Plataforma Inteligente de Reabilitação</p>
+        </div>
+
+        <div id="box-login" class="form-box active">
+            <div id="msg-login" class="message-box"></div>
+            <form id="form-login">
+                <div class="input-group">
+                    <label for="login-email">E-mail</label>
+                    <input type="email" id="login-email" required placeholder="seu@email.com">
+                </div>
+                <div class="input-group">
+                    <label for="login-password">Senha</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <div class="utilities">
+                    <label><input type="checkbox" style="margin-right: 5px;"> Lembrar-me</label>
+                    <a onclick="toggleForm('recuperar')">Esqueceu a senha?</a>
+                </div>
+                <button type="submit" class="btn-submit">Entrar no Painel</button>
+            </form>
+            <div class="toggle-link">
+                É Fisioterapeuta e não possui conta? <a onclick="toggleForm('cadastro')">Cadastre-se</a>
+            </div>
+            <div style="margin-top: 1rem; text-align: center; font-size: 0.78rem; color: #64748b;">
+                ℹ️ <i>Pacientes são cadastrados exclusivamente por seus fisioterapeutas.</i>
+            </div>
+        </div>
+
+        <div id="box-cadastro" class="form-box">
+            <div id="msg-cadastro" class="message-box"></div>
+            <div class="notice-banner">
+                👨‍⚕️ <strong>Área restrita a profissionais:</strong> Apenas Fisioterapeutas podem criar uma conta aqui.
+            </div>
+            <form id="form-cadastro">
+                <div class="input-group">
+                    <label for="cad-nome">Nome Completo do Fisioterapeuta</label>
+                    <input type="text" id="cad-nome" required placeholder="Dr(a). Seu Nome">
+                </div>
+                <div class="input-group">
+                    <label for="cad-crefito">Nº do CREFITO</label>
+                    <input type="text" id="cad-crefito" required placeholder="12345-F">
+                </div>
+                <div class="input-group">
+                    <label for="cad-email">E-mail Profissional</label>
+                    <input type="email" id="cad-email" required placeholder="fisio@clinica.com">
+                </div>
+                <div class="input-group">
+                    <label for="cad-password">Criar Senha</label>
+                    <input type="password" id="cad-password" required placeholder="Mínimo 8 caracteres">
+                    <ul class="password-rules">
+                        <li id="rule-length">Mínimo de 8 caracteres</li>
+                        <li id="rule-upper">Pelo menos 1 letra maiúscula</li>
+                        <li id="rule-number">Pelo menos 1 número</li>
+                        <li id="rule-special">Pelo menos 1 caractere especial (@, #, $, etc)</li>
+                    </ul>
+                </div>
+                <button type="submit" class="btn-submit" style="background-color: #22c55e;">Concluir Cadastro de Fisioterapeuta</button>
+            </form>
+            <div class="toggle-link">
+                Já possui conta? <a onclick="toggleForm('login')">Faça Login</a>
+            </div>
+        </div>
+
+        <div id="box-recuperar" class="form-box">
+            <div id="msg-recuperar" class="message-box"></div>
+            <form id="form-recuperar">
+                <p style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.25rem; text-align: center;">
+                    Insira o e-mail cadastrado para recuperar seu acesso.
+                </p>
+                <div class="input-group">
+                    <label for="recuperar-email">E-mail Cadastrado</label>
+                    <input type="email" id="recuperar-email" required placeholder="seu@email.com">
+                </div>
+                <button type="submit" class="btn-submit" style="background-color: #a855f7;">Recuperar Senha</button>
+            </form>
+            <div class="toggle-link">
+                Lembrou? <a onclick="toggleForm('login')">Voltar para o Login</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="dev-panel">
+        <button class="dev-mode-btn" onclick="quickDevLogin('fisio')">
+            ⚡ Dev: Entrar como Fisio
+        </button>
+        <button class="dev-mode-btn patient" onclick="quickDevLogin('paciente')">
+            ⚡ Dev: Entrar como Paciente
+        </button>
+    </div>
+
+    <script>
+        function inicializarBancoDados() {
+            if (!localStorage.getItem('neuromotion_fisios')) {
+                const fisiosPadrao = [
+                    { id: 'f1', nome: 'Dr. Pedro Henrique Silva', crefito: '12345-F', email: 'fisio@neuromotion.com', senha: 'Fisio123!' }
+                ];
+                localStorage.setItem('neuromotion_fisios', JSON.stringify(fisiosPadrao));
+            }
+
+            if (!localStorage.getItem('neuromotion_pacientes')) {
+                const pacientesPadrao = [
+                    {
+                        id: 'p1',
+                        fisioId: 'f1',
+                        nome: 'João da Silva (Paciente Teste)',
+                        email: 'joao@paciente.com',
+                        senha: 'Paciente123!',
+                        telefone: '(35) 99876-5432',
+                        nascimento: '1995-03-12',
+                        diagnostico: 'Paralisia Facial Periférica à Direita (Paralisia de Bell)',
+                        cid: 'G51.0 - Paralisia de Bell',
+                        anamnese: 'Paciente apresenta paresia moderada a grave da musculatura mímica à direita (Escala House-Brackmann Grau IV). Redução da força de preensão no membro superior ipsilateral.',
+                        conduta: 'Evolução satisfatória. Mantenha a prática guiada pelo espelho de vídeo de forma diária.',
+                        simetria: 89.4,
+                        forca: 580
+                    }
+                ];
+                localStorage.setItem('neuromotion_pacientes', JSON.stringify(pacientesPadrao));
+            }
+        }
+
+        inicializarBancoDados();
+
+        function toggleForm(tela) {
+            document.querySelectorAll('.form-box').forEach(box => box.classList.remove('active'));
+            document.querySelectorAll('.message-box').forEach(msg => { msg.className = 'message-box'; msg.innerText = ''; });
+            
+            if (tela === 'cadastro') {
+                document.getElementById('box-cadastro').classList.add('active');
+            } else if (tela === 'recuperar') {
+                document.getElementById('box-recuperar').classList.add('active');
+            } else {
+                document.getElementById('box-login').classList.add('active');
+            }
+        }
+
+        function showMessage(boxId, text, type) {
+            const box = document.getElementById(boxId);
+            box.className = `message-box ${type}`;
+            box.innerText = text;
+        }
+
+        const passwordInput = document.getElementById('cad-password');
+        passwordInput.addEventListener('input', function() {
+            const val = this.value;
+            const hasLength = val.length >= 8;
+            const hasUpper = /[A-Z]/.test(val);
+            const hasNumber = /[0-9]/.test(val);
+            const hasSpecial = /[^A-Za-z0-9]/.test(val);
+
+            document.getElementById('rule-length').className = hasLength ? 'valid' : '';
+            document.getElementById('rule-upper').className = hasUpper ? 'valid' : '';
+            document.getElementById('rule-number').className = hasNumber ? 'valid' : '';
+            document.getElementById('rule-special').className = hasSpecial ? 'valid' : '';
+        });
+
+        document.getElementById('form-cadastro').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const nome = document.getElementById('cad-nome').value;
+            const crefito = document.getElementById('cad-crefito').value;
+            const email = document.getElementById('cad-email').value.toLowerCase().trim();
+            const senha = passwordInput.value;
+
+            const isStrong = senha.length >= 8 && /[A-Z]/.test(senha) && /[0-9]/.test(senha) && /[^A-Za-z0-9]/.test(senha);
+            if (!isStrong) {
+                showMessage('msg-cadastro', 'A senha informada não atende aos requisitos de segurança.', 'error');
+                return;
+            }
+
+            let fisios = JSON.parse(localStorage.getItem('neuromotion_fisios')) || [];
+            if (fisios.find(f => f.email === email)) {
+                showMessage('msg-cadastro', 'Este e-mail já está cadastrado no sistema!', 'error');
+                return;
+            }
+
+            const novoFisio = { id: 'f_' + Date.now(), nome, crefito, email, senha };
+            fisios.push(novoFisio);
+            localStorage.setItem('neuromotion_fisios', JSON.stringify(fisios));
+
+            showMessage('msg-cadastro', 'Cadastro de Fisioterapeuta realizado com sucesso!', 'success');
+            document.getElementById('form-cadastro').reset();
+            
+            setTimeout(() => {
+                toggleForm('login');
+                showMessage('msg-login', 'Sua conta de Fisioterapeuta foi criada! Faça seu login.', 'success');
+            }, 1500);
+        });
+
+        document.getElementById('form-login').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('login-email').value.toLowerCase().trim();
+            const senha = document.getElementById('login-password').value;
+
+            const fisios = JSON.parse(localStorage.getItem('neuromotion_fisios')) || [];
+            const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
+
+            const fisioAchado = fisios.find(f => f.email === email && f.senha === senha);
+            if (fisioAchado) {
+                localStorage.setItem('neuromotion_sessao', JSON.stringify({ role: 'fisio', data: fisioAchado }));
+                showMessage('msg-login', 'Acesso autorizado (Fisioterapeuta)! Entrando...', 'success');
+                setTimeout(() => { window.location.href = "dashboard.html"; }, 1000);
+                return;
+            }
+
+            const pacienteAchado = pacientes.find(p => p.email === email && p.senha === senha);
+            if (pacienteAchado) {
+                localStorage.setItem('neuromotion_sessao', JSON.stringify({ role: 'paciente', data: pacienteAchado }));
+                showMessage('msg-login', 'Acesso autorizado (Paciente)! Entrando...', 'success');
+                setTimeout(() => { window.location.href = "dashboard.html"; }, 1000);
+                return;
+            }
+
+            showMessage('msg-login', 'E-mail ou senha incorretos. Verifique os dados.', 'error');
+        });
+
+        document.getElementById('form-recuperar').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('recuperar-email').value.toLowerCase().trim();
+            const fisios = JSON.parse(localStorage.getItem('neuromotion_fisios')) || [];
+            const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
+
+            const usuario = fisios.find(f => f.email === email) || pacientes.find(p => p.email === email);
+
+            if (usuario) {
+                showMessage('msg-recuperar', `Conta localizada! Sua senha é: "${usuario.senha}"`, 'success');
+            } else {
+                showMessage('msg-recuperar', 'Nenhum e-mail correspondente foi localizado no sistema.', 'error');
+            }
+        });
+
+        function quickDevLogin(tipo) {
+            inicializarBancoDados();
+            if (tipo === 'fisio') {
+                const fisios = JSON.parse(localStorage.getItem('neuromotion_fisios'));
+                localStorage.setItem('neuromotion_sessao', JSON.stringify({ role: 'fisio', data: fisios[0] }));
+            } else {
+                const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes'));
+                localStorage.setItem('neuromotion_sessao', JSON.stringify({ role: 'paciente', data: pacientes[0] }));
+            }
+            window.location.href = "dashboard.html";
+        }
+    </script>
+</body>
+</html>
