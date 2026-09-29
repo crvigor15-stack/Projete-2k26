@@ -1871,428 +1871,556 @@
             carregarDadosPaciente(targetP);
         }
 
- // ==========================================
-//       MOTOR DOS JOGOS TERAPÊUTICOS
-// ==========================================
-let jogoAtivo=null;
-let gameLoopId=null;
-let gameCanvas=document.getElementById('gameCanvas');
-let gCtx=gameCanvas?gameCanvas.getContext('2d'):null;
-let gameScore=0;
-let estadoJogo='MENU';
-let tempoContagem=3;
-let timerContagem=null;
-let flappyState={y:250,vy:0,obstaculos:[],iniciado:false,contadorSpawn:0};
-let foodState={pouX:220,itens:[],bocaAberta:false,tempoBoca:0,proximoSpawn:0};
-let frutasState={frutaAtual:'🍎',tempoInicioFruta:0,limiteTempoMs:12000};
-let baloesState={baloes:[],linhaY:140,baloesPerdidos:0,limitePerdidos:5,proximoSpawn:0,cores:['#ef4444','#3b82f6','#22c55e','#eab308','#a855f7','#f97316','#ec4899']};
-const ALIMENTOS_BONS=['🍎','🍌','🍓','🍇','🍊','🍐','🍉','🥕','🥦'];
-const ALIMENTOS_RUINS=['💣','👞','🧱','🦟'];
+        // ==========================================
+        //       MOTOR DOS JOGOS TERAPÊUTICOS (GRÁFICOS SUPER BONITINHOS)
+        // ==========================================
+        let jogoAtivo = null;
+        let gameLoopId = null;
+        let gameCanvas = document.getElementById('gameCanvas');
+        let gCtx = gameCanvas ? gameCanvas.getContext('2d') : null;
+        let gameScore = 0;
+        let estadoJogo = 'MENU'; // 'MENU', 'CONTAGEM', 'JOGANDO', 'GAMEOVER'
+        let tempoContagem = 3;
+        let timerContagem = null;
 
-function abrirJogo(tipo){
-    jogoAtivo=tipo;
-    document.getElementById('lista-jogos').style.display='none';
-    document.getElementById('area-jogo').style.display='block';
-    const menu=document.getElementById('menu-flappy');
-    const titulo=document.getElementById('titulo-flappy');
-    const subtitulo=document.getElementById('subtitulo-flappy');
-    const explicacao=document.getElementById('explicacao-idoso');
-    menu.style.display='flex';
-    document.getElementById('btn-iniciar-jogo').style.display='inline-block';
-    estadoJogo='MENU';
-    if(tipo==='flappy'){
-        titulo.innerText='🐦 Flappy Pinça Pro';
-        subtitulo.innerText='Aproxime o ímã para o pássaro voar!';
-        explicacao.innerHTML='<strong>Como Funciona:</strong><br>O pássaro mágico voa ao toque ou sinal da luva. Desvie dos canos brilhantes e consiga pontos!';
-    }else if(tipo==='food'){
-        titulo.innerText='🍔 Food Drop (Pou)';
-        subtitulo.innerText='Alimente o Pou fofinho!';
-        explicacao.innerHTML='<strong>Como Funciona:</strong><br>Coma frutas deliciosas e desvie das bombas perigosas.';
-    }else if(tipo==='frutas'){
-        titulo.innerText='🍓 Pique-Esconde Frutas';
-        subtitulo.innerText='Colha as frutas da árvore mágica!';
-        explicacao.innerHTML='<strong>Como Funciona:</strong><br>Aperte o ímã para colher a fruta e ver uma nova aparecer na árvore!';
-    }else if(tipo==='baloes'){
-        titulo.innerText='🎈 Estoura-Balões';
-        subtitulo.innerText='Estoure os balões na linha limite!';
-        explicacao.innerHTML='<strong>Como Funciona:</strong><br>Aperte quando o balão colorido atingir a linha pontilhada no topo!';
-    }
-    resetarJogo();
-    desenharCenario();
-}
-function fecharJogo(){
-    if(gameLoopId)cancelAnimationFrame(gameLoopId);
-    if(timerContagem)clearInterval(timerContagem);
-    jogoAtivo=null;
-    document.getElementById('area-jogo').style.display='none';
-    document.getElementById('lista-jogos').style.display='grid';
-}
-function iniciarContagemJogo(){
-    estadoJogo='CONTAGEM';
-    tempoContagem=3;
-    const menu=document.getElementById('menu-flappy');
-    const titulo=document.getElementById('titulo-flappy');
-    const subtitulo=document.getElementById('subtitulo-flappy');
-    const explicacao=document.getElementById('explicacao-idoso');
-    const btn=document.getElementById('btn-iniciar-jogo');
-    btn.style.display='none';
-    explicacao.innerHTML='';
-    titulo.innerText='Atenção!';
-    subtitulo.innerText=`O jogo vai começar em: ${tempoContagem}`;
-    if(timerContagem)clearInterval(timerContagem);
-    timerContagem=setInterval(()=>{
-        tempoContagem--;
-        if(tempoContagem>0){
-            subtitulo.innerText=`O jogo vai começar em: ${tempoContagem}`;
-        }else{
-            clearInterval(timerContagem);
-            menu.style.display='none';
+        let flappyState = { y: 250, vy: 0, obstaculos: [], iniciado: false, contadorSpawn: 0 };
+        let foodState = { pouX: 220, itens: [], bocaAberta: false, tempoBoca: 0, proximoSpawn: 0 };
+        let frutasState = { frutaAtual: '🍎', tempoInicioFruta: 0, limiteTempoMs: 10000 };
+        let baloesState = { baloes: [], linhaY: 140, baloesPerdidos: 0, limitePerdidos: 5, proximoSpawn: 0, cores: ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#f97316', '#ec4899'] };
+
+        const ALIMENTOS_BONS = ['🍎', '🍌', '🍓', '🍇', '🍊', '🍐', '🍉', '🥕', '🥦'];
+        const ALIMENTOS_RUINS = ['💣', '👞', '🧱', '🦟'];
+
+        function abrirJogo(tipo) {
+            jogoAtivo = tipo;
+            document.getElementById('lista-jogos').style.display = 'none';
+            document.getElementById('area-jogo').style.display = 'block';
+
+            const menu = document.getElementById('menu-flappy');
+            const titulo = document.getElementById('titulo-flappy');
+            const subtitulo = document.getElementById('subtitulo-flappy');
+            const explicacao = document.getElementById('explicacao-idoso');
+
+            menu.style.display = 'flex';
+            document.getElementById('btn-iniciar-jogo').style.display = 'inline-block';
+            estadoJogo = 'MENU';
+
+            if (tipo === 'flappy') {
+                titulo.innerText = '🐦 Flappy Pinça Pro';
+                subtitulo.innerText = 'Aproxime o ímã para o pássaro voar!';
+                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>O pássaro mágico voa ao toque ou sinal da luva. Desvie dos canos brilhantes e consiga pontos!';
+            } else if (tipo === 'food') {
+                titulo.innerText = '🍔 Food Drop (Pou)';
+                subtitulo.innerText = 'Alimente o Pou fofinho!';
+                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>Coma frutas deliciosas e desvie das bombas perigosas.';
+            } else if (tipo === 'frutas') {
+                titulo.innerText = '🍓 Pique-Esconde Frutas';
+                subtitulo.innerText = 'Colha as frutas da árvore mágica!';
+                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>Aperte o ímã para colher a fruta e ver uma nova aparecer na árvore!';
+            } else if (tipo === 'baloes') {
+                titulo.innerText = '🎈 Estoura-Balões';
+                subtitulo.innerText = 'Estoure os balões na linha limite!';
+                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>Aperte quando o balão colorido atingir a linha pontilhada no topo!';
+            }
+
             resetarJogo();
-            estadoJogo='JOGANDO';
-            if(gameLoopId)cancelAnimationFrame(gameLoopId);
-            loopJogo();
+            desenharCenario();
         }
-    },1000);
-}
-function acionarAcaoJogo(){
-    if(estadoJogo!=='JOGANDO')return;
-    if(jogoAtivo==='flappy'){
-        if(!flappyState.iniciado)flappyState.iniciado=true;
-        flappyState.vy=-4.8;
-    }else if(jogoAtivo==='food'){
-        foodState.bocaAberta=true;
-        foodState.tempoBoca=38;
-    }else if(jogoAtivo==='frutas'){
-        gameScore+=10;
-        registrarProgressoPaciente(0,gameScore,null,'frutas');
-        const frutasDisponiveis=['🍎','🍓','🍌','🍊','🍇','🍐','🍑','🍒','🍍','🍉','🥭'];
-        let novaFruta=frutasState.frutaAtual;
-        while(novaFruta===frutasState.frutaAtual){
-            novaFruta=frutasDisponiveis[Math.floor(Math.random()*frutasDisponiveis.length)];
+
+        function fecharJogo() {
+            if (gameLoopId) cancelAnimationFrame(gameLoopId);
+            if (timerContagem) clearInterval(timerContagem);
+            jogoAtivo = null;
+            document.getElementById('area-jogo').style.display = 'none';
+            document.getElementById('lista-jogos').style.display = 'grid';
         }
-        frutasState.frutaAtual=novaFruta;
-        frutasState.tempoInicioFruta=Date.now();
-    }else if(jogoAtivo==='baloes'){
-        let estourouAlgum=false;
-        baloesState.baloes.forEach(b=>{
-            if(Math.abs(b.y-baloesState.linhaY)<=50&&!b.estourado&&!b.perdido){
-                b.estourado=true;
-                estourouAlgum=true;
-                gameScore+=10;
-                registrarProgressoPaciente(0,gameScore,null,'baloes');
+
+        function iniciarContagemJogo() {
+            estadoJogo = 'CONTAGEM';
+            tempoContagem = 3;
+            
+            const menu = document.getElementById('menu-flappy');
+            const titulo = document.getElementById('titulo-flappy');
+            const subtitulo = document.getElementById('subtitulo-flappy');
+            const explicacao = document.getElementById('explicacao-idoso');
+            const btn = document.getElementById('btn-iniciar-jogo');
+
+            btn.style.display = 'none';
+            explicacao.innerHTML = '';
+            titulo.innerText = 'Atenção!';
+            subtitulo.innerText = `O jogo vai começar em: ${tempoContagem}`;
+
+            if (timerContagem) clearInterval(timerContagem);
+
+            timerContagem = setInterval(() => {
+                tempoContagem--;
+                if (tempoContagem > 0) {
+                    subtitulo.innerText = `O jogo vai começar em: ${tempoContagem}`;
+                } else {
+                    clearInterval(timerContagem);
+                    menu.style.display = 'none';
+                    resetarJogo();
+                    estadoJogo = 'JOGANDO';
+                    if (gameLoopId) cancelAnimationFrame(gameLoopId);
+                    loopJogo();
+                }
+            }, 1000);
+        }
+
+        function acionarAcaoJogo() {
+            if (estadoJogo !== 'JOGANDO') return;
+
+            if (jogoAtivo === 'flappy') {
+                if (!flappyState.iniciado) {
+                    flappyState.iniciado = true;
+                }
+                flappyState.vy = -6.0;
+            } else if (jogoAtivo === 'food') {
+                foodState.bocaAberta = true;
+                foodState.tempoBoca = 25; 
+            } else if (jogoAtivo === 'frutas') {
+                gameScore += 10;
+                registrarProgressoPaciente(0, gameScore, null, 'frutas');
+                const frutasDisponiveis = ['🍎', '🍓', '🍌', '🍊', '🍇', '🍐', '🍑', '🍒', '🍍', '🍉', '🥭'];
+                let novaFruta = frutasState.frutaAtual;
+                while (novaFruta === frutasState.frutaAtual) {
+                    novaFruta = frutasDisponiveis[Math.floor(Math.random() * frutasDisponiveis.length)];
+                }
+                frutasState.frutaAtual = novaFruta;
+                frutasState.tempoInicioFruta = Date.now();
+            } else if (jogoAtivo === 'baloes') {
+                let estourouAlgum = false;
+                baloesState.baloes.forEach(b => {
+                    if (Math.abs(b.y - baloesState.linhaY) <= 50 && !b.estourado && !b.perdido) {
+                        b.estourado = true;
+                        estourouAlgum = true;
+                        gameScore += 10;
+                        registrarProgressoPaciente(0, gameScore, null, 'baloes');
+                    }
+                });
             }
-        });
-    }
-}
-if(gameCanvas){
-    gameCanvas.addEventListener('pointerdown',e=>{
-        e.preventDefault();
-        if(estadoJogo==='JOGANDO')acionarAcaoJogo();
-    });
-}
-function resetarJogo(){
-    gameScore=0;
-    if(jogoAtivo==='flappy'){
-        flappyState={y:250,vy:0,obstaculos:[],iniciado:false,contadorSpawn:0};
-    }else if(jogoAtivo==='food'){
-        foodState={pouX:220,itens:[],bocaAberta:false,tempoBoca:0,proximoSpawn:Date.now()+500};
-    }else if(jogoAtivo==='frutas'){
-        const frutasDisponiveis=['🍎','🍓','🍌','🍊','🍇','🍐','🍑','🍒'];
-        frutasState={
-            frutaAtual:frutasDisponiveis[Math.floor(Math.random()*frutasDisponiveis.length)],
-            tempoInicioFruta:Date.now(),
-            limiteTempoMs:12000
-        };
-    }else if(jogoAtivo==='baloes'){
-        baloesState={
-            baloes:[],
-            linhaY:140,
-            baloesPerdidos:0,
-            limitePerdidos:5,
-            proximoSpawn:Date.now()+500,
-            cores:['#ef4444','#3b82f6','#22c55e','#eab308','#a855f7','#f97316','#ec4899']
-        };
-    }
-}
-function gameOver(){
-    estadoJogo='GAMEOVER';
-    const menu=document.getElementById('menu-flappy');
-    const titulo=document.getElementById('titulo-flappy');
-    const subtitulo=document.getElementById('subtitulo-flappy');
-    const explicacao=document.getElementById('explicacao-idoso');
-    const btn=document.getElementById('btn-iniciar-jogo');
-    titulo.innerText='Fim de Jogo!';
-    subtitulo.innerText=`Sua Pontuação Final: ${gameScore} PONTOS`;
-    explicacao.innerHTML='<p style="text-align:center;color:#38bdf8;font-weight:bold;">Excelente esforço! Continue praticando para melhorar sua evolução motor-funcional!</p>';
-    btn.style.display='inline-block';
-    btn.innerText='Jogar Novamente';
-    menu.style.display='flex';
-}
-function desenharCenario(){
-    if(!gCtx||!gameCanvas)return;
-    gCtx.clearRect(0,0,gameCanvas.width,gameCanvas.height);
-    let bgGrad=gCtx.createLinearGradient(0,0,0,gameCanvas.height);
-    bgGrad.addColorStop(0,'#0f172a');
-    bgGrad.addColorStop(1,'#1e293b');
-    gCtx.fillStyle=bgGrad;
-    gCtx.fillRect(0,0,gameCanvas.width,gameCanvas.height);
-    if(jogoAtivo==='flappy'){
-        gCtx.fillStyle='rgba(255,255,255,0.15)';
-        gCtx.beginPath();
-        gCtx.arc(100,80,30,0,Math.PI*2);
-        gCtx.arc(130,70,40,0,Math.PI*2);
-        gCtx.arc(160,85,25,0,Math.PI*2);
-        gCtx.fill();
-        flappyState.obstaculos.forEach(obs=>{
-            let pipeGrad=gCtx.createLinearGradient(obs.x,0,obs.x+obs.largura,0);
-            pipeGrad.addColorStop(0,'#22c55e');
-            pipeGrad.addColorStop(.5,'#4ade80');
-            pipeGrad.addColorStop(1,'#16a34a');
-            gCtx.fillStyle=pipeGrad;
-            gCtx.fillRect(obs.x,0,obs.largura,obs.topo);
-            gCtx.fillRect(obs.x,gameCanvas.height-obs.baixo,obs.largura,obs.baixo);
-        });
-        gCtx.save();
-        gCtx.translate(100,flappyState.y);
-        gCtx.fillStyle='#f59e0b';
-        gCtx.beginPath();
-        gCtx.arc(0,0,22,0,Math.PI*2);
-        gCtx.fill();
-        gCtx.lineWidth=3;
-        gCtx.strokeStyle='#d97706';
-        gCtx.stroke();
-        gCtx.fillStyle='#fbbf24';
-        gCtx.beginPath();
-        gCtx.ellipse(-5,4,10,6,Math.PI/4,0,Math.PI*2);
-        gCtx.fill();
-        gCtx.fillStyle='#fff';
-        gCtx.beginPath();
-        gCtx.arc(8,-6,7,0,Math.PI*2);
-        gCtx.fill();
-        gCtx.fillStyle='#0f172a';
-        gCtx.beginPath();
-        gCtx.arc(10,-6,3,0,Math.PI*2);
-        gCtx.fill();
-        gCtx.fillStyle='#f97316';
-        gCtx.beginPath();
-        gCtx.moveTo(18,-2);
-        gCtx.lineTo(28,2);
-        gCtx.lineTo(18,6);
-        gCtx.closePath();
-        gCtx.fill();
-        gCtx.restore();
-    }else if(jogoAtivo==='food'){
-        let pouX=foodState.pouX,pouY=390;
-        gCtx.fillStyle='#854d0e';
-        gCtx.beginPath();
-        gCtx.arc(pouX,pouY,45,Math.PI,0,false);
-        gCtx.lineTo(pouX+45,pouY+60);
-        gCtx.quadraticCurveTo(pouX,pouY+75,pouX-45,pouY+60);
-        gCtx.closePath();
-        gCtx.fill();
-        gCtx.lineWidth=3;
-        gCtx.strokeStyle='#713f12';
-        gCtx.stroke();
-        gCtx.fillStyle='#fff';
-        gCtx.beginPath();
-        gCtx.arc(pouX-15,pouY-5,10,0,Math.PI*2);
-        gCtx.arc(pouX+15,pouY-5,10,0,Math.PI*2);
-        gCtx.fill();
-        gCtx.fillStyle='#0f172a';
-        gCtx.beginPath();
-        gCtx.arc(pouX-13,pouY-5,4,0,Math.PI*2);
-        gCtx.arc(pouX+17,pouY-5,4,0,Math.PI*2);
-        gCtx.fill();
-        gCtx.fillStyle='#451a03';
-        gCtx.beginPath();
-        if(foodState.bocaAberta)gCtx.arc(pouX,pouY+18,14,0,Math.PI*2);
-        else gCtx.arc(pouX,pouY+18,8,0,Math.PI,false);
-        gCtx.fill();
-        foodState.itens.forEach(item=>{
-            gCtx.font='36px sans-serif';
-            gCtx.textAlign='center';
-            gCtx.fillText(item.emoji,item.x,item.y);
-        });
-    }else if(jogoAtivo==='frutas'){
-        gCtx.fillStyle='#78350f';
-        gCtx.fillRect(gameCanvas.width/2-20,240,40,200);
-        gCtx.fillStyle='#16a34a';
-        gCtx.beginPath();
-        gCtx.arc(gameCanvas.width/2,200,110,0,Math.PI*2);
-        gCtx.fill();
-        gCtx.fillStyle='#22c55e';
-        gCtx.beginPath();
-        gCtx.arc(gameCanvas.width/2-50,180,70,0,Math.PI*2);
-        gCtx.arc(gameCanvas.width/2+50,180,70,0,Math.PI*2);
-        gCtx.fill();
-        let pulso=1+Math.sin(Date.now()/180)*.06;
-        gCtx.save();
-        gCtx.translate(gameCanvas.width/2,210);
-        gCtx.scale(pulso,pulso);
-        gCtx.font='85px sans-serif';
-        gCtx.textAlign='center';
-        gCtx.textBaseline='middle';
-        gCtx.fillText(frutasState.frutaAtual,0,0);
-        gCtx.restore();
-        let tempoDecorrido=Date.now()-frutasState.tempoInicioFruta;
-        let pctTempoRestante=Math.max(0,1-tempoDecorrido/frutasState.limiteTempoMs);
-        gCtx.fillStyle='#334155';
-        gCtx.fillRect(70,400,300,16);
-        let gradBar=gCtx.createLinearGradient(70,0,370,0);
-        gradBar.addColorStop(0,'#22c55e');
-        gradBar.addColorStop(1,'#eab308');
-        gCtx.fillStyle=gradBar;
-        gCtx.fillRect(70,400,300*pctTempoRestante,16);
-        gCtx.fillStyle='#fff';
-        gCtx.font='bold 15px Fredoka,sans-serif';
-        gCtx.fillText('Aperte o ímã para colher a fruta!',gameCanvas.width/2,365);
-    }else if(jogoAtivo==='baloes'){
-        gCtx.strokeStyle='#ef4444';
-        gCtx.lineWidth=3;
-        gCtx.setLineDash([8,8]);
-        gCtx.beginPath();
-        gCtx.moveTo(0,baloesState.linhaY);
-        gCtx.lineTo(gameCanvas.width,baloesState.linhaY);
-        gCtx.stroke();
-        gCtx.setLineDash([]);
-        gCtx.fillStyle='#ef4444';
-        gCtx.font='bold 13px Fredoka,sans-serif';
-        gCtx.textAlign='left';
-        gCtx.fillText('⚠️ LINHA LIMITE',15,baloesState.linhaY-8);
-        baloesState.baloes.forEach(b=>{
-            if(!b.estourado&&!b.perdido){
-                gCtx.fillStyle=b.cor;
-                gCtx.beginPath();
-                gCtx.ellipse(b.x,b.y,25,32,0,0,Math.PI*2);
-                gCtx.fill();
-                gCtx.fillStyle='rgba(255,255,255,0.4)';
-                gCtx.beginPath();
-                gCtx.ellipse(b.x-8,b.y-10,6,10,Math.PI/4,0,Math.PI*2);
-                gCtx.fill();
-                gCtx.fillStyle=b.cor;
-                gCtx.beginPath();
-                gCtx.moveTo(b.x-5,b.y+32);
-                gCtx.lineTo(b.x+5,b.y+32);
-                gCtx.lineTo(b.x,b.y+38);
-                gCtx.closePath();
-                gCtx.fill();
-                gCtx.strokeStyle='#94a3b8';
-                gCtx.lineWidth=1.5;
-                gCtx.beginPath();
-                gCtx.moveTo(b.x,b.y+38);
-                gCtx.lineTo(b.x,b.y+55);
-                gCtx.stroke();
-            }
-        });
-    }
-    gCtx.fillStyle='rgba(15,23,42,0.8)';
-    gCtx.fillRect(15,15,160,45);
-    gCtx.lineWidth=2;
-    gCtx.strokeStyle='#38bdf8';
-    gCtx.strokeRect(15,15,160,45);
-    gCtx.fillStyle='#fff';
-    gCtx.font='bold 18px Fredoka,sans-serif';
-    gCtx.textAlign='left';
-    gCtx.textBaseline='middle';
-    gCtx.fillText(`🏆 Pontos: ${gameScore}`,28,38);
-}
-function loopJogo(){
-    if(estadoJogo!=='JOGANDO')return;
-    if(jogoAtivo==='flappy'){
-        if(flappyState.iniciado){
-            flappyState.vy+=0.22;
-            flappyState.y+=flappyState.vy;
         }
-        flappyState.contadorSpawn++;
-        if(flappyState.contadorSpawn>=135){
-            flappyState.contadorSpawn=0;
-            let abertura=175;
-            let topoAlt=Math.floor(Math.random()*140)+60;
-            flappyState.obstaculos.push({
-                x:gameCanvas.width,
-                largura:60,
-                topo:topoAlt,
-                baixo:gameCanvas.height-(topoAlt+abertura),
-                passou:false
+
+        if (gameCanvas) {
+            gameCanvas.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                if (estadoJogo === 'JOGANDO') {
+                    acionarAcaoJogo();
+                }
             });
         }
-        for(let i=flappyState.obstaculos.length-1;i>=0;i--){
-            let obs=flappyState.obstaculos[i];
-            obs.x-=1.7;
-            if(!obs.passou&&obs.x+obs.largura<100){
-                obs.passou=true;
-                gameScore+=10;
-                registrarProgressoPaciente(0,gameScore,null,'flappy');
+
+        function resetarJogo() {
+            gameScore = 0;
+            if (jogoAtivo === 'flappy') {
+                flappyState = { y: 250, vy: 0, obstaculos: [], iniciado: false, contadorSpawn: 0 };
+            } else if (jogoAtivo === 'food') {
+                foodState = { pouX: 220, itens: [], bocaAberta: false, tempoBoca: 0, proximoSpawn: Date.now() + 500 };
+            } else if (jogoAtivo === 'frutas') {
+                const frutasDisponiveis = ['🍎', '🍓', '🍌', '🍊', '🍇', '🍐', '🍑', '🍒'];
+                frutasState = {
+                    frutaAtual: frutasDisponiveis[Math.floor(Math.random() * frutasDisponiveis.length)],
+                    tempoInicioFruta: Date.now(),
+                    limiteTempoMs: 10000
+                };
+            } else if (jogoAtivo === 'baloes') {
+                baloesState = {
+                    baloes: [],
+                    linhaY: 140,
+                    baloesPerdidos: 0,
+                    limitePerdidos: 5,
+                    proximoSpawn: Date.now() + 500,
+                    cores: ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#f97316', '#ec4899']
+                };
             }
-            if(100+18>obs.x&&100-18<obs.x+obs.largura&&(flappyState.y-18<obs.topo||flappyState.y+18>gameCanvas.height-obs.baixo)){
-                gameOver();
-                return;
-            }
-            if(obs.x+obs.largura<0)flappyState.obstaculos.splice(i,1);
         }
-        if(flappyState.y>gameCanvas.height-20||flappyState.y<20){
-            gameOver();
-            return;
+
+        function gameOver() {
+            estadoJogo = 'GAMEOVER';
+            const menu = document.getElementById('menu-flappy');
+            const titulo = document.getElementById('titulo-flappy');
+            const subtitulo = document.getElementById('subtitulo-flappy');
+            const explicacao = document.getElementById('explicacao-idoso');
+            const btn = document.getElementById('btn-iniciar-jogo');
+
+            titulo.innerText = 'Fim de Jogo!';
+            subtitulo.innerText = `Sua Pontuação Final: ${gameScore} PONTOS`;
+            explicacao.innerHTML = '<p style="text-align: center; color: #38bdf8; font-weight: bold;">Excelente esforço! Continue praticando para melhorar sua evolução motor-funcional!</p>';
+            btn.style.display = 'inline-block';
+            btn.innerText = 'Jogar Novamente';
+            menu.style.display = 'flex';
         }
-    }else if(jogoAtivo==='food'){
-        if(foodState.tempoBoca>0){
-            foodState.tempoBoca--;
-            if(foodState.tempoBoca===0)foodState.bocaAberta=false;
-        }
-        if(Date.now()>foodState.proximoSpawn){
-            foodState.proximoSpawn=Date.now()+2200;
-            let xPos=Math.floor(Math.random()*320)+60;
-            let ehBom=Math.random()>.35;
-            let emojiArr=ehBom?ALIMENTOS_BONS:ALIMENTOS_RUINS;
-            let emojiEscolhido=emojiArr[Math.floor(Math.random()*emojiArr.length)];
-            foodState.itens.push({x:xPos,y:-30,emoji:emojiEscolhido,bom:ehBom,velocidade:1.35});
-        }
-        for(let i=foodState.itens.length-1;i>=0;i--){
-            let item=foodState.itens[i];
-            item.y+=item.velocidade;
-            if(Math.abs(item.x-foodState.pouX)<45&&Math.abs(item.y-390)<45){
-                if(item.bom&&foodState.bocaAberta){
-                    gameScore+=10;
-                    registrarProgressoPaciente(0,gameScore,null,'food');
-                }else if(!item.bom){
-                    gameScore=Math.max(0,gameScore-5);
+
+        function desenharCenario() {
+            if (!gCtx || !gameCanvas) return;
+            gCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+            // Fundo lindo e animado com gradiente
+            let bgGrad = gCtx.createLinearGradient(0, 0, 0, gameCanvas.height);
+            bgGrad.addColorStop(0, '#0f172a');
+            bgGrad.addColorStop(1, '#1e293b');
+            gCtx.fillStyle = bgGrad;
+            gCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+
+            if (jogoAtivo === 'flappy') {
+                // Desenhar nuvens de fundo
+                gCtx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+                gCtx.beginPath();
+                gCtx.arc(100, 80, 30, 0, Math.PI * 2);
+                gCtx.arc(130, 70, 40, 0, Math.PI * 2);
+                gCtx.arc(160, 85, 25, 0, Math.PI * 2);
+                gCtx.fill();
+
+                // Desenhar canos (obstáculos) bonitos com gradiente verde/neon
+                flappyState.obstaculos.forEach(obs => {
+                    let pipeGrad = gCtx.createLinearGradient(obs.x, 0, obs.x + obs.largura, 0);
+                    pipeGrad.addColorStop(0, '#22c55e');
+                    pipeGrad.addColorStop(0.5, '#4ade80');
+                    pipeGrad.addColorStop(1, '#16a34a');
+                    gCtx.fillStyle = pipeGrad;
+                    
+                    // Cano Superior
+                    gCtx.fillRect(obs.x, 0, obs.largura, obs.topo);
+                    // Cano Inferior
+                    gCtx.fillRect(obs.x, gameCanvas.height - obs.baixo, obs.largura, obs.baixo);
+                });
+
+                // Desenhar Pássaro Fofinho
+                gCtx.save();
+                gCtx.translate(100, flappyState.y);
+                gCtx.fillStyle = '#f59e0b'; // Corpo Amarelo fofo
+                gCtx.beginPath();
+                gCtx.arc(0, 0, 22, 0, Math.PI * 2);
+                gCtx.fill();
+                gCtx.lineWidth = 3;
+                gCtx.strokeStyle = '#d97706';
+                gCtx.stroke();
+
+                // Asa
+                gCtx.fillStyle = '#fbbf24';
+                gCtx.beginPath();
+                gCtx.ellipse(-5, 4, 10, 6, Math.PI / 4, 0, Math.PI * 2);
+                gCtx.fill();
+
+                // Olhinho brilhante
+                gCtx.fillStyle = '#ffffff';
+                gCtx.beginPath();
+                gCtx.arc(8, -6, 7, 0, Math.PI * 2);
+                gCtx.fill();
+                gCtx.fillStyle = '#0f172a';
+                gCtx.beginPath();
+                gCtx.arc(10, -6, 3, 0, Math.PI * 2);
+                gCtx.fill();
+
+                // Bico Laranja
+                gCtx.fillStyle = '#f97316';
+                gCtx.beginPath();
+                gCtx.moveTo(18, -2);
+                gCtx.lineTo(28, 2);
+                gCtx.lineTo(18, 6);
+                gCtx.closePath();
+                gCtx.fill();
+                gCtx.restore();
+
+            } else if (jogoAtivo === 'food') {
+                // Desenhar Pou Fofinho no centro embaixo
+                let pouX = foodState.pouX;
+                let pouY = 390;
+
+                // Corpo do Pou (Marrom macio)
+                gCtx.fillStyle = '#854d0e';
+                gCtx.beginPath();
+                gCtx.arc(pouX, pouY, 45, Math.PI, 0, false);
+                gCtx.lineTo(pouX + 45, pouY + 60);
+                gCtx.quadraticCurveTo(pouX, pouY + 75, pouX - 45, pouY + 60);
+                gCtx.closePath();
+                gCtx.fill();
+                gCtx.lineWidth = 3;
+                gCtx.strokeStyle = '#713f12';
+                gCtx.stroke();
+
+                // Olhos do Pou
+                gCtx.fillStyle = '#ffffff';
+                gCtx.beginPath();
+                gCtx.arc(pouX - 15, pouY - 5, 10, 0, Math.PI * 2);
+                gCtx.arc(pouX + 15, pouY - 5, 10, 0, Math.PI * 2);
+                gCtx.fill();
+                gCtx.fillStyle = '#0f172a';
+                gCtx.beginPath();
+                gCtx.arc(pouX - 13, pouY - 5, 4, 0, Math.PI * 2);
+                gCtx.arc(pouX + 17, pouY - 5, 4, 0, Math.PI * 2);
+                gCtx.fill();
+
+                // Boca do Pou (Abre quando aciona o comando)
+                gCtx.fillStyle = '#451a03';
+                gCtx.beginPath();
+                if (foodState.bocaAberta) {
+                    gCtx.arc(pouX, pouY + 18, 14, 0, Math.PI * 2);
+                } else {
+                    gCtx.arc(pouX, pouY + 18, 8, 0, Math.PI, false);
                 }
-                foodState.itens.splice(i,1);
-                continue;
+                gCtx.fill();
+
+                // Desenhar Itens Caindo
+                foodState.itens.forEach(item => {
+                    gCtx.font = '36px sans-serif';
+                    gCtx.textAlign = 'center';
+                    gCtx.fillText(item.emoji, item.x, item.y);
+                });
+
+            } else if (jogoAtivo === 'frutas') {
+                // Desenhar árvore bonita e estilizada no fundo
+                gCtx.fillStyle = '#78350f'; // Tronco
+                gCtx.fillRect(gameCanvas.width / 2 - 20, 240, 40, 200);
+
+                // Copa da árvore verde vibrante
+                gCtx.fillStyle = '#16a34a';
+                gCtx.beginPath();
+                gCtx.arc(gameCanvas.width / 2, 200, 110, 0, Math.PI * 2);
+                gCtx.fill();
+                gCtx.fillStyle = '#22c55e';
+                gCtx.beginPath();
+                gCtx.arc(gameCanvas.width / 2 - 50, 180, 70, 0, Math.PI * 2);
+                gCtx.arc(gameCanvas.width / 2 + 50, 180, 70, 0, Math.PI * 2);
+                gCtx.fill();
+
+                // Fruta Grande Centralizada com animação e brilho
+                gCtx.font = '85px sans-serif';
+                gCtx.textAlign = 'center';
+                gCtx.textBaseline = 'middle';
+                gCtx.fillText(frutasState.frutaAtual, gameCanvas.width / 2, 210);
+
+                // Barra de Tempo Redonda/Retangular da Fruta
+                let tempoDecorrido = Date.now() - frutasState.frutaInicioFruta;
+                let pctTempoRestante = Math.max(0, 1 - (tempoDecorrido / frutasState.limiteTempoMs));
+                
+                gCtx.fillStyle = '#334155';
+                gCtx.fillRect(70, 400, 300, 16);
+                let gradBar = gCtx.createLinearGradient(70, 0, 370, 0);
+                gradBar.addColorStop(0, '#22c55e');
+                gradBar.addColorStop(1, '#eab308');
+                gCtx.fillStyle = gradBar;
+                gCtx.fillRect(70, 400, 300 * pctTempoRestante, 16);
+
+                gCtx.fillStyle = '#ffffff';
+                gCtx.font = 'bold 15px Fredoka, sans-serif';
+                gCtx.fillText("Aperte o ímã para colher a fruta!", gameCanvas.width / 2, 365);
+
+            } else if (jogoAtivo === 'baloes') {
+                // Linha Limite tracejada
+                gCtx.strokeStyle = '#ef4444';
+                gCtx.lineWidth = 3;
+                gCtx.setLineDash([8, 8]);
+                gCtx.beginPath();
+                gCtx.moveTo(0, baloesState.linhaY);
+                gCtx.lineTo(gameCanvas.width, baloesState.linhaY);
+                gCtx.stroke();
+                gCtx.setLineDash([]);
+
+                gCtx.fillStyle = '#ef4444';
+                gCtx.font = 'bold 13px Fredoka, sans-serif';
+                gCtx.textAlign = 'left';
+                gCtx.fillText("⚠️ LINHA LIMITE", 15, baloesState.linhaY - 8);
+
+                // Desenhar Balões Coloridos
+                baloesState.baloes.forEach(b => {
+                    if (!b.estourado && !b.perdido) {
+                        // Corpo do Balão
+                        gCtx.fillStyle = b.cor;
+                        gCtx.beginPath();
+                        gCtx.ellipse(b.x, b.y, 25, 32, 0, 0, Math.PI * 2);
+                        gCtx.fill();
+
+                        // Brilho no balão
+                        gCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                        gCtx.beginPath();
+                        gCtx.ellipse(b.x - 8, b.y - 10, 6, 10, Math.PI / 4, 0, Math.PI * 2);
+                        gCtx.fill();
+
+                        // Nó do balão
+                        gCtx.fillStyle = b.cor;
+                        gCtx.beginPath();
+                        gCtx.moveTo(b.x - 5, b.y + 32);
+                        gCtx.lineTo(b.x + 5, b.y + 32);
+                        gCtx.lineTo(b.x, b.y + 38);
+                        gCtx.closePath();
+                        gCtx.fill();
+
+                        // Corda
+                        gCtx.strokeStyle = '#94a3b8';
+                        gCtx.lineWidth = 1.5;
+                        gCtx.beginPath();
+                        gCtx.moveTo(b.x, b.y + 38);
+                        gCtx.lineTo(b.x, b.y + 55);
+                        gCtx.stroke();
+                    }
+                });
             }
-            if(item.y>gameCanvas.height+30)foodState.itens.splice(i,1);
+
+            // Desenhar Pontuação na Tela em todos os jogos
+            gCtx.fillStyle = 'rgba(15, 23, 42, 0.8)';
+            gCtx.fillRect(15, 15, 160, 45);
+            gCtx.lineWidth = 2;
+            gCtx.strokeStyle = '#38bdf8';
+            gCtx.strokeRect(15, 15, 160, 45);
+
+            gCtx.fillStyle = '#ffffff';
+            gCtx.font = 'bold 18px Fredoka, sans-serif';
+            gCtx.textAlign = 'left';
+            gCtx.textBaseline = 'middle';
+            gCtx.fillText(`🏆 Pontos: ${gameScore}`, 28, 38);
         }
-    }else if(jogoAtivo==='frutas'){
-        let tempoDecorrido=Date.now()-frutasState.tempoInicioFruta;
-        if(tempoDecorrido>frutasState.limiteTempoMs){
-            const frutasDisponiveis=['🍎','🍓','🍌','🍊','🍇','🍐','🍑','🍒'];
-            frutasState.frutaAtual=frutasDisponiveis[Math.floor(Math.random()*frutasDisponiveis.length)];
-            frutasState.tempoInicioFruta=Date.now();
-        }
-    }else if(jogoAtivo==='baloes'){
-        if(Date.now()>baloesState.proximoSpawn){
-            baloesState.proximoSpawn=Date.now()+2000;
-            let xPos=Math.floor(Math.random()*340)+50;
-            let corEscolhida=baloesState.cores[Math.floor(Math.random()*baloesState.cores.length)];
-            baloesState.baloes.push({x:xPos,y:gameCanvas.height+40,cor:corEscolhida,velocidade:1.8,estourado:false,perdido:false});
-        }
-        for(let i=baloesState.baloes.length-1;i>=0;i--){
-            let b=baloesState.baloes[i];
-            if(!b.estourado&&!b.perdido){
-                b.y-=b.velocidade;
-                if(b.y<30){
-                    b.perdido=true;
-                    baloesState.baloesPerdidos++;
-                    if(baloesState.baloesPerdidos>=baloesState.limitePerdidos){
+
+        function loopJogo() {
+            if (estadoJogo !== 'JOGANDO') return;
+
+            if (jogoAtivo === 'flappy') {
+                if (flappyState.iniciado) {
+                    flappyState.vy += 0.35; // Gravidade suave
+                    flappyState.y += flappyState.vy;
+                }
+
+                // Spawn de Canos
+                flappyState.contadorSpawn++;
+                if (flappyState.contadorSpawn >= 110) {
+                    flappyState.contadorSpawn = 0;
+                    let abertura = 140;
+                    let topoAlt = Math.floor(Math.random() * 180) + 60;
+                    flappyState.obstaculos.push({
+                        x: gameCanvas.width,
+                        largura: 60,
+                        topo: topoAlt,
+                        baixo: gameCanvas.height - (topoAlt + abertura),
+                        passou: false
+                    });
+                }
+
+                // Movimentar Canos
+                for (let i = flappyState.obstaculos.length - 1; i >= 0; i--) {
+                    let obs = flappyState.obstaculos[i];
+                    obs.x -= 2.5;
+
+                    // Pontuação ao passar
+                    if (!obs.passou && obs.x + obs.largura < 100) {
+                        obs.passou = true;
+                        gameScore += 10;
+                        registrarProgressoPaciente(0, gameScore, null, 'flappy');
+                    }
+
+                    // Colisão
+                    if (
+                        100 + 18 > obs.x && 100 - 18 < obs.x + obs.largura &&
+                        (flappyState.y - 18 < obs.topo || flappyState.y + 18 > gameCanvas.height - obs.baixo)
+                    ) {
                         gameOver();
                         return;
                     }
+
+                    // Remover canos fora da tela
+                    if (obs.x + obs.largura < 0) {
+                        flappyState.obstaculos.splice(i, 1);
+                    }
                 }
-            }else if(b.estourado){
-                baloesState.baloes.splice(i,1);
+
+                // Limites superior e inferior da tela
+                if (flappyState.y > gameCanvas.height - 20 || flappyState.y < 20) {
+                    gameOver();
+                    return;
+                }
+
+            } else if (jogoAtivo === 'food') {
+                if (foodState.tempoBoca > 0) {
+                    foodState.tempoBoca--;
+                    if (foodState.tempoBoca === 0) foodState.bocaAberta = false;
+                }
+
+                // Spawn de itens
+                if (Date.now() > foodState.proximoSpawn) {
+                    foodState.proximoSpawn = Date.now() + 1800;
+                    let xPos = Math.floor(Math.random() * 320) + 60;
+                    let ehBom = Math.random() > 0.35;
+                    let emojiArr = ehBom ? ALIMENTOS_BONS : ALIMENTOS_RUINS;
+                    let emojiEscolhido = emojiArr[Math.floor(Math.random() * emojiArr.length)];
+
+                    foodState.itens.push({
+                        x: xPos,
+                        y: -30,
+                        emoji: emojiEscolhido,
+                        bom: ehBom,
+                        velocidade: 2.2
+                    });
+                }
+
+                // Atualizar itens
+                for (let i = foodState.itens.length - 1; i >= 0; i--) {
+                    let item = foodState.itens[i];
+                    item.y += item.velocidade;
+
+                    // Verificar colisão com a boca do Pou (x: pouX, y: 390)
+                    if (Math.abs(item.x - foodState.pouX) < 35 && Math.abs(item.y - 390) < 35) {
+                        if (item.bom && foodState.bocaAberta) {
+                            gameScore += 10;
+                            registrarProgressoPaciente(0, gameScore, null, 'food');
+                        } else if (!item.bom) {
+                            gameScore = Math.max(0, gameScore - 5);
+                        }
+                        foodState.itens.splice(i, 1);
+                        continue;
+                    }
+
+                    // Remover itens que passaram da tela
+                    if (item.y > gameCanvas.height + 30) {
+                        foodState.itens.splice(i, 1);
+                    }
+                }
+
+            } else if (jogoAtivo === 'frutas') {
+                let tempoDecorrido = Date.now() - frutasState.tempoInicioFruta;
+                if (tempoDecorrido > frutasState.limiteTempoMs) {
+                    // Troca automaticamente após 10s sem resposta
+                    const frutasDisponiveis = ['🍎', '🍓', '🍌', '🍊', '🍇', '🍐', '🍑', '🍒'];
+                    frutasState.frutaAtual = frutasDisponiveis[Math.floor(Math.random() * frutasDisponiveis.length)];
+                    frutasState.tempoInicioFruta = Date.now();
+                }
+
+            } else if (jogoAtivo === 'baloes') {
+                if (Date.now() > baloesState.proximoSpawn) {
+                    baloesState.proximoSpawn = Date.now() + 2000;
+                    let xPos = Math.floor(Math.random() * 340) + 50;
+                    let corEscolhida = baloesState.cores[Math.floor(Math.random() * baloesState.cores.length)];
+                    baloesState.baloes.push({
+                        x: xPos,
+                        y: gameCanvas.height + 40,
+                        cor: corEscolhida,
+                        velocidade: 1.8,
+                        estourado: false,
+                        perdido: false
+                    });
+                }
+
+                for (let i = baloesState.baloes.length - 1; i >= 0; i--) {
+                    let b = baloesState.baloes[i];
+                    if (!b.estourado && !b.perdido) {
+                        b.y -= b.velocidade;
+                        // Se passou muito da linha limite sem estourar
+                        if (b.y < 30) {
+                            b.perdido = true;
+                            baloesState.baloesPerdidos++;
+                            if (baloesState.baloesPerdidos >= baloesState.limitePerdidos) {
+                                gameOver();
+                                return;
+                            }
+                        }
+                    } else if (b.estourado) {
+                        // Remove logo após estourar
+                        baloesState.baloes.splice(i, 1);
+                    }
+                }
             }
+
+            desenharCenario();
+            gameLoopId = requestAnimationFrame(loopJogo);
         }
-    }
-    desenharCenario();
-    gameLoopId=requestAnimationFrame(loopJogo);
-}
+    </script>
+</body>
+</html>
