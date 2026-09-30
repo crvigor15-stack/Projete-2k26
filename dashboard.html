@@ -40,7 +40,6 @@
         .grid-kpi { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
         
         .chart-box { position: relative; width: 100%; height: 260px; margin-top: 1rem; }
-        .chart-box-emg { position: relative; width: 100%; height: 350px; background-color: #1a202c; border-radius: 8px; border: 1px solid #2d3748; padding: 15px; }
 
         .kpi-card { background: white; border: 1px solid #e2e8f0; padding: 1.5rem; border-radius: 16px; border-left: 5px solid #3b82f6; }
         .kpi-card-dark { background-color: #1a202c; border: 1px solid #2d3748; border-radius: 8px; padding: 15px; }
@@ -78,25 +77,19 @@
         .counter-box { display: flex; justify-content: space-around; background: #f1f5f9; padding: 0.75rem; border-radius: 10px; margin-bottom: 1rem; font-weight: bold; font-size: 1.1rem; border: 1px solid #e2e8f0; }
         .counter-value { font-size: 1.4rem; color: #3b82f6; }
 
-        /* JOGOS DESIGN MELHORADO (Gráficos super bonitinhos e coloridos) */
+        /* JOGOS DESIGN */
         .games-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
-        .game-card { background: linear-gradient(145deg, #ffffff, #f1f5f9); border: 2px solid #e2e8f0; border-radius: 24px; overflow: hidden; text-align: center; padding-bottom: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 12px 30px -5px rgba(0,0,0,0.08); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s; }
-        .game-card:hover { transform: translateY(-8px) scale(1.02); box-shadow: 0 20px 40px -5px rgba(56, 189, 248, 0.25); border-color: #38bdf8; }
-        .game-thumb { height: 160px; color: white; display: flex; align-items: center; justify-content: center; font-size: 4.5rem; position: relative; text-shadow: 0 5px 15px rgba(0,0,0,0.2); animation: floatAnim 3s ease-in-out infinite; }
+        .game-card { background: white; border: 1px solid #e2e8f0; border-radius: 20px; overflow: hidden; text-align: center; padding-bottom: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05); transition: transform 0.2s, box-shadow 0.2s; }
+        .game-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px -5px rgba(0,0,0,0.1); }
+        .game-thumb { height: 160px; color: white; display: flex; align-items: center; justify-content: center; font-size: 4rem; position: relative; }
         
-        @keyframes floatAnim {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
-        }
-        
-        .canvas-container { position: relative; width: 100%; max-width: 440px; height: 500px; margin: 0 auto; border-radius: 24px; overflow: hidden; border: 5px solid #38bdf8; touch-action: manipulation; box-shadow: 0 20px 35px -5px rgba(0, 0, 0, 0.25); background: linear-gradient(135deg, #1e293b, #0f172a); }
+        .canvas-container { position: relative; width: 100%; max-width: 440px; height: 500px; margin: 0 auto; border-radius: 20px; overflow: hidden; border: 4px solid #0f172a; touch-action: manipulation; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
         .canvas-container canvas { display: block; width: 100%; height: 100%; cursor: pointer; }
         
-        .game-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 10; padding: 2rem; text-align: center; font-family: 'Fredoka', cursive, sans-serif; }
-        .game-menu h3 { font-size: 2.2rem; color: #38bdf8; margin-bottom: 0.5rem; text-shadow: 0 3px 6px rgba(0,0,0,0.6); }
-        .game-menu p { font-size: 1.05rem; color: #cbd5e1; margin-bottom: 1.5rem; }
-        .game-menu .btn-menu { padding: 1rem 2.5rem; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: 50px; font-size: 1.3rem; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5); }
-        .game-menu .btn-menu:hover { transform: scale(1.05); background: linear-gradient(135deg, #4ade80, #22c55e); }
+        .game-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(4px); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 10; padding: 2rem; text-align: center; font-family: 'Fredoka', cursive, sans-serif; }
+        .game-menu h3 { font-size: 2rem; color: #38bdf8; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+        .game-menu p { font-size: 1rem; color: #cbd5e1; margin-bottom: 1.5rem; }
+        .game-menu .btn-menu { padding: 0.9rem 2.2rem; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: 50px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4); }
 
         .patient-selector-bar { background: #e0f2fe; border: 1px solid #bae6fd; padding: 1rem 1.25rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
         .patient-selector-bar select { padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid #0284c7; font-weight: 600; color: #0369a1; background: white; cursor: pointer; }
@@ -129,6 +122,45 @@
         .chat-input-area { display: flex; gap: 0.5rem; padding: 0.75rem; background: white; border-top: 1px solid #cbd5e1; }
         .chat-input-area input { flex: 1; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; }
 
+        /* ESTILOS ESPECÍFICOS DO EXERCÍCIO DA BOLINHA EMG */
+        .emg-game-wrapper {
+            position: relative;
+            width: 100%;
+            height: 520px;
+            background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 4px solid #38bdf8;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .emg-canvas-game {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .emg-overlay-chart {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            width: 240px;
+            height: 120px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 2px solid #00d2ff;
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px);
+            z-index: 5;
+        }
+        .emg-overlay-title {
+            color: #00d2ff;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
         @media (max-width: 900px) {
             .app-container { flex-direction: column; }
             .mobile-header { display: flex; }
@@ -138,6 +170,12 @@
             main { padding: 1.25rem; }
             .grid-2, .grid-3, .ia-layout { grid-template-columns: 1fr; }
             .patient-selector-bar { flex-direction: column; align-items: flex-start; }
+            .emg-overlay-chart {
+                width: 180px;
+                height: 100px;
+                bottom: 10px;
+                right: 10px;
+            }
         }
     </style>
 </head>
@@ -158,7 +196,7 @@
                 <li id="menu-item-dashboard"><a onclick="switchTab('dashboard')" id="nav-dashboard">📊 Painel Geral</a></li>
                 <li id="menu-item-pacientes"><a onclick="switchTab('pacientes')" id="nav-pacientes">👥 Gestão de Pacientes</a></li>
                 <li id="menu-item-camera"><a onclick="switchTab('camera')" id="nav-camera" class="active">👁️ Exercícios Faciais</a></li>
-                <li id="menu-item-emg"><a onclick="switchTab('emg')" id="nav-emg">🖐🏻 Exercício de Preensão</a></li>
+                <li id="menu-item-emg"><a onclick="switchTab('emg')" id="nav-emg">⚡ Exercício EMG (Bolinha)</a></li>
                 <li id="menu-item-jogos"><a onclick="switchTab('jogos')" id="nav-jogos">🎮 Jogos Terapêuticos</a></li>
                 <li><a onclick="switchTab('feedback')" id="nav-feedback">💬 Conduta Médica</a></li>
                 <li><a onclick="confirmarSair()" style="color: #f87171; margin-top: 1rem;">🚪 Sair</a></li>
@@ -421,62 +459,81 @@
                 </div>
             </div>
 
-            <!-- ABA DE LEITURA DO SINAL EMG (MONITOR EMG INTEGRADO) -->
+            <!-- ABA DE EXERCÍCIO EMG COM A BOLINHA (REABILITAÇÃO AVC) -->
             <div id="emg" class="tab-content">
                 <header>
-                    <h2>Exercício da Bolinha (Reabilitação)</h2>
-                    <p>Controle a bolinha usando a força do seu músculo! Aperte a mão para levantar.</p>
+                    <h2>Exercício Terapêutico de EMG - Reabilitação AVC</h2>
+                    <p>Contraia o músculo da mão para erguer a bolinha e levá-la até as estrelas de incentivo!</p>
                 </header>
 
-                <div class="card" style="position: relative; overflow: hidden; background: #e0f2fe; text-align: center; border: 4px solid #0284c7; border-radius: 20px; padding: 0;">
-                    <!-- Cabecalho de Status e Instrucao Interativa -->
-                    <div style="padding: 1.5rem;">
-                        <h3 id="emg-instruction" style="color: #0369a1; font-size: 1.6rem; transition: color 0.3s;">Conecte a luva para começar!</h3>
-                        <p id="statusText" style="color: #64748b; font-size: 0.95rem; margin-top: 5px;">Status: Desconectado</p>
-                        
-                        <div style="margin-top: 15px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
-                            <button class="btn btn-success" id="btnConnect" onclick="conectarSensorEMGBLE()">🔌 Conectar Luva (BLE)</button>
-                            <button class="btn" style="background: #6366f1;" onclick="simularSinalEMG()">🔄 Simular</button>
-                            <button class="btn btn-danger" onclick="pararLeituraEMG()">⏹️ Parar</button>
+                <!-- CARD DE INTERAÇÃO COM O IDOSO / CONTROLES -->
+                <div class="card" style="background: #1e293b; border: 2px solid #38bdf8; color: white;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <h3 style="color: #38bdf8; font-size: 1.3rem;">⚡ Sensor de Força Muscular (Luva)</h3>
+                            <p style="color: #cbd5e1; font-size: 0.95rem; margin-top: 2px;" id="statusText">Status: <span style="color: #ef4444; font-weight: bold;">Desconectado</span></p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button class="btn btn-emg" id="btnConnect" onclick="conectarSensorEMGBLE()">🔌 Conectar Luva (BLE)</button>
+                            <button class="btn" style="background: #6366f1;" onclick="simularSinalEMG()">🔄 Simular Força</button>
+                            <button class="btn btn-danger" onclick="pararLeituraEMG()">⏹️ Desconectar</button>
                         </div>
                     </div>
 
-                    <!-- Area de Jogo da Bolinha -->
-                    <div style="position: relative; width: 100%; height: 400px; background: #f8fafc; border-top: 3px solid #bae6fd;">
-                        
-                        <!-- Zona Alvo (verde) -->
-                        <div id="emg-target-zone" style="position: absolute; left: 0; width: 100%; height: 120px; bottom: 180px; background: rgba(34, 197, 94, 0.2); border-top: 3px dashed #22c55e; border-bottom: 3px dashed #22c55e;">
-                            <span style="color: #166534; font-weight: bold; position: absolute; right: 15px; top: 10px; font-size: 1.1rem;">ZONA ALVO ⭐</span>
-                        </div>
-                        
-                        <!-- Bolinha Interativa -->
-                        <div id="emg-ball" style="position: absolute; left: 50%; transform: translateX(-50%); bottom: 10px; width: 70px; height: 70px; background: radial-gradient(circle, #38bdf8, #0284c7); border-radius: 50%; box-shadow: 0 8px 15px rgba(0,0,0,0.3); transition: bottom 0.15s ease-out, background 0.3s, transform 0.2s;">
-                            <span style="font-size: 2.2rem; line-height: 70px;">😐</span>
+                    <!-- MENSAGEM DO INSTRUTOR AMIGÁVEL PARA O IDOSO -->
+                    <div class="instructor-card" id="emg-instructor-box" style="background: #0f172a; margin-bottom: 0;">
+                        <div class="instructor-avatar" id="emg-avatar-icon">🔵</div>
+                        <div class="instructor-info">
+                            <h4 style="color: #38bdf8;">Instrução de Reabilitação</h4>
+                            <p id="emg-instrucao-texto">Aperte a mão para fazer a bolinha subir!</p>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Mini Painel EMG (Canto da tela) -->
-                    <div style="position: absolute; bottom: 15px; left: 15px; background: rgba(15, 23, 42, 0.85); border-radius: 12px; padding: 10px; width: 220px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); text-align: left;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                            <span style="color: #38bdf8; font-size: 0.8rem; font-weight: bold;">Sinal EMG:</span>
-                            <span id="valEmg" style="color: #fff; font-weight: bold; font-size: 1rem;">0</span>
+                <!-- ÁREA PRINCIPAL DO EXERCÍCIO INTERATIVO DE AVC -->
+                <div class="emg-game-wrapper">
+                    <!-- CANVAS DO EXERCÍCIO DE REABILITAÇÃO -->
+                    <canvas id="emgBallCanvas" class="emg-canvas-game"></canvas>
+
+                    <!-- GRÁFICO EMG NO CANTO INFERIOR DIREITO DA TELA -->
+                    <div class="emg-overlay-chart">
+                        <div class="emg-overlay-title">
+                            <span>SINAL EMG (RAW)</span>
+                            <span id="emg-overlay-val" style="color: #ffffff;">0 ADC</span>
                         </div>
-                        <!-- Grafico pequeno -->
-                        <div style="width: 100%; height: 60px;">
+                        <div style="position: relative; width: 100%; height: 80px;">
                             <canvas id="emgChart"></canvas>
                         </div>
                     </div>
                 </div>
 
-                <!-- SEÇÃO ADICIONAL PARA O FISIOTERAPEUTA (Oculta ou simplificada para não tirar o foco) -->
-                <div id="painel-fisio-emg" style="margin-top: 1.5rem; display: none;">
+                <!-- SEÇÃO ADICIONAL PARA O FISIOTERAPEUTA REGULAR A SENSIBILIDADE -->
+                <div id="painel-fisio-emg" style="margin-top: 1.5rem;">
                     <div class="grid-2">
                         <div class="card">
-                            <h3 style="margin-bottom: 0.75rem; color: #0f172a;">📊 Métricas e Limiares Clínicos</h3>
+                            <h3 style="margin-bottom: 0.75rem; color: #0f172a;">📊 Métricas de Desempenho Muscular</h3>
                             <div class="detail-item">
-                                <span>Contrações Relevantes Detectadas:</span>
-                                <strong id="emg-contractions-count">0</strong>
+                                <span>Estrelas Coletadas Hoje:</span>
+                                <strong id="emg-stars-count" style="color: #eab308; font-size: 1.3rem;">0 ⭐</strong>
                             </div>
+                            <div class="detail-item">
+                                <span>Contração Atual (%):</span>
+                                <strong id="valContracao" style="color: #22c55e;">0 %</strong>
+                            </div>
+                            <div class="detail-item">
+                                <span>Pico Máximo de Força Registrado:</span>
+                                <strong id="valPico" style="color: #0284c7;">0 ADC</strong>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <h3 style="margin-bottom: 0.75rem; color: #0f172a;">⚙️ Calibração de Sensibilidade Muscular</h3>
+                            <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 1rem;">Ajuste o limite de força exigido do paciente de acordo com seu grau de espasticidade/flacidez post-AVC.</p>
+                            <div class="form-group">
+                                <label for="input-emg-threshold">Limiar de Força do Músculo (ADC):</label>
+                                <input type="number" id="input-emg-threshold" value="150" min="10" max="4095" onchange="atualizarLimiarEMG(this.value)">
+                            </div>
+                            <button class="btn" style="background: #0284c7; width: 100%;" onclick="zerarMetricasEMG()">🧹 Zerar Histórico de Força</button>
                         </div>
                     </div>
                 </div>
@@ -486,17 +543,16 @@
             <div id="jogos" class="tab-content">
                 <header>
                     <h2>Jogos de Reabilitação Lúdica</h2>
-                    <p>Escolha um jogo para treinar controle de força, reflexo e coordenação motora com gráficos vibrantes e música de fundo!</p>
+                    <p>Escolha um jogo para treinar controle de força, reflexo e coordenação motora.</p>
                 </header>
 
-                <div class="card" style="margin-bottom: 1.5rem; border-left: 6px solid #8b5cf6; background: linear-gradient(135deg, #f5f3ff, #ede9fe);">
+                <div class="card" style="margin-bottom: 1.5rem; border-left: 6px solid #8b5cf6;">
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                         <div>
-                            <h3 style="color: #5b21b6; margin-bottom: 0.25rem;">🎵 Música de Fundo e Luva Sensoriada</h3>
-                            <p style="color: #6d28d9; font-size: 0.9rem;">Ative a trilha sonora alegre para animar sua sessão ou conecte sua luva Bluetooth!</p>
+                            <h3 style="color: #0f172a; margin-bottom: 0.25rem;">🧤 Conexão da Luva Sensoriada</h3>
+                            <p style="color: #64748b; font-size: 0.9rem;">Conecte sua luva Bluetooth ou dê um clique/toque na tela para acionar os jogos.</p>
                         </div>
-                        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
-                            <button id="btn-toggle-musica" class="btn" style="background: #8b5cf6;" onclick="alternarMusicaFundo()">🔊 Ligar Música</button>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
                             <button class="btn btn-success" onclick="conectarSensorEMGBLE()">🔌 Conectar Luva</button>
                             <span id="ble-status-text" style="font-weight: bold; color: #ef4444;">Status: Desconectado</span>
                         </div>
@@ -508,7 +564,7 @@
                         <div>
                             <div class="game-thumb" style="background: linear-gradient(135deg, #38bdf8, #0284c7);">🐦</div>
                             <h3 style="margin-top:1rem; font-family:'Fredoka', sans-serif; color: #0f172a;">Flappy Pinça Pro</h3>
-                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Voo mágico! Pressione ou use a pinça para voar e desviar dos canos brilhantes.</p>
+                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Voo suave! Aperte a pinça/clique para voar e passar pelos portais com segurança.</p>
                         </div>
                         <div style="padding: 0 1.25rem 1.25rem 1.25rem;">
                             <button class="btn" style="width: 100%; border-radius: 50px; font-weight: bold; background: #0284c7;" onclick="abrirJogo('flappy')">🎮 Jogar Flappy</button>
@@ -519,7 +575,7 @@
                         <div>
                             <div class="game-thumb" style="background: linear-gradient(135deg, #f59e0b, #d97706);">🍔</div>
                             <h3 style="margin-top:1rem; font-family:'Fredoka', sans-serif; color: #0f172a;">Food Drop (Pou)</h3>
-                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Alimente o bichinho fofinho com frutas deliciosas e desvie das bombas!</p>
+                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">O Pou fica parado no centro. Ao aproximar o ímã, ele abre a boca para comer o alimento bom. Cuidado com os alimentos estragados!</p>
                         </div>
                         <div style="padding: 0 1.25rem 1.25rem 1.25rem;">
                             <button class="btn" style="width: 100%; border-radius: 50px; font-weight: bold; background: #d97706;" onclick="abrirJogo('food')">🍔 Jogar Food Drop</button>
@@ -530,7 +586,7 @@
                         <div>
                             <div class="game-thumb" style="background: linear-gradient(135deg, #10b981, #047857);">🍓</div>
                             <h3 style="margin-top:1rem; font-family:'Fredoka', sans-serif; color: #0f172a;">Pique-Esconde Frutas</h3>
-                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Colha frutinhas coloridas na árvore mágica antes que o tempo acabe!</p>
+                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Árvore bonita e interativa! A fruta aparece na árvore e só some quando o idoso aperta o ímã. Fique atento ao tempo de 10 segundos!</p>
                         </div>
                         <div style="padding: 0 1.25rem 1.25rem 1.25rem;">
                             <button class="btn" style="width: 100%; border-radius: 50px; font-weight: bold; background: #047857;" onclick="abrirJogo('frutas')">🍓 Jogar Frutas</button>
@@ -541,7 +597,7 @@
                         <div>
                             <div class="game-thumb" style="background: linear-gradient(135deg, #ec4899, #be185d);">🎈</div>
                             <h3 style="margin-top:1rem; font-family:'Fredoka', sans-serif; color: #0f172a;">Estoura-Balões</h3>
-                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Estoure balões coloridos repletos de confete conforme sobem na tela!</p>
+                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Balões coloridos sobem um a um devagar. Aperte quando estiver perto da linha limite! Limite de 5 balões perdidos.</p>
                         </div>
                         <div style="padding: 0 1.25rem 1.25rem 1.25rem;">
                             <button class="btn" style="width: 100%; border-radius: 50px; font-weight: bold; background: #be185d;" onclick="abrirJogo('baloes')">🎈 Jogar Balões</button>
@@ -630,7 +686,7 @@
         let chartSimetriaInst = null;
         let chartPincaInst = null;
 
-        // --- VARIÁVEIS DO MONITOR EMG BLE INTEGRADO ---
+        // --- VARIÁVEIS DO MONITOR EMG BLE INTEGRADO E EXERCÍCIO DA BOLINHA ---
         const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
         const CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
 
@@ -639,88 +695,29 @@
         let emgChart = null;
         let emgSimulacaoInterval = null;
 
-        const MAX_DATA_POINTS = 100;
+        const MAX_DATA_POINTS = 50;
         const EMG_MAX_ADC = 4095;
         let maxEmgPico = 0;
         let limiarContracaoEMG = 150;
-        let qtdContracoesDetectadas = 0;
-        let emContracaoAtiva = false;
+        let emgSinalAtual = 0;
 
-        // Controle de detecção do sensor Hall por borda (aproximação do ímã)
+        // Controle de detecção do sensor Hall por borda
         let hallAnterior = 4095;
-        const LIMIAR_HALL_IMA = 2200; 
+        const LIMIAR_HALL_IMA = 2200;
 
-        // --- SISTEMA DE ÁUDIO / MÚSICA DE FUNDO (Web Audio API) ---
-        let audioCtx = null;
-        let musicaTocando = false;
-        let loopMusicaInterval = null;
-
-        function alternarMusicaFundo() {
-            const btn = document.getElementById('btn-toggle-musica');
-            if (!musicaTocando) {
-                if (!audioCtx) {
-                    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-                if (audioCtx.state === 'suspended') {
-                    audioCtx.resume();
-                }
-                musicaTocando = true;
-                if (btn) {
-                    btn.innerText = "🔇 Desligar Música";
-                    btn.style.background = "#ef4444";
-                }
-                iniciarTrilhaSonoraAleluia();
-            } else {
-                musicaTocando = false;
-                if (btn) {
-                    btn.innerText = "🔊 Ligar Música";
-                    btn.style.background = "#8b5cf6";
-                }
-                pararTrilhaSonora();
-            }
-        }
-
-        function tocarNotaMusical(frequencia, duracao, tipo = 'sine', ganhoValor = 0.05) {
-            if (!audioCtx || !musicaTocando) return;
-            try {
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.type = tipo;
-                osc.frequency.setValueAtTime(frequencia, audioCtx.currentTime);
-                
-                gain.gain.setValueAtTime(ganhoValor, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duracao);
-                
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                
-                osc.start();
-                osc.stop(audioCtx.currentTime + duracao);
-            } catch (e) {
-                console.error("Erro audio:", e);
-            }
-        }
-
-        function iniciarTrilhaSonoraAleluia() {
-            // Melodia alegre e relaxante em formato de arpejo (C Major: C, E, G, B)
-            const notas = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63];
-            let indexNota = 0;
-            
-            if (loopMusicaInterval) clearInterval(loopMusicaInterval);
-            
-            loopMusicaInterval = setInterval(() => {
-                if (!musicaTocando) return;
-                tocarNotaMusical(notas[indexNota], 0.35, 'triangle', 0.04);
-                indexNota = (indexNota + 1) % notas.length;
-            }, 300);
-        }
-
-        function pararTrilhaSonora() {
-            if (loopMusicaInterval) {
-                clearInterval(loopMusicaInterval);
-                loopMusicaInterval = null;
-            }
-        }
+        // --- VARIÁVEIS DO EXERCÍCIO DA BOLINHA (REABILITAÇÃO AVC PARA IDOSOS) ---
+        let ballCanvas = null;
+        let ballCtx = null;
+        let ballAnimationId = null;
+        let ballState = {
+            y: 0,              // Posição Y atual da bolinha (pixels)
+            targetY: 0,        // Posição Y de destino baseada no EMG
+            radius: 30,        // Tamanho grande para boa visualização por idosos
+            x: 0,              // Centro X
+            estrelasColetadas: 0
+        };
+        let estrelaAlvo = { x: 0, y: 80, aparente: true, tamanho: 35, pulso: 0 };
+        let ultimaMensagemIdoso = "";
 
         function toggleMobileMenu() {
             document.getElementById('sidebar-nav').classList.toggle('open');
@@ -739,6 +736,10 @@
                 fecharJogo();
             }
 
+            if (tabId !== 'emg') {
+                if (ballAnimationId) cancelAnimationFrame(ballAnimationId);
+            }
+
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('nav ul li a').forEach(link => link.classList.remove('active'));
             
@@ -749,7 +750,8 @@
             if (targetNav) targetNav.classList.add('active');
 
             if (tabId === 'emg') {
-                inicializarGraficoEMG();
+                inicializarGraficoEMGOverlay();
+                iniciarExercicioBolinhaEMG();
             }
 
             if (tabId === 'feedback') {
@@ -762,17 +764,17 @@
         document.addEventListener("DOMContentLoaded", () => {
             const sessaoRaw = localStorage.getItem("neuromotion_sessao");
             if (!sessaoRaw) {
-                // Mock session for preview purposes
-                sessaoAtual = { role: 'paciente', data: { nome: 'Paciente Teste' } };
-            } else {
-                sessaoAtual = JSON.parse(sessaoRaw);
+                window.location.href = "index.html";
+                return;
             }
+
+            sessaoAtual = JSON.parse(sessaoRaw);
             configurarInterfacePorPerfil();
             listarCamerasDisponiveis();
         });
 
-        // --- INTEGRACÃO DO GRÁFICO E SENSOR EMG ---
-        function inicializarGraficoEMG() {
+        // --- INTEGRACÃO DO GRÁFICO E SENSOR EMG NO CANTO DA TELA ---
+        function inicializarGraficoEMGOverlay() {
             const canvas = document.getElementById('emgChart');
             if (!canvas) return;
 
@@ -787,13 +789,13 @@
                 data: {
                     labels: Array(MAX_DATA_POINTS).fill(''),
                     datasets: [{
-                        label: 'Sinal EMG',
+                        label: 'EMG (ADC)',
                         data: Array(MAX_DATA_POINTS).fill(0),
                         borderColor: '#00d2ff',
                         backgroundColor: 'rgba(0, 210, 255, 0.2)',
-                        borderWidth: 1.5,
+                        borderWidth: 2,
                         fill: true,
-                        tension: 0.2,
+                        tension: 0.3,
                         pointRadius: 0
                     }]
                 },
@@ -806,14 +808,12 @@
                         y: {
                             min: 0,
                             max: 4095,
-                            display: false
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
+                            ticks: { display: false }
                         }
                     },
                     plugins: {
                         legend: { display: false }
-                    },
-                    layout: {
-                        padding: 0
                     }
                 }
             });
@@ -849,7 +849,6 @@
                 if (btnConnect) btnConnect.style.display = 'none';
 
                 pararLeituraEMGSimulada();
-                document.getElementById('emg-instruction').innerText = "💪 Ótimo! Faça força para levantar a bolinha!";
 
             } catch (error) {
                 console.error("Erro na conexão BLE:", error);
@@ -870,67 +869,36 @@
                     atualizarInterfaceEMG(hallValue, emgValue);
                     
                     const imaAproximou = (hallValue < LIMIAR_HALL_IMA && hallAnterior >= LIMIAR_HALL_IMA);
-                    const emgAcionou = (emgValue >= limiarContracaoEMG && !emContracaoAtiva);
-
-                    if (imaAproximou || emgAcionou) {
+                    if (imaAproximou) {
                         acionarAcaoJogo();
                     }
+
                     hallAnterior = hallValue;
                 }
             }
         }
 
         function atualizarInterfaceEMG(hall, emg) {
-            const valEmg = document.getElementById('valEmg');
-            const ball = document.getElementById('emg-ball');
-            const instruction = document.getElementById('emg-instruction');
+            emgSinalAtual = emg;
 
-            if (valEmg) valEmg.innerText = emg;
+            const emgOverlayVal = document.getElementById('emg-overlay-val');
+            if (emgOverlayVal) emgOverlayVal.innerText = `${emg} ADC`;
 
-            if(ball && instruction) {
-                let maxExpected = 2500; 
-                let normalizedEmg = Math.min(emg, maxExpected) / maxExpected;
-                let ballHeight = normalizedEmg * 330; 
-                let ballBottom = 10 + ballHeight;
-                ball.style.bottom = ballBottom + 'px';
+            const valContracao = document.getElementById('valContracao');
+            const valPico = document.getElementById('valPico');
 
-                if (ballBottom >= 180 && ballBottom <= 300) {
-                    instruction.innerText = "⭐ Muito bem! Segure a força! ⭐";
-                    instruction.style.color = "#16a34a";
-                    ball.innerHTML = "<span style='font-size: 2.2rem; line-height: 70px;'>😁</span>";
-                    ball.style.background = "radial-gradient(circle, #4ade80, #16a34a)";
-                    ball.style.transform = "translateX(-50%) scale(1.1)";
-                } else if (ballBottom < 180) {
-                    instruction.innerText = "💪 Faça mais força para levantar a bolinha!";
-                    instruction.style.color = "#0369a1";
-                    ball.innerHTML = "<span style='font-size: 2.2rem; line-height: 70px;'>😐</span>";
-                    ball.style.background = "radial-gradient(circle, #38bdf8, #0284c7)";
-                    ball.style.transform = "translateX(-50%) scale(1.0)";
-                } else {
-                    instruction.innerText = "🔽 Força demais! Relaxe um pouquinho!";
-                    instruction.style.color = "#ea580c";
-                    ball.innerHTML = "<span style='font-size: 2.2rem; line-height: 70px;'>😲</span>";
-                    ball.style.background = "radial-gradient(circle, #fb923c, #ea580c)";
-                    ball.style.transform = "translateX(-50%) scale(1.0)";
-                }
+            const percentualContracao = Math.min(100, ((emg / EMG_MAX_ADC) * 100)).toFixed(1);
+            if (valContracao) valContracao.innerText = `${percentualContracao} %`;
+
+            if (emg > maxEmgPico) {
+                maxEmgPico = emg;
+                if (valPico) valPico.innerText = `${maxEmgPico} ADC`;
             }
 
             if (emgChart) {
                 emgChart.data.datasets[0].data.push(emg);
                 emgChart.data.datasets[0].data.shift();
                 emgChart.update();
-            }
-
-            if (emg > maxEmgPico) {
-                maxEmgPico = emg;
-            }
-            if (emg >= limiarContracaoEMG && !emContracaoAtiva) {
-                emContracaoAtiva = true;
-                qtdContracoesDetectadas++;
-                const countEl = document.getElementById('emg-contractions-count');
-                if (countEl) countEl.innerText = qtdContracoesDetectadas;
-            } else if (emg < limiarContracaoEMG) {
-                emContracaoAtiva = false;
             }
         }
 
@@ -939,19 +907,11 @@
             const statusText = document.getElementById('statusText');
             if (statusText) statusText.innerHTML = 'Status: <span style="color: #38bdf8; font-weight: bold;">Simulando...</span>';
 
-            let time = 0;
             emgSimulacaoInterval = setInterval(() => {
-                time += 0.1;
-                const imaAtivo = Math.random() > 0.8;
-                const hallSim = imaAtivo ? Math.floor(Math.random() * 500) + 100 : Math.floor(Math.random() * 500) + 3000;
-                
-                const forcaOnda = Math.abs(Math.sin(time)) * 2400; 
-                const ruidoBase = Math.floor(Math.random() * 150) + 20;
-                const emgSim = Math.floor(forcaOnda + ruidoBase);
-                
-                const imaAproximou = (hallSim < LIMIAR_HALL_IMA && hallAnterior >= LIMIAR_HALL_IMA);
-                if (imaAproximou) acionarAcaoJogo();
-                hallAnterior = hallSim;
+                const modoContracao = Math.sin(Date.now() / 1000) > 0.1;
+                const ruidoBase = Math.floor(Math.random() * 80) + 20;
+                const emgSim = modoContracao ? Math.floor(Math.random() * 1500) + 800 : ruidoBase;
+                const hallSim = 3500;
 
                 atualizarInterfaceEMG(hallSim, emgSim);
             }, 100);
@@ -970,14 +930,6 @@
                 bluetoothDevice.gatt.disconnect();
             }
             onBLEDisconnected();
-            
-            const ball = document.getElementById('emg-ball');
-            if(ball) {
-                ball.style.bottom = '10px';
-                ball.innerHTML = "<span style='font-size: 2.2rem; line-height: 70px;'>😴</span>";
-                ball.style.background = "radial-gradient(circle, #94a3b8, #64748b)";
-            }
-            document.getElementById('emg-instruction').innerText = "Conecte a luva para começar!";
         }
 
         function onBLEDisconnected() {
@@ -995,6 +947,187 @@
 
         function atualizarLimiarEMG(valor) {
             limiarContracaoEMG = parseInt(valor, 10) || 150;
+        }
+
+        function zerarMetricasEMG() {
+            maxEmgPico = 0;
+            ballState.estrelasColetadas = 0;
+            
+            const valPico = document.getElementById('valPico');
+            const starsCount = document.getElementById('emg-stars-count');
+            
+            if (valPico) valPico.innerText = "0 ADC";
+            if (starsCount) starsCount.innerText = "0 ⭐";
+
+            if (emgChart) {
+                emgChart.data.datasets[0].data = Array(MAX_DATA_POINTS).fill(0);
+                emgChart.update();
+            }
+        }
+
+        // ==========================================
+        //  LÓGICA DO EXERCÍCIO DA BOLINHA PARA AVC
+        // ==========================================
+        function iniciarExercicioBolinhaEMG() {
+            ballCanvas = document.getElementById('emgBallCanvas');
+            if (!ballCanvas) return;
+
+            // Ajusta dimensões do canvas conforme conteiner
+            const rect = ballCanvas.parentElement.getBoundingClientRect();
+            ballCanvas.width = rect.width || 600;
+            ballCanvas.height = rect.height || 520;
+            ballCtx = ballCanvas.getContext('2d');
+
+            ballState.x = ballCanvas.width / 2;
+            ballState.y = ballCanvas.height - 80;
+            ballState.targetY = ballCanvas.height - 80;
+
+            estrelaAlvo.x = ballCanvas.width / 2;
+            estrelaAlvo.y = 90;
+
+            if (ballAnimationId) cancelAnimationFrame(ballAnimationId);
+            loopBolinhaEMG();
+        }
+
+        function atualizarInstrutorEMG(texto, emoji, cor) {
+            const txt = document.getElementById('emg-instrucao-texto');
+            const avatar = document.getElementById('emg-avatar-icon');
+            const box = document.getElementById('emg-instructor-box');
+
+            if (txt) txt.innerText = texto;
+            if (avatar) avatar.innerText = emoji;
+            if (box) box.style.borderLeftColor = cor;
+
+            if (ultimaMensagemIdoso !== texto) {
+                falar(texto);
+                ultimaMensagemIdoso = texto;
+            }
+        }
+
+        function loopBolinhaEMG() {
+            atualizarLógicaBolinha();
+            desenharCenarioBolinha();
+
+            ballAnimationId = requestAnimationFrame(loopBolinhaEMG);
+        }
+
+        function atualizarLógicaBolinha() {
+            const h = ballCanvas.height;
+            const minY = 90;  // Topo da tela (quando estica o músculo ao máximo)
+            const maxY = h - 80; // Base da tela (repouso)
+
+            // Calcula normalização do EMG baseada na escala (0 a 2000 ADC como pico usual de treino)
+            const intensidade = Math.min(1.0, Math.max(0, (emgSinalAtual - 30) / (limiarContracaoEMG * 3 || 1500)));
+
+            // Posição alvo proporcional à contração muscular
+            ballState.targetY = maxY - (intensidade * (maxY - minY));
+
+            // Suavização do movimento (filtro passa-baixas / interpolação) para idosos não verem tremores solavancados
+            ballState.y += (ballState.targetY - ballState.y) * 0.12;
+
+            // Animação de pulso da estrela
+            estrelaAlvo.pulso += 0.05;
+
+            // Interação do idoso: Checar se a bolinha alcançou a estrela
+            const distEstrela = Math.abs(ballState.y - estrelaAlvo.y);
+
+            if (distEstrela < 35 && estrelaAlvo.aparente) {
+                ballState.estrelasColetadas++;
+                estrelaAlvo.aparente = false;
+
+                const starsCount = document.getElementById('emg-stars-count');
+                if (starsCount) starsCount.innerText = `${ballState.estrelasColetadas} ⭐`;
+
+                atualizarInstrutorEMG("🎉 Excelente contração! Você conseguiu subir a bolinha!", "⭐", "#22c55e");
+
+                // Mantém registro nos dados do paciente
+                registrarProgressoPaciente(0, ballState.estrelasColetadas * 10, null, 'flappy');
+
+                setTimeout(() => {
+                    estrelaAlvo.aparente = true;
+                    atualizarInstrutorEMG("Agora relaxe a mão devagar para a bolinha descer.", "🔵", "#38bdf8");
+                }, 3000);
+            }
+
+            // Atualiza mensagens de estímulo para o idoso
+            if (estrelaAlvo.aparente) {
+                if (emgSinalAtual < limiarContracaoEMG) {
+                    atualizarInstrutorEMG("Aperte a mão com força para erguer a bolinha!", "💪", "#38bdf8");
+                } else if (distEstrela >= 35) {
+                    atualizarInstrutorEMG("Muito bem! Continue apertando para subir mais!", "🚀", "#eab308");
+                }
+            }
+        }
+
+        function desenharCenarioBolinha() {
+            if (!ballCtx) return;
+            const w = ballCanvas.width;
+            const h = ballCanvas.height;
+
+            // Limpa tela com gradiente escuro amigável
+            ballCtx.clearRect(0, 0, w, h);
+
+            // Linha guia vertical do exercício
+            ballCtx.beginPath();
+            ballCtx.setLineDash([8, 8]);
+            ballCtx.moveTo(w / 2, 60);
+            ballCtx.lineTo(w / 2, h - 50);
+            ballCtx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
+            ballCtx.lineWidth = 3;
+            ballCtx.stroke();
+            ballCtx.setLineDash([]);
+
+            // Desenhar Plataforma de Repouso (Base)
+            ballCtx.fillStyle = '#334155';
+            ballCtx.beginPath();
+            ballCtx.roundRect(w / 2 - 80, h - 50, 160, 20, 10);
+            ballCtx.fill();
+            ballCtx.fillStyle = '#94a3b8';
+            ballCtx.font = 'bold 12px Segoe UI';
+            ballCtx.textAlign = 'center';
+            ballCtx.fillText('REPOUSO', w / 2, h - 36);
+
+            // Desenhar a Estrela Guia no Topo
+            if (estrelaAlvo.aparente) {
+                const escalaPulso = 1 + Math.sin(estrelaAlvo.pulso) * 0.1;
+                ballCtx.save();
+                ballCtx.translate(estrelaAlvo.x, estrelaAlvo.y);
+                ballCtx.scale(escalaPulso, escalaPulso);
+
+                ballCtx.font = '40px Segoe UI';
+                ballCtx.textAlign = 'center';
+                ballCtx.textBaseline = 'middle';
+                ballCtx.fillText('⭐', 0, 0);
+
+                ballCtx.restore();
+            }
+
+            // Desenhar a Bolinha Reabilitadora com Brilho
+            ballCtx.save();
+            ballCtx.shadowColor = '#00d2ff';
+            ballCtx.shadowBlur = emgSinalAtual > limiarContracaoEMG ? 25 : 10;
+
+            const gradBolinha = ballCtx.createRadialGradient(
+                ballState.x - 8, ballState.y - 8, 4,
+                ballState.x, ballState.y, ballState.radius
+            );
+            gradBolinha.addColorStop(0, '#38bdf8');
+            gradBolinha.addColorStop(1, '#0284c7');
+
+            ballCtx.beginPath();
+            ballCtx.arc(ballState.x, ballState.y, ballState.radius, 0, Math.PI * 2);
+            ballCtx.fillStyle = gradBolinha;
+            ballCtx.fill();
+            ballCtx.lineWidth = 3;
+            ballCtx.strokeStyle = '#ffffff';
+            ballCtx.stroke();
+            ballCtx.restore();
+
+            // Seta ou Indicador Visual
+            ballCtx.fillStyle = '#ffffff';
+            ballCtx.font = 'bold 14px Segoe UI';
+            ballCtx.textAlign = 'center';
+            ballCtx.fillText('Bolinha', ballState.x, ballState.y + 5);
         }
 
         // --- DEMAIS MÉTODOS DO DASHBOARD ---
@@ -1087,7 +1220,7 @@
                 document.getElementById('painel-fisio-emg').style.display = "none";
 
                 carregarDadosPaciente(sessaoAtual.data);
-                switchTab('dashboard');
+                switchTab('camera');
             }
         }
 
@@ -1651,7 +1784,7 @@
             document.getElementById('status-hold').style.color = "#64748b";
 
             if (exercicioAtual === 'sobrancelhas') {
-                atualizarInstrutor("Mantenha o rosto relaxado olhando para a câmera.", "#0f172a", "👨‍⚕️");
+                atualizarInstrutor("Mantenha o rosto relaxado olhando para a câmera.", "#0f172a", "👨‍‍⚕️");
                 falar("Calibrando sobrancelhas. Mantenha o rosto relaxado.");
             } else if (exercicioAtual === 'sorriso') {
                 atualizarInstrutor("Permaneça neutro para calibrar a abertura do sorriso.", "#0f172a", "👨‍⚕️");
@@ -1702,7 +1835,7 @@
         function pararCamera() {
             if (cameraMediaPipe) cameraMediaPipe.stop();
             if (canvasCtx) canvasCtx.clearRect(0, 0, canvasIa.width, canvasIa.height);
-            atualizarInstrutor("Treino pausado.", "#0f172a", "👨‍⚕️");
+            atualizarInstrutor("Treino pausado.", "#0f172a", "👨‍‍⚕️");
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         }
 
@@ -1872,14 +2005,14 @@
         }
 
         // ==========================================
-        //       MOTOR DOS JOGOS TERAPÊUTICOS (GRÁFICOS SUPER BONITINHOS)
+        //       MOTOR DOS JOGOS TERAPÊUTICOS
         // ==========================================
         let jogoAtivo = null;
         let gameLoopId = null;
         let gameCanvas = document.getElementById('gameCanvas');
         let gCtx = gameCanvas ? gameCanvas.getContext('2d') : null;
         let gameScore = 0;
-        let estadoJogo = 'MENU'; // 'MENU', 'CONTAGEM', 'JOGANDO', 'GAMEOVER'
+        let estadoJogo = 'MENU';
         let tempoContagem = 3;
         let timerContagem = null;
 
@@ -1907,20 +2040,20 @@
 
             if (tipo === 'flappy') {
                 titulo.innerText = '🐦 Flappy Pinça Pro';
-                subtitulo.innerText = 'Aproxime o ímã para o pássaro voar!';
-                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>O pássaro mágico voa ao toque ou sinal da luva. Desvie dos canos brilhantes e consiga pontos!';
+                subtitulo.innerText = 'Aperte a pinça ou toque na tela para voar!';
+                explicacao.innerHTML = '<strong>Como Jogar:</strong><br>• Aperte a pinça (ou toque na tela) para o passarinho subir.<br>• Solte para ele descer.<br>• Passe no meio dos canos com calma!';
             } else if (tipo === 'food') {
                 titulo.innerText = '🍔 Food Drop (Pou)';
-                subtitulo.innerText = 'Alimente o Pou fofinho!';
-                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>Coma frutas deliciosas e desvie das bombas perigosas.';
+                subtitulo.innerText = 'Aproxime o ímã para o Pou abrir a boca e comer!';
+                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>O Pou fica no centro. As comidas vão cair ordenadas uma a uma devagar. Aproxime o ímã para abrir a boca do Pou no momento certo. Coma alimentos bons e fuja de bombas/sapatos!';
             } else if (tipo === 'frutas') {
                 titulo.innerText = '🍓 Pique-Esconde Frutas';
-                subtitulo.innerText = 'Colha as frutas da árvore mágica!';
-                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>Aperte o ímã para colher a fruta e ver uma nova aparecer na árvore!';
+                subtitulo.innerText = 'Aperte a pinça/ímã para mudar a fruta!';
+                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>Uma fruta bonita vai aparecer no meio da tela. Aperte o ímã para fazê-la sumir e aparecer uma nova fruta!';
             } else if (tipo === 'baloes') {
                 titulo.innerText = '🎈 Estoura-Balões';
-                subtitulo.innerText = 'Estoure os balões na linha limite!';
-                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>Aperte quando o balão colorido atingir a linha pontilhada no topo!';
+                subtitulo.innerText = 'Faça a pinça com o ímã quando o balão chegar na linha!';
+                explicacao.innerHTML = '<strong>Como Funciona:</strong><br>Os balões sobem um de cada vez. Quando o balão atingir a linha tracejada no topo, aproxime o ímã com os dedos para estourá-lo!';
             }
 
             resetarJogo();
@@ -1974,10 +2107,10 @@
                 if (!flappyState.iniciado) {
                     flappyState.iniciado = true;
                 }
-                flappyState.vy = -6.0;
+                flappyState.vy = -2.5;
             } else if (jogoAtivo === 'food') {
                 foodState.bocaAberta = true;
-                foodState.tempoBoca = 25; 
+                foodState.tempoBoca = 25;
             } else if (jogoAtivo === 'frutas') {
                 gameScore += 10;
                 registrarProgressoPaciente(0, gameScore, null, 'frutas');
@@ -1991,7 +2124,7 @@
             } else if (jogoAtivo === 'baloes') {
                 let estourouAlgum = false;
                 baloesState.baloes.forEach(b => {
-                    if (Math.abs(b.y - baloesState.linhaY) <= 50 && !b.estourado && !b.perdido) {
+                    if (Math.abs(b.y - baloesState.linhaY) <= 45 && !b.estourado && !b.perdido) {
                         b.estourado = true;
                         estourouAlgum = true;
                         gameScore += 10;
@@ -2043,383 +2176,384 @@
             const explicacao = document.getElementById('explicacao-idoso');
             const btn = document.getElementById('btn-iniciar-jogo');
 
+            menu.style.display = 'flex';
             titulo.innerText = 'Fim de Jogo!';
-            subtitulo.innerText = `Sua Pontuação Final: ${gameScore} PONTOS`;
-            explicacao.innerHTML = '<p style="text-align: center; color: #38bdf8; font-weight: bold;">Excelente esforço! Continue praticando para melhorar sua evolução motor-funcional!</p>';
+            subtitulo.innerText = `Sua pontuação final foi: ${gameScore} Pontos`;
+            explicacao.innerHTML = 'Muito bem! Treinar com jogos ajuda no fortalecimento e coordenação motor.';
             btn.style.display = 'inline-block';
             btn.innerText = 'Jogar Novamente';
-            menu.style.display = 'flex';
-        }
-
-        function desenharCenario() {
-            if (!gCtx || !gameCanvas) return;
-            gCtx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-
-            // Fundo lindo e animado com gradiente
-            let bgGrad = gCtx.createLinearGradient(0, 0, 0, gameCanvas.height);
-            bgGrad.addColorStop(0, '#0f172a');
-            bgGrad.addColorStop(1, '#1e293b');
-            gCtx.fillStyle = bgGrad;
-            gCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
-
-            if (jogoAtivo === 'flappy') {
-                // Desenhar nuvens de fundo
-                gCtx.fillStyle = 'rgba(255, 255, 255, 0.15)';
-                gCtx.beginPath();
-                gCtx.arc(100, 80, 30, 0, Math.PI * 2);
-                gCtx.arc(130, 70, 40, 0, Math.PI * 2);
-                gCtx.arc(160, 85, 25, 0, Math.PI * 2);
-                gCtx.fill();
-
-                // Desenhar canos (obstáculos) bonitos com gradiente verde/neon
-                flappyState.obstaculos.forEach(obs => {
-                    let pipeGrad = gCtx.createLinearGradient(obs.x, 0, obs.x + obs.largura, 0);
-                    pipeGrad.addColorStop(0, '#22c55e');
-                    pipeGrad.addColorStop(0.5, '#4ade80');
-                    pipeGrad.addColorStop(1, '#16a34a');
-                    gCtx.fillStyle = pipeGrad;
-                    
-                    // Cano Superior
-                    gCtx.fillRect(obs.x, 0, obs.largura, obs.topo);
-                    // Cano Inferior
-                    gCtx.fillRect(obs.x, gameCanvas.height - obs.baixo, obs.largura, obs.baixo);
-                });
-
-                // Desenhar Pássaro Fofinho
-                gCtx.save();
-                gCtx.translate(100, flappyState.y);
-                gCtx.fillStyle = '#f59e0b'; // Corpo Amarelo fofo
-                gCtx.beginPath();
-                gCtx.arc(0, 0, 22, 0, Math.PI * 2);
-                gCtx.fill();
-                gCtx.lineWidth = 3;
-                gCtx.strokeStyle = '#d97706';
-                gCtx.stroke();
-
-                // Asa
-                gCtx.fillStyle = '#fbbf24';
-                gCtx.beginPath();
-                gCtx.ellipse(-5, 4, 10, 6, Math.PI / 4, 0, Math.PI * 2);
-                gCtx.fill();
-
-                // Olhinho brilhante
-                gCtx.fillStyle = '#ffffff';
-                gCtx.beginPath();
-                gCtx.arc(8, -6, 7, 0, Math.PI * 2);
-                gCtx.fill();
-                gCtx.fillStyle = '#0f172a';
-                gCtx.beginPath();
-                gCtx.arc(10, -6, 3, 0, Math.PI * 2);
-                gCtx.fill();
-
-                // Bico Laranja
-                gCtx.fillStyle = '#f97316';
-                gCtx.beginPath();
-                gCtx.moveTo(18, -2);
-                gCtx.lineTo(28, 2);
-                gCtx.lineTo(18, 6);
-                gCtx.closePath();
-                gCtx.fill();
-                gCtx.restore();
-
-            } else if (jogoAtivo === 'food') {
-                // Desenhar Pou Fofinho no centro embaixo
-                let pouX = foodState.pouX;
-                let pouY = 390;
-
-                // Corpo do Pou (Marrom macio)
-                gCtx.fillStyle = '#854d0e';
-                gCtx.beginPath();
-                gCtx.arc(pouX, pouY, 45, Math.PI, 0, false);
-                gCtx.lineTo(pouX + 45, pouY + 60);
-                gCtx.quadraticCurveTo(pouX, pouY + 75, pouX - 45, pouY + 60);
-                gCtx.closePath();
-                gCtx.fill();
-                gCtx.lineWidth = 3;
-                gCtx.strokeStyle = '#713f12';
-                gCtx.stroke();
-
-                // Olhos do Pou
-                gCtx.fillStyle = '#ffffff';
-                gCtx.beginPath();
-                gCtx.arc(pouX - 15, pouY - 5, 10, 0, Math.PI * 2);
-                gCtx.arc(pouX + 15, pouY - 5, 10, 0, Math.PI * 2);
-                gCtx.fill();
-                gCtx.fillStyle = '#0f172a';
-                gCtx.beginPath();
-                gCtx.arc(pouX - 13, pouY - 5, 4, 0, Math.PI * 2);
-                gCtx.arc(pouX + 17, pouY - 5, 4, 0, Math.PI * 2);
-                gCtx.fill();
-
-                // Boca do Pou (Abre quando aciona o comando)
-                gCtx.fillStyle = '#451a03';
-                gCtx.beginPath();
-                if (foodState.bocaAberta) {
-                    gCtx.arc(pouX, pouY + 18, 14, 0, Math.PI * 2);
-                } else {
-                    gCtx.arc(pouX, pouY + 18, 8, 0, Math.PI, false);
-                }
-                gCtx.fill();
-
-                // Desenhar Itens Caindo
-                foodState.itens.forEach(item => {
-                    gCtx.font = '36px sans-serif';
-                    gCtx.textAlign = 'center';
-                    gCtx.fillText(item.emoji, item.x, item.y);
-                });
-
-            } else if (jogoAtivo === 'frutas') {
-                // Desenhar árvore bonita e estilizada no fundo
-                gCtx.fillStyle = '#78350f'; // Tronco
-                gCtx.fillRect(gameCanvas.width / 2 - 20, 240, 40, 200);
-
-                // Copa da árvore verde vibrante
-                gCtx.fillStyle = '#16a34a';
-                gCtx.beginPath();
-                gCtx.arc(gameCanvas.width / 2, 200, 110, 0, Math.PI * 2);
-                gCtx.fill();
-                gCtx.fillStyle = '#22c55e';
-                gCtx.beginPath();
-                gCtx.arc(gameCanvas.width / 2 - 50, 180, 70, 0, Math.PI * 2);
-                gCtx.arc(gameCanvas.width / 2 + 50, 180, 70, 0, Math.PI * 2);
-                gCtx.fill();
-
-                // Fruta Grande Centralizada com animação e brilho
-                gCtx.font = '85px sans-serif';
-                gCtx.textAlign = 'center';
-                gCtx.textBaseline = 'middle';
-                gCtx.fillText(frutasState.frutaAtual, gameCanvas.width / 2, 210);
-
-                // Barra de Tempo Redonda/Retangular da Fruta
-                let tempoDecorrido = Date.now() - frutasState.frutaInicioFruta;
-                let pctTempoRestante = Math.max(0, 1 - (tempoDecorrido / frutasState.limiteTempoMs));
-                
-                gCtx.fillStyle = '#334155';
-                gCtx.fillRect(70, 400, 300, 16);
-                let gradBar = gCtx.createLinearGradient(70, 0, 370, 0);
-                gradBar.addColorStop(0, '#22c55e');
-                gradBar.addColorStop(1, '#eab308');
-                gCtx.fillStyle = gradBar;
-                gCtx.fillRect(70, 400, 300 * pctTempoRestante, 16);
-
-                gCtx.fillStyle = '#ffffff';
-                gCtx.font = 'bold 15px Fredoka, sans-serif';
-                gCtx.fillText("Aperte o ímã para colher a fruta!", gameCanvas.width / 2, 365);
-
-            } else if (jogoAtivo === 'baloes') {
-                // Linha Limite tracejada
-                gCtx.strokeStyle = '#ef4444';
-                gCtx.lineWidth = 3;
-                gCtx.setLineDash([8, 8]);
-                gCtx.beginPath();
-                gCtx.moveTo(0, baloesState.linhaY);
-                gCtx.lineTo(gameCanvas.width, baloesState.linhaY);
-                gCtx.stroke();
-                gCtx.setLineDash([]);
-
-                gCtx.fillStyle = '#ef4444';
-                gCtx.font = 'bold 13px Fredoka, sans-serif';
-                gCtx.textAlign = 'left';
-                gCtx.fillText("⚠️ LINHA LIMITE", 15, baloesState.linhaY - 8);
-
-                // Desenhar Balões Coloridos
-                baloesState.baloes.forEach(b => {
-                    if (!b.estourado && !b.perdido) {
-                        // Corpo do Balão
-                        gCtx.fillStyle = b.cor;
-                        gCtx.beginPath();
-                        gCtx.ellipse(b.x, b.y, 25, 32, 0, 0, Math.PI * 2);
-                        gCtx.fill();
-
-                        // Brilho no balão
-                        gCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
-                        gCtx.beginPath();
-                        gCtx.ellipse(b.x - 8, b.y - 10, 6, 10, Math.PI / 4, 0, Math.PI * 2);
-                        gCtx.fill();
-
-                        // Nó do balão
-                        gCtx.fillStyle = b.cor;
-                        gCtx.beginPath();
-                        gCtx.moveTo(b.x - 5, b.y + 32);
-                        gCtx.lineTo(b.x + 5, b.y + 32);
-                        gCtx.lineTo(b.x, b.y + 38);
-                        gCtx.closePath();
-                        gCtx.fill();
-
-                        // Corda
-                        gCtx.strokeStyle = '#94a3b8';
-                        gCtx.lineWidth = 1.5;
-                        gCtx.beginPath();
-                        gCtx.moveTo(b.x, b.y + 38);
-                        gCtx.lineTo(b.x, b.y + 55);
-                        gCtx.stroke();
-                    }
-                });
-            }
-
-            // Desenhar Pontuação na Tela em todos os jogos
-            gCtx.fillStyle = 'rgba(15, 23, 42, 0.8)';
-            gCtx.fillRect(15, 15, 160, 45);
-            gCtx.lineWidth = 2;
-            gCtx.strokeStyle = '#38bdf8';
-            gCtx.strokeRect(15, 15, 160, 45);
-
-            gCtx.fillStyle = '#ffffff';
-            gCtx.font = 'bold 18px Fredoka, sans-serif';
-            gCtx.textAlign = 'left';
-            gCtx.textBaseline = 'middle';
-            gCtx.fillText(`🏆 Pontos: ${gameScore}`, 28, 38);
         }
 
         function loopJogo() {
             if (estadoJogo !== 'JOGANDO') return;
 
+            atualizarJogo();
+            desenharCenario();
+
+            gameLoopId = requestAnimationFrame(loopJogo);
+        }
+
+        function atualizarJogo() {
             if (jogoAtivo === 'flappy') {
                 if (flappyState.iniciado) {
-                    flappyState.vy += 0.35; // Gravidade suave
+                    flappyState.vy += 0.08;
                     flappyState.y += flappyState.vy;
-                }
 
-                // Spawn de Canos
-                flappyState.contadorSpawn++;
-                if (flappyState.contadorSpawn >= 110) {
-                    flappyState.contadorSpawn = 0;
-                    let abertura = 140;
-                    let topoAlt = Math.floor(Math.random() * 180) + 60;
-                    flappyState.obstaculos.push({
-                        x: gameCanvas.width,
-                        largura: 60,
-                        topo: topoAlt,
-                        baixo: gameCanvas.height - (topoAlt + abertura),
-                        passou: false
-                    });
-                }
-
-                // Movimentar Canos
-                for (let i = flappyState.obstaculos.length - 1; i >= 0; i--) {
-                    let obs = flappyState.obstaculos[i];
-                    obs.x -= 2.5;
-
-                    // Pontuação ao passar
-                    if (!obs.passou && obs.x + obs.largura < 100) {
-                        obs.passou = true;
-                        gameScore += 10;
-                        registrarProgressoPaciente(0, gameScore, null, 'flappy');
-                    }
-
-                    // Colisão
-                    if (
-                        100 + 18 > obs.x && 100 - 18 < obs.x + obs.largura &&
-                        (flappyState.y - 18 < obs.topo || flappyState.y + 18 > gameCanvas.height - obs.baixo)
-                    ) {
+                    if (flappyState.y > 470 || flappyState.y < 10) {
                         gameOver();
                         return;
                     }
 
-                    // Remover canos fora da tela
-                    if (obs.x + obs.largura < 0) {
-                        flappyState.obstaculos.splice(i, 1);
+                    flappyState.contadorSpawn++;
+                    if (flappyState.contadorSpawn >= 350) {
+                        flappyState.contadorSpawn = 0;
+                        const vaoTamanho = 210;
+                        const vaoTop = Math.floor(Math.random() * (260 - 80)) + 80;
+                        flappyState.obstaculos.push({
+                            x: 440,
+                            topHeight: vaoTop,
+                            bottomTop: vaoTop + vaoTamanho,
+                            passou: false
+                        });
                     }
-                }
 
-                // Limites superior e inferior da tela
-                if (flappyState.y > gameCanvas.height - 20 || flappyState.y < 20) {
-                    gameOver();
-                    return;
-                }
+                    flappyState.obstaculos.forEach((obs) => {
+                        obs.x -= 0.8;
 
+                        const passaroX = 80;
+                        const passaroY = flappyState.y;
+                        const raioPassaro = 16;
+
+                        if (passaroX + raioPassaro > obs.x && passaroX - raioPassaro < obs.x + 50) {
+                            if (passaroY - raioPassaro < obs.topHeight || passaroY + raioPassaro > obs.bottomTop) {
+                                gameOver();
+                                return;
+                            }
+                        }
+
+                        if (!obs.passou && obs.x + 50 < passaroX) {
+                            obs.passou = true;
+                            gameScore += 10;
+                            registrarProgressoPaciente(0, gameScore, null, 'flappy');
+                        }
+                    });
+
+                    flappyState.obstaculos = flappyState.obstaculos.filter(obs => obs.x > -60);
+                }
             } else if (jogoAtivo === 'food') {
                 if (foodState.tempoBoca > 0) {
                     foodState.tempoBoca--;
                     if (foodState.tempoBoca === 0) foodState.bocaAberta = false;
                 }
 
-                // Spawn de itens
                 if (Date.now() > foodState.proximoSpawn) {
-                    foodState.proximoSpawn = Date.now() + 1800;
-                    let xPos = Math.floor(Math.random() * 320) + 60;
-                    let ehBom = Math.random() > 0.35;
-                    let emojiArr = ehBom ? ALIMENTOS_BONS : ALIMENTOS_RUINS;
-                    let emojiEscolhido = emojiArr[Math.floor(Math.random() * emojiArr.length)];
-
+                    foodState.proximoSpawn = Date.now() + 2200;
+                    const ehBom = Math.random() > 0.3;
+                    const lista = ehBom ? ALIMENTOS_BONS : ALIMENTOS_RUINS;
+                    const icone = lista[Math.floor(Math.random() * lista.length)];
                     foodState.itens.push({
-                        x: xPos,
+                        x: 220,
                         y: -30,
-                        emoji: emojiEscolhido,
-                        bom: ehBom,
-                        velocidade: 2.2
+                        icone: icone,
+                        ehBom: ehBom,
+                        comido: false
                     });
                 }
 
-                // Atualizar itens
-                for (let i = foodState.itens.length - 1; i >= 0; i--) {
-                    let item = foodState.itens[i];
-                    item.y += item.velocidade;
+                foodState.itens.forEach(it => {
+                    it.y += 1.8;
 
-                    // Verificar colisão com a boca do Pou (x: pouX, y: 390)
-                    if (Math.abs(item.x - foodState.pouX) < 35 && Math.abs(item.y - 390) < 35) {
-                        if (item.bom && foodState.bocaAberta) {
-                            gameScore += 10;
-                            registrarProgressoPaciente(0, gameScore, null, 'food');
-                        } else if (!item.bom) {
-                            gameScore = Math.max(0, gameScore - 5);
+                    if (!it.comido && Math.abs(it.y - 360) < 30) {
+                        if (foodState.bocaAberta) {
+                            it.comido = true;
+                            if (it.ehBom) {
+                                gameScore += 10;
+                                registrarProgressoPaciente(0, gameScore, null, 'food');
+                            } else {
+                                gameOver();
+                                return;
+                            }
                         }
-                        foodState.itens.splice(i, 1);
-                        continue;
                     }
+                });
 
-                    // Remover itens que passaram da tela
-                    if (item.y > gameCanvas.height + 30) {
-                        foodState.itens.splice(i, 1);
-                    }
-                }
-
+                foodState.itens = foodState.itens.filter(it => it.y < 520 && !it.comido);
             } else if (jogoAtivo === 'frutas') {
-                let tempoDecorrido = Date.now() - frutasState.tempoInicioFruta;
-                if (tempoDecorrido > frutasState.limiteTempoMs) {
-                    // Troca automaticamente após 10s sem resposta
-                    const frutasDisponiveis = ['🍎', '🍓', '🍌', '🍊', '🍇', '🍐', '🍑', '🍒'];
-                    frutasState.frutaAtual = frutasDisponiveis[Math.floor(Math.random() * frutasDisponiveis.length)];
-                    frutasState.tempoInicioFruta = Date.now();
+                const decorrido = Date.now() - frutasState.tempoInicioFruta;
+                if (decorrido >= frutasState.limiteTempoMs) {
+                    gameOver();
                 }
-
             } else if (jogoAtivo === 'baloes') {
                 if (Date.now() > baloesState.proximoSpawn) {
-                    baloesState.proximoSpawn = Date.now() + 2000;
-                    let xPos = Math.floor(Math.random() * 340) + 50;
-                    let corEscolhida = baloesState.cores[Math.floor(Math.random() * baloesState.cores.length)];
+                    baloesState.proximoSpawn = Date.now() + 2400;
+                    const xRandom = Math.floor(Math.random() * 280) + 80;
+                    const corRandom = baloesState.cores[Math.floor(Math.random() * baloesState.cores.length)];
                     baloesState.baloes.push({
-                        x: xPos,
-                        y: gameCanvas.height + 40,
-                        cor: corEscolhida,
-                        velocidade: 1.8,
+                        x: xRandom,
+                        y: 520,
+                        cor: corRandom,
                         estourado: false,
                         perdido: false
                     });
                 }
 
-                for (let i = baloesState.baloes.length - 1; i >= 0; i--) {
-                    let b = baloesState.baloes[i];
-                    if (!b.estourado && !b.perdido) {
-                        b.y -= b.velocidade;
-                        // Se passou muito da linha limite sem estourar
-                        if (b.y < 30) {
+                baloesState.baloes.forEach(b => {
+                    if (!b.estourado) {
+                        b.y -= 1.3;
+                        if (b.y < (baloesState.linhaY - 50) && !b.perdido) {
                             b.perdido = true;
                             baloesState.baloesPerdidos++;
                             if (baloesState.baloesPerdidos >= baloesState.limitePerdidos) {
                                 gameOver();
-                                return;
                             }
                         }
-                    } else if (b.estourado) {
-                        // Remove logo após estourar
-                        baloesState.baloes.splice(i, 1);
                     }
-                }
+                });
+
+                baloesState.baloes = baloesState.baloes.filter(b => b.y > -50 && !b.estourado);
+            }
+        }
+
+        function desenharPou(ctx, cx, cy, bocaAberta) {
+            ctx.save();
+            ctx.translate(cx, cy);
+
+            ctx.beginPath();
+            ctx.moveTo(0, -68);
+            ctx.bezierCurveTo(42, -68, 70, 0, 72, 42);
+            ctx.bezierCurveTo(72, 62, 50, 70, 0, 70);
+            ctx.bezierCurveTo(-50, 70, -72, 62, -72, 42);
+            ctx.bezierCurveTo(-70, 0, -42, -68, 0, -68);
+            ctx.closePath();
+
+            ctx.fillStyle = '#A36B39';
+            ctx.fill();
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = '#3D220C';
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.ellipse(0, 50, 52, 14, 0, 0, Math.PI);
+            ctx.fillStyle = 'rgba(61, 34, 12, 0.15)';
+            ctx.fill();
+
+            // OLHO ESQUERDO
+            ctx.beginPath();
+            ctx.ellipse(-23, -12, 18, 21, 0, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+            ctx.lineWidth = 3.5;
+            ctx.strokeStyle = '#000000';
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(-20, -10, 8.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#000000';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(-23, -13, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+
+            // OLHO DIREITO
+            ctx.beginPath();
+            ctx.ellipse(23, -12, 18, 21, 0, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+            ctx.lineWidth = 3.5;
+            ctx.strokeStyle = '#000000';
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(20, -10, 8.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#000000';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(17, -13, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+
+            // BOCA
+            if (bocaAberta) {
+                ctx.beginPath();
+                ctx.ellipse(0, 22, 22, 18, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#3D0000';
+                ctx.fill();
+                ctx.lineWidth = 3.5;
+                ctx.strokeStyle = '#000000';
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(0, 32, 10, Math.PI, 0);
+                ctx.fillStyle = '#FF5577';
+                ctx.fill();
+            } else {
+                ctx.beginPath();
+                ctx.arc(0, 18, 22, 0.15 * Math.PI, 0.85 * Math.PI, false);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#000000';
+                ctx.lineCap = 'round';
+                ctx.stroke();
             }
 
-            desenharCenario();
-            gameLoopId = requestAnimationFrame(loopJogo);
+            ctx.restore();
+        }
+
+        function desenharCenario() {
+            if (!gameCanvas) return;
+            gCtx = gameCanvas.getContext('2d');
+            gCtx.clearRect(0, 0, 440, 500);
+
+            if (jogoAtivo === 'flappy') {
+                gCtx.fillStyle = '#70c5ce';
+                gCtx.fillRect(0, 0, 440, 500);
+
+                // Obstáculos
+                flappyState.obstaculos.forEach(obs => {
+                    gCtx.fillStyle = '#22c55e';
+                    gCtx.fillRect(obs.x, 0, 50, obs.topHeight);
+                    gCtx.fillRect(obs.x, obs.bottomTop, 50, 500 - obs.bottomTop);
+
+                    gCtx.strokeStyle = '#15803d';
+                    gCtx.lineWidth = 3;
+                    gCtx.strokeRect(obs.x, 0, 50, obs.topHeight);
+                    gCtx.strokeRect(obs.x, obs.bottomTop, 50, 500 - obs.bottomTop);
+                });
+
+                // Chão
+                gCtx.fillStyle = '#ded895';
+                gCtx.fillRect(0, 470, 440, 30);
+
+                // Passarinho
+                gCtx.save();
+                gCtx.translate(80, flappyState.y);
+                gCtx.beginPath();
+                gCtx.arc(0, 0, 16, 0, Math.PI * 2);
+                gCtx.fillStyle = '#eab308';
+                gCtx.fill();
+                gCtx.strokeStyle = '#000';
+                gCtx.lineWidth = 2;
+                gCtx.stroke();
+
+                gCtx.beginPath();
+                gCtx.arc(6, -4, 4, 0, Math.PI * 2);
+                gCtx.fillStyle = '#fff';
+                gCtx.fill();
+                gCtx.beginPath();
+                gCtx.arc(7, -4, 2, 0, Math.PI * 2);
+                gCtx.fillStyle = '#000';
+                gCtx.fill();
+
+                gCtx.beginPath();
+                gCtx.moveTo(12, 0);
+                gCtx.lineTo(22, 4);
+                gCtx.lineTo(12, 8);
+                gCtx.closePath();
+                gCtx.fillStyle = '#f97316';
+                gCtx.fill();
+                gCtx.restore();
+
+            } else if (jogoAtivo === 'food') {
+                gCtx.fillStyle = '#fef3c7';
+                gCtx.fillRect(0, 0, 440, 500);
+
+                desenharPou(gCtx, 220, 360, foodState.bocaAberta);
+
+                foodState.itens.forEach(it => {
+                    gCtx.font = '36px Segoe UI';
+                    gCtx.textAlign = 'center';
+                    gCtx.textBaseline = 'middle';
+                    gCtx.fillText(it.icone, it.x, it.y);
+                });
+
+            } else if (jogoAtivo === 'frutas') {
+                gCtx.fillStyle = '#ecfdf5';
+                gCtx.fillRect(0, 0, 440, 500);
+
+                // Árvore central
+                gCtx.fillStyle = '#854d0e';
+                gCtx.fillRect(195, 240, 50, 220);
+
+                gCtx.beginPath();
+                gCtx.arc(220, 180, 110, 0, Math.PI * 2);
+                gCtx.fillStyle = '#22c55e';
+                gCtx.fill();
+
+                // Fruta no meio
+                gCtx.font = '72px Segoe UI';
+                gCtx.textAlign = 'center';
+                gCtx.textBaseline = 'middle';
+                gCtx.fillText(frutasState.frutaAtual, 220, 180);
+
+                // Barra de Tempo
+                const decorrido = Date.now() - frutasState.tempoInicioFruta;
+                const restantePct = Math.max(0, 1 - (decorrido / frutasState.limiteTempoMs));
+                gCtx.fillStyle = '#e2e8f0';
+                gCtx.fillRect(40, 450, 360, 20);
+                gCtx.fillStyle = restantePct > 0.3 ? '#10b981' : '#ef4444';
+                gCtx.fillRect(40, 450, 360 * restantePct, 20);
+
+            } else if (jogoAtivo === 'baloes') {
+                gCtx.fillStyle = '#f0f9ff';
+                gCtx.fillRect(0, 0, 440, 500);
+
+                // Linha de Limite de Estouro
+                gCtx.beginPath();
+                gCtx.setLineDash([8, 8]);
+                gCtx.moveTo(0, baloesState.linhaY);
+                gCtx.lineTo(440, baloesState.linhaY);
+                gCtx.strokeStyle = '#ef4444';
+                gCtx.lineWidth = 3;
+                gCtx.stroke();
+                gCtx.setLineDash([]);
+
+                gCtx.fillStyle = '#ef4444';
+                gCtx.font = 'bold 12px Segoe UI';
+                gCtx.fillText('LINHA DE ESTOURO', 10, baloesState.linhaY - 8);
+
+                // Desenhar balões
+                baloesState.baloes.forEach(b => {
+                    if (!b.estourado) {
+                        gCtx.save();
+                        gCtx.beginPath();
+                        gCtx.ellipse(b.x, b.y, 22, 28, 0, 0, Math.PI * 2);
+                        gCtx.fillStyle = b.cor;
+                        gCtx.fill();
+                        gCtx.strokeStyle = 'rgba(0,0,0,0.2)';
+                        gCtx.lineWidth = 2;
+                        gCtx.stroke();
+
+                        // No do balão
+                        gCtx.beginPath();
+                        gCtx.moveTo(b.x - 3, b.y + 28);
+                        gCtx.lineTo(b.x + 3, b.y + 28);
+                        gCtx.lineTo(b.x, b.y + 33);
+                        gCtx.closePath();
+                        gCtx.fillStyle = b.cor;
+                        gCtx.fill();
+
+                        gCtx.restore();
+                    }
+                });
+
+                // Vidas/Balões Perdidos
+                gCtx.fillStyle = '#0f172a';
+                gCtx.font = 'bold 14px Segoe UI';
+                gCtx.fillText(`Perdidos: ${baloesState.baloesPerdidos} / ${baloesState.limitePerdidos}`, 320, 30);
+            }
+
+            // Placar fixo
+            if (estadoJogo === 'JOGANDO') {
+                gCtx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+                gCtx.roundRect(15, 15, 120, 35, 8);
+                gCtx.fill();
+                gCtx.fillStyle = '#ffffff';
+                gCtx.font = 'bold 16px Segoe UI';
+                gCtx.textAlign = 'left';
+                gCtx.fillText(`Pontos: ${gameScore}`, 25, 38);
+            }
         }
     </script>
 </body>
