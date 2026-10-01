@@ -702,7 +702,7 @@
         let emgSinalAtual = 0;
 
         // Controle de detecção do sensor Hall por borda
-        let hallAnterior = 4095;
+        let hallAnterior = 1800;
         const LIMIAR_HALL_IMA = 2200;
 
         // --- VARIÁVEIS DO EXERCÍCIO DA BOLINHA (REABILITAÇÃO AVC PARA IDOSOS) ---
@@ -1220,7 +1220,7 @@
                 document.getElementById('painel-fisio-emg').style.display = "none";
 
                 carregarDadosPaciente(sessaoAtual.data);
-                switchTab('camera');
+                switchTab('dashboard');
             }
         }
 
