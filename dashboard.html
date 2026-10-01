@@ -1,4 +1,3 @@
-<!-- dashboard.html -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -194,9 +193,9 @@
                 <div id="user-badge" class="badge-role">Visão: Paciente</div>
             </div>
             <ul>
-                <li id="menu-item-dashboard"><a onclick="switchTab('dashboard')" id="nav-dashboard" class="active">📊 Painel Geral</a></li>
+                <li id="menu-item-dashboard"><a onclick="switchTab('dashboard')" id="nav-dashboard">📊 Painel Geral</a></li>
                 <li id="menu-item-pacientes"><a onclick="switchTab('pacientes')" id="nav-pacientes">👥 Gestão de Pacientes</a></li>
-                <li id="menu-item-camera"><a onclick="switchTab('camera')" id="nav-camera">👁️ Exercícios Faciais</a></li>
+                <li id="menu-item-camera"><a onclick="switchTab('camera')" id="nav-camera" class="active">👁️ Exercícios Faciais</a></li>
                 <li id="menu-item-emg"><a onclick="switchTab('emg')" id="nav-emg">⚡ Exercício EMG (Bolinha)</a></li>
                 <li id="menu-item-jogos"><a onclick="switchTab('jogos')" id="nav-jogos">🎮 Jogos Terapêuticos</a></li>
                 <li><a onclick="switchTab('feedback')" id="nav-feedback">💬 Conduta Médica</a></li>
@@ -218,7 +217,7 @@
             </div>
 
             <!-- ABA 1: PAINEL GERAL -->
-            <div id="dashboard" class="tab-content active">
+            <div id="dashboard" class="tab-content">
                 <header>
                     <h2 id="dash-title">Painel Clínico de Evolução</h2>
                     <p id="dash-subtitle">Acompanhamento quantitativo da reabilitação neuromuscular.</p>
@@ -400,7 +399,7 @@
             </div>
 
             <!-- ABA 4: EXERCÍCIOS FACIAIS -->
-            <div id="camera" class="tab-content">
+            <div id="camera" class="tab-content active">
                 <header>
                     <h2>Módulo de Exercícios Faciais Guiados por IA</h2>
                     <p>O instrutor inteligente detecta a sua postura e orienta a sua repetição em tempo real.</p>
@@ -765,7 +764,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             const sessaoRaw = localStorage.getItem("neuromotion_sessao");
             if (!sessaoRaw) {
-                window.location.href = "index.html";
+                window.location.href = "login.html";
                 return;
             }
 
@@ -973,6 +972,7 @@
             ballCanvas = document.getElementById('emgBallCanvas');
             if (!ballCanvas) return;
 
+            // Ajusta dimensões do canvas conforme conteiner
             const rect = ballCanvas.parentElement.getBoundingClientRect();
             ballCanvas.width = rect.width || 600;
             ballCanvas.height = rect.height || 520;
@@ -1013,15 +1013,22 @@
 
         function atualizarLógicaBolinha() {
             const h = ballCanvas.height;
-            const minY = 90;
-            const maxY = h - 80;
+            const minY = 90;  // Topo da tela (quando estica o músculo ao máximo)
+            const maxY = h - 80; // Base da tela (repouso)
 
+            // Calcula normalização do EMG baseada na escala (0 a 2000 ADC como pico usual de treino)
             const intensidade = Math.min(1.0, Math.max(0, (emgSinalAtual - 30) / (limiarContracaoEMG * 3 || 1500)));
+
+            // Posição alvo proporcional à contração muscular
             ballState.targetY = maxY - (intensidade * (maxY - minY));
+
+            // Suavização do movimento (filtro passa-baixas / interpolação) para idosos não verem tremores solavancados
             ballState.y += (ballState.targetY - ballState.y) * 0.12;
 
+            // Animação de pulso da estrela
             estrelaAlvo.pulso += 0.05;
 
+            // Interação do idoso: Checar se a bolinha alcançou a estrela
             const distEstrela = Math.abs(ballState.y - estrelaAlvo.y);
 
             if (distEstrela < 35 && estrelaAlvo.aparente) {
@@ -1032,6 +1039,8 @@
                 if (starsCount) starsCount.innerText = `${ballState.estrelasColetadas} ⭐`;
 
                 atualizarInstrutorEMG("🎉 Excelente contração! Você conseguiu subir a bolinha!", "⭐", "#22c55e");
+
+                // Mantém registro nos dados do paciente
                 registrarProgressoPaciente(0, ballState.estrelasColetadas * 10, null, 'flappy');
 
                 setTimeout(() => {
@@ -1040,6 +1049,7 @@
                 }, 3000);
             }
 
+            // Atualiza mensagens de estímulo para o idoso
             if (estrelaAlvo.aparente) {
                 if (emgSinalAtual < limiarContracaoEMG) {
                     atualizarInstrutorEMG("Aperte a mão com força para erguer a bolinha!", "💪", "#38bdf8");
@@ -1054,8 +1064,10 @@
             const w = ballCanvas.width;
             const h = ballCanvas.height;
 
+            // Limpa tela com gradiente escuro amigável
             ballCtx.clearRect(0, 0, w, h);
 
+            // Linha guia vertical do exercício
             ballCtx.beginPath();
             ballCtx.setLineDash([8, 8]);
             ballCtx.moveTo(w / 2, 60);
@@ -1065,6 +1077,7 @@
             ballCtx.stroke();
             ballCtx.setLineDash([]);
 
+            // Desenhar Plataforma de Repouso (Base)
             ballCtx.fillStyle = '#334155';
             ballCtx.beginPath();
             ballCtx.roundRect(w / 2 - 80, h - 50, 160, 20, 10);
@@ -1074,6 +1087,7 @@
             ballCtx.textAlign = 'center';
             ballCtx.fillText('REPOUSO', w / 2, h - 36);
 
+            // Desenhar a Estrela Guia no Topo
             if (estrelaAlvo.aparente) {
                 const escalaPulso = 1 + Math.sin(estrelaAlvo.pulso) * 0.1;
                 ballCtx.save();
@@ -1088,6 +1102,7 @@
                 ballCtx.restore();
             }
 
+            // Desenhar a Bolinha Reabilitadora com Brilho
             ballCtx.save();
             ballCtx.shadowColor = '#00d2ff';
             ballCtx.shadowBlur = emgSinalAtual > limiarContracaoEMG ? 25 : 10;
@@ -1108,6 +1123,7 @@
             ballCtx.stroke();
             ballCtx.restore();
 
+            // Seta ou Indicador Visual
             ballCtx.fillStyle = '#ffffff';
             ballCtx.font = 'bold 14px Segoe UI';
             ballCtx.textAlign = 'center';
@@ -1204,7 +1220,7 @@
                 document.getElementById('painel-fisio-emg').style.display = "none";
 
                 carregarDadosPaciente(sessaoAtual.data);
-                switchTab('dashboard');
+                switchTab('camera');
             }
         }
 
@@ -1768,7 +1784,7 @@
             document.getElementById('status-hold').style.color = "#64748b";
 
             if (exercicioAtual === 'sobrancelhas') {
-                atualizarInstrutor("Mantenha o rosto relaxado olhando para a câmera.", "#0f172a", "👨‍⚕️");
+                atualizarInstrutor("Mantenha o rosto relaxado olhando para a câmera.", "#0f172a", "👨‍‍⚕️");
                 falar("Calibrando sobrancelhas. Mantenha o rosto relaxado.");
             } else if (exercicioAtual === 'sorriso') {
                 atualizarInstrutor("Permaneça neutro para calibrar a abertura do sorriso.", "#0f172a", "👨‍⚕️");
@@ -1819,7 +1835,7 @@
         function pararCamera() {
             if (cameraMediaPipe) cameraMediaPipe.stop();
             if (canvasCtx) canvasCtx.clearRect(0, 0, canvasIa.width, canvasIa.height);
-            atualizarInstrutor("Treino pausado.", "#0f172a", "👨‍⚕️");
+            atualizarInstrutor("Treino pausado.", "#0f172a", "👨‍‍⚕️");
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
         }
 
@@ -2146,56 +2162,83 @@
                     linhaY: 140,
                     baloesPerdidos: 0,
                     limitePerdidos: 5,
-                    proximoSpawn: Date.now() + 300,
+                    proximoSpawn: Date.now() + 500,
                     cores: ['#ef4444', '#3b82f6', '#22c55e', '#eab308', '#a855f7', '#f97316', '#ec4899']
                 };
             }
         }
 
-        function loopJogo() {
-            if (estadoJogo === 'JOGANDO') {
-                atualizarLogicaJogo();
-                desenharCenario();
-                gameLoopId = requestAnimationFrame(loopJogo);
-            }
+        function gameOver() {
+            estadoJogo = 'GAMEOVER';
+            const menu = document.getElementById('menu-flappy');
+            const titulo = document.getElementById('titulo-flappy');
+            const subtitulo = document.getElementById('subtitulo-flappy');
+            const explicacao = document.getElementById('explicacao-idoso');
+            const btn = document.getElementById('btn-iniciar-jogo');
+
+            menu.style.display = 'flex';
+            titulo.innerText = 'Fim de Jogo!';
+            subtitulo.innerText = `Sua pontuação final foi: ${gameScore} Pontos`;
+            explicacao.innerHTML = 'Muito bem! Treinar com jogos ajuda no fortalecimento e coordenação motor.';
+            btn.style.display = 'inline-block';
+            btn.innerText = 'Jogar Novamente';
         }
 
-        function atualizarLogicaJogo() {
+        function loopJogo() {
+            if (estadoJogo !== 'JOGANDO') return;
+
+            atualizarJogo();
+            desenharCenario();
+
+            gameLoopId = requestAnimationFrame(loopJogo);
+        }
+
+        function atualizarJogo() {
             if (jogoAtivo === 'flappy') {
                 if (flappyState.iniciado) {
-                    flappyState.vy += 0.12;
+                    flappyState.vy += 0.08;
                     flappyState.y += flappyState.vy;
 
-                    if (flappyState.y < 20) flappyState.y = 20;
-
-                    flappyState.contadorSpawn++;
-                    if (flappyState.contadorSpawn > 160) {
-                        flappyState.contadorSpawn = 0;
-                        const abertura = 180;
-                        const topoH = Math.floor(Math.random() * 150) + 50;
-                        flappyState.obstaculos.push({ x: 440, topo: topoH, base: topoH + abertura, pontuado: false });
+                    if (flappyState.y > 470 || flappyState.y < 10) {
+                        gameOver();
+                        return;
                     }
 
-                    flappyState.obstaculos.forEach(o => {
-                        o.x -= 1.5;
-                        if (o.x + 50 < 100 && !o.pontuado) {
-                            o.pontuado = true;
+                    flappyState.contadorSpawn++;
+                    if (flappyState.contadorSpawn >= 350) {
+                        flappyState.contadorSpawn = 0;
+                        const vaoTamanho = 210;
+                        const vaoTop = Math.floor(Math.random() * (260 - 80)) + 80;
+                        flappyState.obstaculos.push({
+                            x: 440,
+                            topHeight: vaoTop,
+                            bottomTop: vaoTop + vaoTamanho,
+                            passou: false
+                        });
+                    }
+
+                    flappyState.obstaculos.forEach((obs) => {
+                        obs.x -= 0.8;
+
+                        const passaroX = 80;
+                        const passaroY = flappyState.y;
+                        const raioPassaro = 16;
+
+                        if (passaroX + raioPassaro > obs.x && passaroX - raioPassaro < obs.x + 50) {
+                            if (passaroY - raioPassaro < obs.topHeight || passaroY + raioPassaro > obs.bottomTop) {
+                                gameOver();
+                                return;
+                            }
+                        }
+
+                        if (!obs.passou && obs.x + 50 < passaroX) {
+                            obs.passou = true;
                             gameScore += 10;
                             registrarProgressoPaciente(0, gameScore, null, 'flappy');
                         }
-
-                        if (100 + 15 > o.x && 100 - 15 < o.x + 50) {
-                            if (flappyState.y - 15 < o.topo || flappyState.y + 15 > o.base) {
-                                encenarGameOver("Você tocou no obstáculo!");
-                            }
-                        }
                     });
 
-                    if (flappyState.y > 470) {
-                        encenarGameOver("Você caiu!");
-                    }
-
-                    flappyState.obstaculos = flappyState.obstaculos.filter(o => o.x > -60);
+                    flappyState.obstaculos = flappyState.obstaculos.filter(obs => obs.x > -60);
                 }
             } else if (jogoAtivo === 'food') {
                 if (foodState.tempoBoca > 0) {
@@ -2204,23 +2247,31 @@
                 }
 
                 if (Date.now() > foodState.proximoSpawn) {
+                    foodState.proximoSpawn = Date.now() + 2200;
                     const ehBom = Math.random() > 0.3;
-                    const icone = ehBom ? ALIMENTOS_BONS[Math.floor(Math.random() * ALIMENTOS_BONS.length)] : ALIMENTOS_RUINS[Math.floor(Math.random() * ALIMENTOS_RUINS.length)];
-                    foodState.itens.push({ x: 220, y: -30, icone: icone, ehBom: ehBom });
-                    foodState.proximoSpawn = Date.now() + 2500;
+                    const lista = ehBom ? ALIMENTOS_BONS : ALIMENTOS_RUINS;
+                    const icone = lista[Math.floor(Math.random() * lista.length)];
+                    foodState.itens.push({
+                        x: 220,
+                        y: -30,
+                        icone: icone,
+                        ehBom: ehBom,
+                        comido: false
+                    });
                 }
 
                 foodState.itens.forEach(it => {
-                    it.y += 1.2;
+                    it.y += 1.8;
 
-                    if (it.y >= 360 && it.y <= 400 && !it.comido) {
+                    if (!it.comido && Math.abs(it.y - 360) < 30) {
                         if (foodState.bocaAberta) {
                             it.comido = true;
                             if (it.ehBom) {
                                 gameScore += 10;
                                 registrarProgressoPaciente(0, gameScore, null, 'food');
                             } else {
-                                gameScore = Math.max(0, gameScore - 5);
+                                gameOver();
+                                return;
                             }
                         }
                     }
@@ -2230,25 +2281,30 @@
             } else if (jogoAtivo === 'frutas') {
                 const decorrido = Date.now() - frutasState.tempoInicioFruta;
                 if (decorrido >= frutasState.limiteTempoMs) {
-                    encenarGameOver("O tempo de 10s acabou! Tente ser mais rápido na próxima vez.");
+                    gameOver();
                 }
             } else if (jogoAtivo === 'baloes') {
                 if (Date.now() > baloesState.proximoSpawn) {
-                    const cor = baloesState.cores[Math.floor(Math.random() * baloesState.cores.length)];
-                    const x = Math.floor(Math.random() * 260) + 90;
-                    baloesState.baloes.push({ x: x, y: 520, cor: cor, estourado: false, perdido: false });
-                    baloesState.proximoSpawn = Date.now() + 2200;
+                    baloesState.proximoSpawn = Date.now() + 2400;
+                    const xRandom = Math.floor(Math.random() * 280) + 80;
+                    const corRandom = baloesState.cores[Math.floor(Math.random() * baloesState.cores.length)];
+                    baloesState.baloes.push({
+                        x: xRandom,
+                        y: 520,
+                        cor: corRandom,
+                        estourado: false,
+                        perdido: false
+                    });
                 }
 
                 baloesState.baloes.forEach(b => {
-                    if (!b.estourado && !b.perdido) {
+                    if (!b.estourado) {
                         b.y -= 1.3;
-
-                        if (b.y < baloesState.linhaY - 45) {
+                        if (b.y < (baloesState.linhaY - 50) && !b.perdido) {
                             b.perdido = true;
                             baloesState.baloesPerdidos++;
                             if (baloesState.baloesPerdidos >= baloesState.limitePerdidos) {
-                                encenarGameOver("Você perdeu 5 balões!");
+                                gameOver();
                             }
                         }
                     }
@@ -2258,107 +2314,192 @@
             }
         }
 
-        function encenarGameOver(motivo) {
-            estadoJogo = 'GAMEOVER';
-            const menu = document.getElementById('menu-flappy');
-            const titulo = document.getElementById('titulo-flappy');
-            const subtitulo = document.getElementById('subtitulo-flappy');
-            const explicacao = document.getElementById('explicacao-idoso');
-            const btn = document.getElementById('btn-iniciar-jogo');
+        function desenharPou(ctx, cx, cy, bocaAberta) {
+            ctx.save();
+            ctx.translate(cx, cy);
 
-            menu.style.display = 'flex';
-            btn.style.display = 'inline-block';
-            titulo.innerText = 'Fim de Jogo!';
-            subtitulo.innerText = `${motivo} - Pontuação Final: ${gameScore} pts`;
-            explicacao.innerHTML = 'Clique abaixo para tentar novamente!';
+            ctx.beginPath();
+            ctx.moveTo(0, -68);
+            ctx.bezierCurveTo(42, -68, 70, 0, 72, 42);
+            ctx.bezierCurveTo(72, 62, 50, 70, 0, 70);
+            ctx.bezierCurveTo(-50, 70, -72, 62, -72, 42);
+            ctx.bezierCurveTo(-70, 0, -42, -68, 0, -68);
+            ctx.closePath();
+
+            ctx.fillStyle = '#A36B39';
+            ctx.fill();
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = '#3D220C';
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.ellipse(0, 50, 52, 14, 0, 0, Math.PI);
+            ctx.fillStyle = 'rgba(61, 34, 12, 0.15)';
+            ctx.fill();
+
+            // OLHO ESQUERDO
+            ctx.beginPath();
+            ctx.ellipse(-23, -12, 18, 21, 0, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+            ctx.lineWidth = 3.5;
+            ctx.strokeStyle = '#000000';
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(-20, -10, 8.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#000000';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(-23, -13, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+
+            // OLHO DIREITO
+            ctx.beginPath();
+            ctx.ellipse(23, -12, 18, 21, 0, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+            ctx.lineWidth = 3.5;
+            ctx.strokeStyle = '#000000';
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.arc(20, -10, 8.5, 0, Math.PI * 2);
+            ctx.fillStyle = '#000000';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(17, -13, 3, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+
+            // BOCA
+            if (bocaAberta) {
+                ctx.beginPath();
+                ctx.ellipse(0, 22, 22, 18, 0, 0, Math.PI * 2);
+                ctx.fillStyle = '#3D0000';
+                ctx.fill();
+                ctx.lineWidth = 3.5;
+                ctx.strokeStyle = '#000000';
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(0, 32, 10, Math.PI, 0);
+                ctx.fillStyle = '#FF5577';
+                ctx.fill();
+            } else {
+                ctx.beginPath();
+                ctx.arc(0, 18, 22, 0.15 * Math.PI, 0.85 * Math.PI, false);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#000000';
+                ctx.lineCap = 'round';
+                ctx.stroke();
+            }
+
+            ctx.restore();
         }
 
         function desenharCenario() {
-            if (!gCtx) return;
+            if (!gameCanvas) return;
+            gCtx = gameCanvas.getContext('2d');
             gCtx.clearRect(0, 0, 440, 500);
 
             if (jogoAtivo === 'flappy') {
                 gCtx.fillStyle = '#70c5ce';
                 gCtx.fillRect(0, 0, 440, 500);
 
-                gCtx.fillStyle = '#22c55e';
-                flappyState.obstaculos.forEach(o => {
-                    gCtx.fillRect(o.x, 0, 50, o.topo);
-                    gCtx.fillRect(o.x, o.base, 50, 500 - o.base);
+                // Obstáculos
+                flappyState.obstaculos.forEach(obs => {
+                    gCtx.fillStyle = '#22c55e';
+                    gCtx.fillRect(obs.x, 0, 50, obs.topHeight);
+                    gCtx.fillRect(obs.x, obs.bottomTop, 50, 500 - obs.bottomTop);
+
+                    gCtx.strokeStyle = '#15803d';
+                    gCtx.lineWidth = 3;
+                    gCtx.strokeRect(obs.x, 0, 50, obs.topHeight);
+                    gCtx.strokeRect(obs.x, obs.bottomTop, 50, 500 - obs.bottomTop);
                 });
 
+                // Chão
                 gCtx.fillStyle = '#ded895';
                 gCtx.fillRect(0, 470, 440, 30);
 
-                gCtx.font = '32px Segoe UI';
-                gCtx.textAlign = 'center';
-                gCtx.fillText('🐦', 100, flappyState.y);
+                // Passarinho
+                gCtx.save();
+                gCtx.translate(80, flappyState.y);
+                gCtx.beginPath();
+                gCtx.arc(0, 0, 16, 0, Math.PI * 2);
+                gCtx.fillStyle = '#eab308';
+                gCtx.fill();
+                gCtx.strokeStyle = '#000';
+                gCtx.lineWidth = 2;
+                gCtx.stroke();
+
+                gCtx.beginPath();
+                gCtx.arc(6, -4, 4, 0, Math.PI * 2);
+                gCtx.fillStyle = '#fff';
+                gCtx.fill();
+                gCtx.beginPath();
+                gCtx.arc(7, -4, 2, 0, Math.PI * 2);
+                gCtx.fillStyle = '#000';
+                gCtx.fill();
+
+                gCtx.beginPath();
+                gCtx.moveTo(12, 0);
+                gCtx.lineTo(22, 4);
+                gCtx.lineTo(12, 8);
+                gCtx.closePath();
+                gCtx.fillStyle = '#f97316';
+                gCtx.fill();
+                gCtx.restore();
 
             } else if (jogoAtivo === 'food') {
                 gCtx.fillStyle = '#fef3c7';
                 gCtx.fillRect(0, 0, 440, 500);
 
-                gCtx.fillStyle = '#fbbf24';
-                gCtx.beginPath();
-                gCtx.arc(220, 380, 50, 0, Math.PI * 2);
-                gCtx.fill();
-
-                gCtx.fillStyle = '#0f172a';
-                gCtx.beginPath();
-                gCtx.arc(200, 365, 6, 0, Math.PI * 2);
-                gCtx.arc(240, 365, 6, 0, Math.PI * 2);
-                gCtx.fill();
-
-                if (foodState.bocaAberta) {
-                    gCtx.fillStyle = '#ef4444';
-                    gCtx.beginPath();
-                    gCtx.arc(220, 395, 20, 0, Math.PI * 2);
-                    gCtx.fill();
-                } else {
-                    gCtx.strokeStyle = '#0f172a';
-                    gCtx.lineWidth = 4;
-                    gCtx.beginPath();
-                    gCtx.arc(220, 390, 12, 0, Math.PI);
-                    gCtx.stroke();
-                }
+                desenharPou(gCtx, 220, 360, foodState.bocaAberta);
 
                 foodState.itens.forEach(it => {
-                    if (!it.comido) {
-                        gCtx.font = '36px Segoe UI';
-                        gCtx.textAlign = 'center';
-                        gCtx.fillText(it.icone, it.x, it.y);
-                    }
+                    gCtx.font = '36px Segoe UI';
+                    gCtx.textAlign = 'center';
+                    gCtx.textBaseline = 'middle';
+                    gCtx.fillText(it.icone, it.x, it.y);
                 });
 
             } else if (jogoAtivo === 'frutas') {
-                gCtx.fillStyle = '#dcfce7';
+                gCtx.fillStyle = '#ecfdf5';
                 gCtx.fillRect(0, 0, 440, 500);
 
+                // Árvore central
                 gCtx.fillStyle = '#854d0e';
-                gCtx.fillRect(200, 260, 40, 240);
+                gCtx.fillRect(195, 240, 50, 220);
 
-                gCtx.fillStyle = '#16a34a';
                 gCtx.beginPath();
                 gCtx.arc(220, 180, 110, 0, Math.PI * 2);
+                gCtx.fillStyle = '#22c55e';
                 gCtx.fill();
 
-                gCtx.font = '70px Segoe UI';
+                // Fruta no meio
+                gCtx.font = '72px Segoe UI';
                 gCtx.textAlign = 'center';
                 gCtx.textBaseline = 'middle';
                 gCtx.fillText(frutasState.frutaAtual, 220, 180);
 
+                // Barra de Tempo
                 const decorrido = Date.now() - frutasState.tempoInicioFruta;
-                const restanteSeg = Math.max(0, ((frutasState.limiteTempoMs - decorrido) / 1000)).toFixed(1);
-
-                gCtx.fillStyle = '#0f172a';
-                gCtx.font = 'bold 20px Segoe UI';
-                gCtx.textAlign = 'center';
-                gCtx.fillText(`⏱️ Tempo Restante: ${restanteSeg}s`, 220, 40);
+                const restantePct = Math.max(0, 1 - (decorrido / frutasState.limiteTempoMs));
+                gCtx.fillStyle = '#e2e8f0';
+                gCtx.fillRect(40, 450, 360, 20);
+                gCtx.fillStyle = restantePct > 0.3 ? '#10b981' : '#ef4444';
+                gCtx.fillRect(40, 450, 360 * restantePct, 20);
 
             } else if (jogoAtivo === 'baloes') {
-                gCtx.fillStyle = '#e0f2fe';
+                gCtx.fillStyle = '#f0f9ff';
                 gCtx.fillRect(0, 0, 440, 500);
 
+                // Linha de Limite de Estouro
                 gCtx.beginPath();
                 gCtx.setLineDash([8, 8]);
                 gCtx.moveTo(0, baloesState.linhaY);
@@ -2369,36 +2510,50 @@
                 gCtx.setLineDash([]);
 
                 gCtx.fillStyle = '#ef4444';
-                gCtx.font = 'bold 14px Segoe UI';
-                gCtx.textAlign = 'right';
-                gCtx.fillText('LINHA DE ESTOURO ✂️', 420, baloesState.linhaY - 8);
+                gCtx.font = 'bold 12px Segoe UI';
+                gCtx.fillText('LINHA DE ESTOURO', 10, baloesState.linhaY - 8);
 
+                // Desenhar balões
                 baloesState.baloes.forEach(b => {
                     if (!b.estourado) {
-                        gCtx.fillStyle = b.cor;
+                        gCtx.save();
                         gCtx.beginPath();
                         gCtx.ellipse(b.x, b.y, 22, 28, 0, 0, Math.PI * 2);
+                        gCtx.fillStyle = b.cor;
+                        gCtx.fill();
+                        gCtx.strokeStyle = 'rgba(0,0,0,0.2)';
+                        gCtx.lineWidth = 2;
+                        gCtx.stroke();
+
+                        // No do balão
+                        gCtx.beginPath();
+                        gCtx.moveTo(b.x - 3, b.y + 28);
+                        gCtx.lineTo(b.x + 3, b.y + 28);
+                        gCtx.lineTo(b.x, b.y + 33);
+                        gCtx.closePath();
+                        gCtx.fillStyle = b.cor;
                         gCtx.fill();
 
-                        gCtx.strokeStyle = '#64748b';
-                        gCtx.lineWidth = 2;
-                        gCtx.beginPath();
-                        gCtx.moveTo(b.x, b.y + 28);
-                        gCtx.lineTo(b.x, b.y + 48);
-                        gCtx.stroke();
+                        gCtx.restore();
                     }
                 });
 
+                // Vidas/Balões Perdidos
                 gCtx.fillStyle = '#0f172a';
-                gCtx.font = 'bold 16px Segoe UI';
-                gCtx.textAlign = 'left';
-                gCtx.fillText(`❌ Balões Perdidos: ${baloesState.baloesPerdidos} / ${baloesState.limitePerdidos}`, 20, 30);
+                gCtx.font = 'bold 14px Segoe UI';
+                gCtx.fillText(`Perdidos: ${baloesState.baloesPerdidos} / ${baloesState.limitePerdidos}`, 320, 30);
             }
 
-            gCtx.fillStyle = '#0f172a';
-            gCtx.font = 'bold 22px Fredoka, sans-serif';
-            gCtx.textAlign = 'left';
-            gCtx.fillText(`Pontos: ${gameScore}`, 20, 480);
+            // Placar fixo
+            if (estadoJogo === 'JOGANDO') {
+                gCtx.fillStyle = 'rgba(15, 23, 42, 0.7)';
+                gCtx.roundRect(15, 15, 120, 35, 8);
+                gCtx.fill();
+                gCtx.fillStyle = '#ffffff';
+                gCtx.font = 'bold 16px Segoe UI';
+                gCtx.textAlign = 'left';
+                gCtx.fillText(`Pontos: ${gameScore}`, 25, 38);
+            }
         }
     </script>
 </body>
