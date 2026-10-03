@@ -196,7 +196,7 @@
                 <li id="menu-item-dashboard"><a onclick="switchTab('dashboard')" id="nav-dashboard">📊 Painel Geral</a></li>
                 <li id="menu-item-pacientes"><a onclick="switchTab('pacientes')" id="nav-pacientes">👥 Gestão de Pacientes</a></li>
                 <li id="menu-item-camera"><a onclick="switchTab('camera')" id="nav-camera" class="active">👁️ Exercícios Faciais</a></li>
-                <li id="menu-item-emg"><a onclick="switchTab('emg')" id="nav-emg">⚡ Exercício EMG (Bolinha)</a></li>
+                <li id="menu-item-emg"><a onclick="switchTab('emg')" id="nav-emg">🔵 Bolinha</a></li>
                 <li id="menu-item-jogos"><a onclick="switchTab('jogos')" id="nav-jogos">🎮 Jogos Terapêuticos</a></li>
                 <li><a onclick="switchTab('feedback')" id="nav-feedback">💬 Conduta Médica</a></li>
                 <li><a onclick="confirmarSair()" style="color: #f87171; margin-top: 1rem;">🚪 Sair</a></li>
@@ -474,7 +474,7 @@
                             <p style="color: #cbd5e1; font-size: 0.95rem; margin-top: 2px;" id="statusText">Status: <span style="color: #ef4444; font-weight: bold;">Desconectado</span></p>
                         </div>
                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            <button class="btn btn-emg" id="btnConnect" onclick="conectarSensorEMGBLE()">🔌 Conectar Luva (BLE)</button>
+                            <button class="btn btn-emg" id="btnConnect" onclick="conectarSensorEMGBLE()">🔌 Conectar Luva</button>
                             <button class="btn" style="background: #6366f1;" onclick="simularSinalEMG()">🔄 Simular Força</button>
                             <button class="btn btn-danger" onclick="pararLeituraEMG()">⏹️ Desconectar</button>
                         </div>
@@ -498,8 +498,7 @@
                     <!-- GRÁFICO EMG NO CANTO INFERIOR DIREITO DA TELA -->
                     <div class="emg-overlay-chart">
                         <div class="emg-overlay-title">
-                            <span>SINAL EMG (RAW)</span>
-                            <span id="emg-overlay-val" style="color: #ffffff;">0 ADC</span>
+                            <span>SINAL</span>
                         </div>
                         <div style="position: relative; width: 100%; height: 80px;">
                             <canvas id="emgChart"></canvas>
@@ -703,7 +702,7 @@
 
         // Controle de detecção do sensor Hall por borda
         let hallAnterior = 1800;
-        const LIMIAR_HALL_IMA = 2200;
+        const LIMIAR_HALL_IMA = 2000;
 
         // --- VARIÁVEIS DO EXERCÍCIO DA BOLINHA (REABILITAÇÃO AVC PARA IDOSOS) ---
         let ballCanvas = null;
