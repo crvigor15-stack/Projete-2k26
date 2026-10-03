@@ -243,6 +243,29 @@
 
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
         @media print { nav, .mobile-header, .patient-selector-bar, .btn, #toast-region { display: none !important; } main { padding: 0; } .card { box-shadow: none; break-inside: avoid; } }
+
+        /* ===== Sensor + voz ===== */
+        .btn-ghost { background: transparent; color: var(--text); border: 1px solid #b8c4d0; } .btn-ghost:hover { background: #eef3f7; }
+        .pill { display: inline-flex; align-items: center; gap: .5rem; padding: .3rem .8rem; border-radius: 99px; font-weight: 600; font-size: .9rem; background: #eef3f7; color: var(--muted); }
+        .pill::before { content: ''; width: .55rem; height: .55rem; border-radius: 50%; background: currentColor; }
+        .pill.st-ok { background: #dcfce7; color: #166534; } .pill.st-warn { background: #fef9c3; color: #854d0e; }
+        .pill.st-err { background: #fee2e2; color: #991b1b; } .pill.st-info { background: #e0f2fe; color: #075985; }
+        .emg-layout { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1.5rem; align-items: start; }
+        .emg-stage { position: relative; height: clamp(400px, 66vh, 580px); border-radius: var(--r-lg); overflow: hidden; border: 1px solid #16415f; box-shadow: var(--shadow); background: #0b1b2b; }
+        .emg-hud { position: absolute; top: 14px; left: 14px; z-index: 5; display: flex; align-items: baseline; gap: .6rem; background: rgba(11,27,43,.78); border: 1px solid rgba(56,189,248,.35); color: #fff; padding: .45rem .9rem; border-radius: var(--r-md); }
+        .emg-hud strong { font-size: 1.75rem; font-variant-numeric: tabular-nums; } .emg-hud-label { color: #9fb3c8; font-size: .85rem; }
+        .emg-side .card { margin-bottom: 1rem; } .emg-side .instructor-card { margin-bottom: 1rem; }
+        .emg-side-head { display: flex; justify-content: space-between; align-items: center; gap: .5rem; margin-bottom: 1rem; }
+        .emg-actions { display: grid; gap: .5rem; }
+        .meter-row { display: flex; justify-content: space-between; }
+        .meter { height: 12px; background: #e2eaf0; border-radius: 99px; overflow: hidden; margin: .5rem 0 1rem; }
+        .meter > span { display: block; height: 100%; width: 0; background: var(--primary); border-radius: 99px; transition: width .12s linear; }
+        .voice-panel { margin-top: auto; display: grid; gap: .5rem; padding-top: 1.25rem; border-top: 1px solid rgba(255,255,255,.12); }
+        .voice-panel label { color: #a9b8c8; font-size: .8rem; margin-top: .25rem; }
+        .voice-panel select { width: 100%; padding: .5rem; border-radius: 8px; border: 1px solid rgba(255,255,255,.2); background: #10283d; color: #fff; }
+        .voice-toggle, .voice-test { display: flex; align-items: center; gap: .6rem; width: 100%; padding: .6rem .8rem; border-radius: var(--r-md); border: 1px solid rgba(255,255,255,.2); background: transparent; color: #fff; cursor: pointer; font-weight: 600; }
+        .voice-toggle[aria-pressed="true"] { background: rgba(56,189,248,.18); border-color: var(--accent); }
+        @media (max-width: 1100px) { .emg-layout { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -253,6 +276,7 @@
 <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></symbol>
 <symbol id="i-game" viewBox="0 0 24 24"><rect x="2.5" y="7" width="19" height="10.5" rx="5"/><path d="M7.5 10.5V14M5.75 12.25h3.5M16 11h.01M18 13.5h.01"/></symbol>
 <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+<symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></symbol>
 <symbol id="i-out" viewBox="0 0 24 24"><path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/></symbol>
 </defs></svg>
     <div id="toast-region" role="status" aria-live="polite"></div>
@@ -278,6 +302,16 @@
                 <li><a href="#" onclick="switchTab('feedback'); return false;" id="nav-feedback"><svg class="ic" aria-hidden="true"><use href="#i-chat"/></svg>Conduta médica</a></li>
                 <li><a href="#" class="nav-logout" onclick="confirmarSair(); return false;"><svg class="ic" aria-hidden="true"><use href="#i-out"/></svg>Sair</a></li>
             </ul>
+            <section class="voice-panel" id="voice-panel" aria-label="Voz do instrutor">
+                <button type="button" id="voz-toggle" class="voice-toggle" aria-pressed="true" onclick="alternarVoz()"><svg class="ic" aria-hidden="true"><use href="#i-sound"/></svg><span id="voz-toggle-txt">Voz ligada</span></button>
+                <label for="voz-select">Voz do instrutor</label>
+                <select id="voz-select" onchange="escolherVozManual(this.value)"></select>
+                <label for="voz-velocidade">Velocidade da fala</label>
+                <select id="voz-velocidade" onchange="definirVelocidadeVoz(this.value)">
+                    <option value="0.8">Lenta</option><option value="0.95">Normal</option><option value="1.1">Rápida</option>
+                </select>
+                <button type="button" class="voice-test" onclick="testarVoz()">Testar voz</button>
+            </section>
         </nav>
 
         <main id="conteudo" tabindex="-1">
@@ -536,82 +570,51 @@
                 </div>
             </div>
 
-            <!-- ABA DE EXERCÍCIO EMG COM A BOLINHA (REABILITAÇÃO AVC) -->
+            <!-- ABA: EXERCÍCIO COM SENSOR (visão do paciente) -->
             <div id="emg" class="tab-content">
                 <header>
-                    <h2>Exercício Terapêutico de EMG - Reabilitação AVC</h2>
-                    <p>Contraia o músculo da mão para erguer a bolinha e levá-la até as estrelas de incentivo!</p>
+                    <h2>Exercício com sensor</h2>
+                    <p>Aperte a mão para erguer a bolinha até a estrela. Relaxe devagar para ela descer.</p>
                 </header>
 
-                <!-- CARD DE INTERAÇÃO COM O IDOSO / CONTROLES -->
-                <div class="card" style="background: #1e293b; border: 2px solid #38bdf8; color: white;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1rem;">
-                        <div>
-                            <h3 style="color: #38bdf8; font-size: 1.3rem;">Sensor de Força Muscular (Luva)</h3>
-                            <p style="color: #cbd5e1; font-size: 0.95rem; margin-top: 2px;" id="statusText" aria-live="polite">Status: <span style="color: #ef4444; font-weight: bold;">Desconectado</span></p>
-                        </div>
-                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-                            <button class="btn btn-emg" id="btnConnect" onclick="conectarSensorEMGBLE()">Conectar Luva</button>
-                            <button class="btn btn-indigo" onclick="simularSinalEMG()">Simular Força</button>
-                            <button class="btn btn-danger" onclick="pararLeituraEMG()">Desconectar</button>
+                <div class="emg-layout">
+                    <div class="emg-stage">
+                        <canvas id="emgBallCanvas" class="emg-canvas-game" role="img" aria-label="Bolinha que sobe conforme a força da mão"></canvas>
+                        <div class="emg-hud"><span class="emg-hud-label">Estrelas</span><strong id="emg-stars-count">0</strong></div>
+                        <div class="emg-overlay-chart">
+                            <div class="emg-overlay-title"><span>Sinal do sensor</span><span id="emg-overlay-val"></span></div>
+                            <div style="position: relative; width: 100%; height: 80px;"><canvas id="emgChart"></canvas></div>
                         </div>
                     </div>
 
-                    <!-- MENSAGEM DO INSTRUTOR AMIGÁVEL PARA O IDOSO -->
-                    <div class="instructor-card" id="emg-instructor-box" style="background: #0f172a; margin-bottom: 0;">
-                        <div class="instructor-avatar" id="emg-avatar-icon">🔵</div>
-                        <div class="instructor-info">
-                            <h4 style="color: #38bdf8;">Instrução de Reabilitação</h4>
-                            <p id="emg-instrucao-texto">Aperte a mão para fazer a bolinha subir!</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ÁREA PRINCIPAL DO EXERCÍCIO INTERATIVO DE AVC -->
-                <div class="emg-game-wrapper">
-                    <!-- CANVAS DO EXERCÍCIO DE REABILITAÇÃO -->
-                    <canvas id="emgBallCanvas" role="img" aria-label="Bolinha que sobe conforme a força muscular" class="emg-canvas-game"></canvas>
-
-                    <!-- GRÁFICO EMG NO CANTO INFERIOR DIREITO DA TELA -->
-                    <div class="emg-overlay-chart">
-                        <div class="emg-overlay-title">
-                            <span>SINAL</span>
-                        </div>
-                        <div style="position: relative; width: 100%; height: 80px;">
-                            <canvas id="emgChart"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO ADICIONAL PARA O FISIOTERAPEUTA REGULAR A SENSIBILIDADE -->
-                <div id="painel-fisio-emg" style="margin-top: 1.5rem;">
-                    <div class="grid-2">
+                    <aside class="emg-side">
                         <div class="card">
-                            <h3 style="margin-bottom: 0.75rem; color: #0f172a;">Métricas de Desempenho Muscular</h3>
-                            <div class="detail-item">
-                                <span>Estrelas Coletadas Hoje:</span>
-                                <strong id="emg-stars-count" style="color: #eab308; font-size: 1.3rem;">0 ⭐</strong>
+                            <div class="emg-side-head">
+                                <h3>Luva sensora</h3>
+                                <span id="statusText" class="pill st-err" aria-live="polite">Desconectado</span>
                             </div>
-                            <div class="detail-item">
-                                <span>Contração Atual (%):</span>
-                                <strong id="valContracao" style="color: #22c55e;">0 %</strong>
+                            <div class="emg-actions">
+                                <button class="btn btn-emg btn-block" id="btnConnect" onclick="conectarSensorEMGBLE()">Conectar luva</button>
+                                <button class="btn btn-ghost btn-block" onclick="pararLeituraEMG()">Desconectar</button>
                             </div>
-                            <div class="detail-item">
-                                <span>Pico Máximo de Força Registrado:</span>
-                                <strong id="valPico" style="color: #0284c7;">0 ADC</strong>
+                        </div>
+
+                        <div class="instructor-card" id="emg-instructor-box">
+                            <div class="instructor-avatar" id="emg-avatar-icon">🔌</div>
+                            <div class="instructor-info">
+                                <h4>Instrutor</h4>
+                                <p id="emg-instrucao-texto">Conecte a luva para começar o exercício.</p>
                             </div>
                         </div>
 
                         <div class="card">
-                            <h3 style="margin-bottom: 0.75rem; color: #0f172a;">Calibração de Sensibilidade Muscular</h3>
-                            <p style="color: #64748b; font-size: 0.85rem; margin-bottom: 1rem;">Ajuste o limite de força exigido do paciente de acordo com seu grau de espasticidade/flacidez post-AVC.</p>
-                            <div class="form-group">
-                                <label for="input-emg-threshold">Limiar de Força do Músculo (ADC):</label>
-                                <input type="number" id="input-emg-threshold" value="150" min="10" max="4095" onchange="atualizarLimiarEMG(this.value)">
-                            </div>
-                            <button class="btn btn-block" onclick="zerarMetricasEMG()">Zerar Histórico de Força</button>
+                            <h3 style="margin-bottom: .75rem;">Desempenho</h3>
+                            <div class="meter-row"><span>Força atual</span><strong id="valContracao">0 %</strong></div>
+                            <div class="meter" role="presentation"><span id="emg-meter-fill"></span></div>
+                            <div class="detail-item"><span>Pico da sessão</span><strong id="valPico">0 ADC</strong></div>
+                            <button class="btn btn-ghost btn-block" style="margin-top: .5rem;" onclick="zerarMetricasEMG()">Reiniciar sessão</button>
                         </div>
-                    </div>
+                    </aside>
                 </div>
             </div>
 
@@ -736,6 +739,11 @@
                         </select>
                     </div>
 
+                    <div class="form-group" style="max-width: 400px;">
+                        <label for="presc-emg-limiar">Força mínima do sensor (ADC)</label>
+                        <input type="number" id="presc-emg-limiar" min="10" max="4095" value="150">
+                        <small style="color: var(--muted);">Quanto menor o valor, mais fácil é erguer a bolinha. Ajuste conforme a espasticidade ou a flacidez do paciente.</small>
+                    </div>
                     <button class="btn btn-success" onclick="salvarPrescricaoExterna()">Salvar Prescrição de Exercícios</button>
                 </div>
 
@@ -780,11 +788,8 @@
         function definirStatusEMG(texto, tipo) {
             const el = document.getElementById('statusText');
             if (!el) return;
-            el.textContent = 'Status: ';
-            const span = document.createElement('span');
-            span.className = 'st-' + tipo;
-            span.textContent = texto;
-            el.appendChild(span);
+            el.className = 'pill st-' + tipo;
+            el.textContent = texto;
         }
         if (window.Chart) {
             Chart.defaults.font.family = "'IBM Plex Sans', 'Segoe UI', sans-serif";
@@ -807,7 +812,7 @@
         let bluetoothDevice = null;
         let emgCharacteristic = null;
         let emgChart = null;
-        let emgSimulacaoInterval = null;
+        let luvaConectada = false;
 
         const MAX_DATA_POINTS = 50;
         const EMG_MAX_ADC = 4095;
@@ -839,9 +844,7 @@
         }
 
         function switchTab(tabId) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-            }
+            cancelarVoz();
 
             if (tabId !== 'camera' && cameraMediaPipe) {
                 pararCamera();
@@ -947,6 +950,7 @@
             try {
                 if (statusText) definirStatusEMG('Buscando dispositivo...', 'warn');
                 
+                if (!navigator.bluetooth) throw new Error('sem-bluetooth');
                 bluetoothDevice = await navigator.bluetooth.requestDevice({
                     filters: [{ name: 'Luva_NeuroMotion' }],
                     optionalServices: [SERVICE_UUID]
@@ -967,12 +971,17 @@
                     bleStatusText.style.color = "#22c55e";
                 }
                 if (btnConnect) btnConnect.style.display = 'none';
-
-                pararLeituraEMGSimulada();
+                luvaConectada = true;
+                notificar('Luva conectada.', 'ok');
+                falar('Luva conectada. Aperte a mão para começar.', { urgente: true });
 
             } catch (error) {
                 console.error("Erro na conexão BLE:", error);
-                if (statusText) definirStatusEMG('Erro ao conectar', 'err');
+                if (error.name === 'NotFoundError') definirStatusEMG('Desconectado', 'err');
+                else {
+                    definirStatusEMG('Erro ao conectar', 'err');
+                    notificar(error.message === 'sem-bluetooth' ? 'Este navegador não permite Bluetooth. Use o Chrome ou o Edge.' : 'Não foi possível conectar. Confira se a luva está ligada e por perto.', 'err');
+                }
             }
         }
 
@@ -1009,6 +1018,8 @@
 
             const percentualContracao = Math.min(100, ((emg / EMG_MAX_ADC) * 100)).toFixed(1);
             if (valContracao) valContracao.innerText = `${percentualContracao} %`;
+            const barra = document.getElementById('emg-meter-fill');
+            if (barra) barra.style.width = percentualContracao + '%';
 
             if (emg > maxEmgPico) {
                 maxEmgPico = emg;
@@ -1022,30 +1033,9 @@
             }
         }
 
-        function simularSinalEMG() {
-            pararLeituraEMGSimulada();
-            const statusText = document.getElementById('statusText');
-            if (statusText) definirStatusEMG('Simulando...', 'info');
 
-            emgSimulacaoInterval = setInterval(() => {
-                const modoContracao = Math.sin(Date.now() / 1000) > 0.1;
-                const ruidoBase = Math.floor(Math.random() * 80) + 20;
-                const emgSim = modoContracao ? Math.floor(Math.random() * 1500) + 800 : ruidoBase;
-                const hallSim = 3500;
-
-                atualizarInterfaceEMG(hallSim, emgSim);
-            }, 100);
-        }
-
-        function pararLeituraEMGSimulada() {
-            if (emgSimulacaoInterval) {
-                clearInterval(emgSimulacaoInterval);
-                emgSimulacaoInterval = null;
-            }
-        }
 
         function pararLeituraEMG() {
-            pararLeituraEMGSimulada();
             if (bluetoothDevice && bluetoothDevice.gatt.connected) {
                 bluetoothDevice.gatt.disconnect();
             }
@@ -1062,12 +1052,11 @@
                 bleStatusText.innerText = "Status: Desconectado";
                 bleStatusText.style.color = "#ef4444";
             }
-            if (btnConnect) btnConnect.style.display = 'block';
+            if (btnConnect) btnConnect.style.display = '';
+            luvaConectada = false;
+            emgSinalAtual = 0;
         }
 
-        function atualizarLimiarEMG(valor) {
-            limiarContracaoEMG = parseInt(valor, 10) || 150;
-        }
 
         function zerarMetricasEMG() {
             maxEmgPico = 0;
@@ -1077,7 +1066,7 @@
             const starsCount = document.getElementById('emg-stars-count');
             
             if (valPico) valPico.innerText = "0 ADC";
-            if (starsCount) starsCount.innerText = "0 ⭐";
+            if (starsCount) starsCount.innerText = "0";
 
             if (emgChart) {
                 emgChart.data.datasets[0].data = Array(MAX_DATA_POINTS).fill(0);
@@ -1091,163 +1080,145 @@
         function iniciarExercicioBolinhaEMG() {
             ballCanvas = document.getElementById('emgBallCanvas');
             if (!ballCanvas) return;
-
-            // Ajusta dimensões do canvas conforme conteiner
-            const rect = ballCanvas.parentElement.getBoundingClientRect();
-            ballCanvas.width = rect.width || 600;
-            ballCanvas.height = rect.height || 520;
             ballCtx = ballCanvas.getContext('2d');
-
-            ballState.x = ballCanvas.width / 2;
-            ballState.y = ballCanvas.height - 80;
-            ballState.targetY = ballCanvas.height - 80;
-
-            estrelaAlvo.x = ballCanvas.width / 2;
-            estrelaAlvo.y = 90;
-
+            ajustarCanvasBolinha();
+            if (!window.__roBolinha && window.ResizeObserver) {
+                window.__roBolinha = new ResizeObserver(() => { if (ballCanvas.offsetParent) ajustarCanvasBolinha(); });
+                window.__roBolinha.observe(ballCanvas.parentElement);
+            }
+            ballState.y = ballState.base;
+            estrelaAlvo.aparente = true;
             if (ballAnimationId) cancelAnimationFrame(ballAnimationId);
             loopBolinhaEMG();
         }
 
-        function atualizarInstrutorEMG(texto, emoji, cor) {
+        function ajustarCanvasBolinha() {
+            const r = ballCanvas.parentElement.getBoundingClientRect();
+            if (!r.width) return;
+            const dpr = window.devicePixelRatio || 1;
+            ballCanvas.width = r.width * dpr;
+            ballCanvas.height = r.height * dpr;
+            ballCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            Object.assign(ballState, { w: r.width, h: r.height, x: r.width / 2, topo: 90, base: r.height - 90 });
+            estrelaAlvo.x = ballState.x;
+            estrelaAlvo.y = ballState.topo;
+            ballState.y = Math.min(Math.max(ballState.y, ballState.topo), ballState.base);
+        }
+
+        function atualizarInstrutorEMG(texto, emoji, cor, fala = { canal: 'emg', intervalo: 5000, validade: 3000 }) {
             const txt = document.getElementById('emg-instrucao-texto');
             const avatar = document.getElementById('emg-avatar-icon');
             const box = document.getElementById('emg-instructor-box');
-
             if (txt) txt.innerText = texto;
             if (avatar) avatar.innerText = emoji;
             if (box) box.style.borderLeftColor = cor;
-
             if (ultimaMensagemIdoso !== texto) {
-                falar(texto);
                 ultimaMensagemIdoso = texto;
+                falar(texto, fala);
             }
         }
 
         function loopBolinhaEMG() {
             atualizarLógicaBolinha();
             desenharCenarioBolinha();
-
             ballAnimationId = requestAnimationFrame(loopBolinhaEMG);
         }
 
+        function intensidadeEMG(valor) {
+            return Math.min(1, Math.max(0, (valor - 30) / ((limiarContracaoEMG * 3) || 1500)));
+        }
+
         function atualizarLógicaBolinha() {
-            const h = ballCanvas.height;
-            const minY = 90;  // Topo da tela (quando estica o músculo ao máximo)
-            const maxY = h - 80; // Base da tela (repouso)
-
-            // Calcula normalização do EMG baseada na escala (0 a 2000 ADC como pico usual de treino)
-            const intensidade = Math.min(1.0, Math.max(0, (emgSinalAtual - 30) / (limiarContracaoEMG * 3 || 1500)));
-
-            // Posição alvo proporcional à contração muscular
-            ballState.targetY = maxY - (intensidade * (maxY - minY));
-
-            // Suavização do movimento (filtro passa-baixas / interpolação) para idosos não verem tremores solavancados
-            ballState.y += (ballState.targetY - ballState.y) * 0.12;
-
-            // Animação de pulso da estrela
+            const { topo, base } = ballState;
+            const emg = luvaConectada ? emgSinalAtual : 0;
+            // Suavização para que tremores não gerem movimentos bruscos
+            ballState.y += ((base - intensidadeEMG(emg) * (base - topo)) - ballState.y) * 0.12;
             estrelaAlvo.pulso += 0.05;
 
-            // Interação do idoso: Checar se a bolinha alcançou a estrela
-            const distEstrela = Math.abs(ballState.y - estrelaAlvo.y);
+            if (!luvaConectada) {
+                atualizarInstrutorEMG('Conecte a luva para começar o exercício.', '🔌', '#eab308', { canal: 'emg', intervalo: 20000 });
+                return;
+            }
 
-            if (distEstrela < 35 && estrelaAlvo.aparente) {
+            const dist = Math.abs(ballState.y - estrelaAlvo.y);
+            if (dist < 35 && estrelaAlvo.aparente) {
                 ballState.estrelasColetadas++;
                 estrelaAlvo.aparente = false;
-
-                const starsCount = document.getElementById('emg-stars-count');
-                if (starsCount) starsCount.innerText = `${ballState.estrelasColetadas} ⭐`;
-
-                atualizarInstrutorEMG("🎉 Excelente contração! Você conseguiu subir a bolinha!", "⭐", "#22c55e");
-
-                // Mantém registro nos dados do paciente
+                document.getElementById('emg-stars-count').textContent = ballState.estrelasColetadas;
+                const nome = primeiroNome();
+                atualizarInstrutorEMG(`Excelente${nome ? ', ' + nome : ''}! Você chegou à estrela.`, '⭐', '#22c55e', { canal: 'emg', urgente: true });
                 registrarProgressoPaciente(0, ballState.estrelasColetadas * 10, null, 'flappy');
-
                 setTimeout(() => {
                     estrelaAlvo.aparente = true;
-                    atualizarInstrutorEMG("Agora relaxe a mão devagar para a bolinha descer.", "🔵", "#38bdf8");
+                    atualizarInstrutorEMG('Agora relaxe a mão devagar para a bolinha descer.', '🔵', '#38bdf8', { canal: 'emg', validade: 4000 });
                 }, 3000);
             }
 
-            // Atualiza mensagens de estímulo para o idoso
             if (estrelaAlvo.aparente) {
-                if (emgSinalAtual < limiarContracaoEMG) {
-                    atualizarInstrutorEMG("Aperte a mão com força para erguer a bolinha!", "💪", "#38bdf8");
-                } else if (distEstrela >= 35) {
-                    atualizarInstrutorEMG("Muito bem! Continue apertando para subir mais!", "🚀", "#eab308");
+                if (emg < limiarContracaoEMG) {
+                    atualizarInstrutorEMG('Aperte a mão com força para erguer a bolinha!', '💪', '#38bdf8');
+                } else if (dist >= 35) {
+                    atualizarInstrutorEMG('Muito bem! Continue apertando para subir mais!', '🚀', '#eab308');
                 }
             }
         }
 
+        function desenharEstrela(c, cx, cy, R) {
+            c.beginPath();
+            for (let i = 0; i < 10; i++) {
+                const r = i % 2 ? R * 0.45 : R, a = -Math.PI / 2 + i * Math.PI / 5;
+                c.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+            }
+            c.closePath();
+        }
+
         function desenharCenarioBolinha() {
-            if (!ballCtx) return;
-            const w = ballCanvas.width;
-            const h = ballCanvas.height;
+            if (!ballCtx || !ballState.w) return;
+            const c = ballCtx, { w, h, x, y, topo, base, radius } = ballState;
+            const fonte = '"IBM Plex Sans", "Segoe UI", sans-serif';
+            const forte = luvaConectada && emgSinalAtual > limiarContracaoEMG;
 
-            // Limpa tela com gradiente escuro amigável
-            ballCtx.clearRect(0, 0, w, h);
+            const fundo = c.createLinearGradient(0, 0, 0, h);
+            fundo.addColorStop(0, '#0d2f4b'); fundo.addColorStop(1, '#0b1b2b');
+            c.fillStyle = fundo; c.fillRect(0, 0, w, h);
 
-            // Linha guia vertical do exercício
-            ballCtx.beginPath();
-            ballCtx.setLineDash([8, 8]);
-            ballCtx.moveTo(w / 2, 60);
-            ballCtx.lineTo(w / 2, h - 50);
-            ballCtx.strokeStyle = 'rgba(56, 189, 248, 0.3)';
-            ballCtx.lineWidth = 3;
-            ballCtx.stroke();
-            ballCtx.setLineDash([]);
+            // Trilho por onde a bolinha sobe
+            c.fillStyle = 'rgba(56,189,248,0.08)';
+            c.beginPath(); c.roundRect(x - 44, topo - 50, 88, base - topo + 100, 44); c.fill();
 
-            // Desenhar Plataforma de Repouso (Base)
-            ballCtx.fillStyle = '#334155';
-            ballCtx.beginPath();
-            ballCtx.roundRect(w / 2 - 80, h - 50, 160, 20, 10);
-            ballCtx.fill();
-            ballCtx.fillStyle = '#94a3b8';
-            ballCtx.font = 'bold 12px Segoe UI';
-            ballCtx.textAlign = 'center';
-            ballCtx.fillText('REPOUSO', w / 2, h - 36);
+            // Linha da força mínima (limiar prescrito)
+            const yLim = base - intensidadeEMG(limiarContracaoEMG) * (base - topo);
+            c.setLineDash([6, 6]); c.strokeStyle = 'rgba(250,204,21,0.75)'; c.lineWidth = 2;
+            c.beginPath(); c.moveTo(x - 64, yLim); c.lineTo(x + 64, yLim); c.stroke(); c.setLineDash([]);
+            c.fillStyle = '#facc15'; c.font = `600 12px ${fonte}`; c.textAlign = 'left';
+            c.fillText('Força mínima', x + 72, yLim + 4);
 
-            // Desenhar a Estrela Guia no Topo
+            // Base de repouso
+            c.fillStyle = '#1e3a52'; c.beginPath(); c.roundRect(x - 80, base + 48, 160, 12, 6); c.fill();
+            c.fillStyle = '#9fb3c8'; c.textAlign = 'center'; c.fillText('Mão relaxada', x, base + 80);
+
+            // Estrela-alvo
             if (estrelaAlvo.aparente) {
-                const escalaPulso = 1 + Math.sin(estrelaAlvo.pulso) * 0.1;
-                ballCtx.save();
-                ballCtx.translate(estrelaAlvo.x, estrelaAlvo.y);
-                ballCtx.scale(escalaPulso, escalaPulso);
-
-                ballCtx.font = '40px Segoe UI';
-                ballCtx.textAlign = 'center';
-                ballCtx.textBaseline = 'middle';
-                ballCtx.fillText('⭐', 0, 0);
-
-                ballCtx.restore();
+                const esc = 1 + Math.sin(estrelaAlvo.pulso) * 0.08;
+                c.save(); c.translate(estrelaAlvo.x, estrelaAlvo.y); c.scale(esc, esc);
+                c.shadowColor = '#facc15'; c.shadowBlur = 22; c.fillStyle = '#facc15';
+                desenharEstrela(c, 0, 0, 26); c.fill(); c.restore();
             }
 
-            // Desenhar a Bolinha Reabilitadora com Brilho
-            ballCtx.save();
-            ballCtx.shadowColor = '#00d2ff';
-            ballCtx.shadowBlur = emgSinalAtual > limiarContracaoEMG ? 25 : 10;
+            // Bolinha
+            c.save();
+            c.shadowColor = '#38bdf8'; c.shadowBlur = forte ? 30 : 10;
+            const g = c.createRadialGradient(x - 8, y - 8, 4, x, y, radius);
+            g.addColorStop(0, '#7dd3fc'); g.addColorStop(1, '#0369a1');
+            c.beginPath(); c.arc(x, y, radius, 0, Math.PI * 2);
+            c.fillStyle = g; c.fill(); c.lineWidth = 3; c.strokeStyle = '#fff'; c.stroke();
+            c.restore();
 
-            const gradBolinha = ballCtx.createRadialGradient(
-                ballState.x - 8, ballState.y - 8, 4,
-                ballState.x, ballState.y, ballState.radius
-            );
-            gradBolinha.addColorStop(0, '#38bdf8');
-            gradBolinha.addColorStop(1, '#0284c7');
-
-            ballCtx.beginPath();
-            ballCtx.arc(ballState.x, ballState.y, ballState.radius, 0, Math.PI * 2);
-            ballCtx.fillStyle = gradBolinha;
-            ballCtx.fill();
-            ballCtx.lineWidth = 3;
-            ballCtx.strokeStyle = '#ffffff';
-            ballCtx.stroke();
-            ballCtx.restore();
-
-            // Seta ou Indicador Visual
-            ballCtx.fillStyle = '#ffffff';
-            ballCtx.font = 'bold 14px Segoe UI';
-            ballCtx.textAlign = 'center';
-            ballCtx.fillText('Bolinha', ballState.x, ballState.y + 5);
+            if (!luvaConectada) {
+                c.fillStyle = 'rgba(11,27,43,0.6)'; c.fillRect(0, 0, w, h);
+                c.fillStyle = '#fff'; c.font = `600 18px ${fonte}`; c.textAlign = 'center';
+                c.fillText('Conecte a luva para começar', w / 2, h / 2);
+            }
         }
 
         // --- DEMAIS MÉTODOS DO DASHBOARD ---
@@ -1303,7 +1274,7 @@
 
                 document.getElementById('menu-item-dashboard').style.display = 'block';
                 document.getElementById('menu-item-camera').style.display = 'none';
-                document.getElementById('menu-item-emg').style.display = 'block';
+                document.getElementById('menu-item-emg').style.display = 'none';
                 document.getElementById('menu-item-jogos').style.display = 'none';
                 document.getElementById('menu-item-pacientes').style.display = 'block';
 
@@ -1312,7 +1283,6 @@
 
                 document.getElementById('painel-fisio-graficos').style.display = "block";
                 document.getElementById('painel-paciente-interativo').style.display = "none";
-                document.getElementById('painel-fisio-emg').style.display = "block";
 
                 atualizarDropdownsPacientes();
 
@@ -1337,7 +1307,6 @@
 
                 document.getElementById('painel-fisio-graficos').style.display = "none";
                 document.getElementById('painel-paciente-interativo').style.display = "block";
-                document.getElementById('painel-fisio-emg').style.display = "none";
 
                 carregarDadosPaciente(sessaoAtual.data);
                 switchTab('dashboard');
@@ -1434,6 +1403,8 @@
             document.getElementById("presc-sorriso").value = pacienteSelecionado.prescricaoExercicios.sorriso || 10;
             document.getElementById("presc-biquinho").value = pacienteSelecionado.prescricaoExercicios.biquinho || 10;
             document.getElementById("select-tempo-fisioterapeuta").value = pacienteSelecionado.prescricaoExercicios.tempoSustentacao || 10000;
+            limiarContracaoEMG = pacienteSelecionado.prescricaoExercicios.limiarEMG || 150;
+            document.getElementById("presc-emg-limiar").value = limiarContracaoEMG;
 
             const metaTotalDia = (pacienteSelecionado.prescricaoExercicios.sobrancelhas || 10) +
                                  (pacienteSelecionado.prescricaoExercicios.sorriso || 10) +
@@ -1597,6 +1568,7 @@
             const numSorriso = parseInt(document.getElementById('presc-sorriso').value, 10) || 10;
             const numBiquinho = parseInt(document.getElementById('presc-biquinho').value, 10) || 10;
             const tempoSust = parseInt(document.getElementById('select-tempo-fisioterapeuta').value, 10) || 10000;
+            const limiarEMG = Math.min(4095, Math.max(10, parseInt(document.getElementById('presc-emg-limiar').value, 10) || 150));
 
             const pacientes = lerPacientes();
             const index = pacientes.findIndex(p => p.id === targetId);
@@ -1605,7 +1577,8 @@
                     sobrancelhas: numSobrancelhas,
                     sorriso: numSorriso,
                     biquinho: numBiquinho,
-                    tempoSustentacao: tempoSust
+                    tempoSustentacao: tempoSust,
+                    limiarEMG
                 };
 
                 salvarPacientes(pacientes);
@@ -1779,19 +1752,114 @@
         }
 
         // --- SISTEMA DE VOZ ---
-        let ultimaFala = "";
-        function falar(texto) {
-            if ('speechSynthesis' in window) {
-                if (ultimaFala === texto && window.speechSynthesis.speaking) return;
-                window.speechSynthesis.cancel();
-                ultimaFala = texto;
-                const utterance = new SpeechSynthesisUtterance(texto);
-                utterance.lang = 'pt-BR';
-                utterance.rate = 1.0;
-                utterance.pitch = 1.0;
-                window.speechSynthesis.speak(utterance);
-            }
+        // Fila de falas: nada é cortado no meio; falas velhas expiram e a mais recente de cada canal substitui a pendente.
+        const suportaVoz = 'speechSynthesis' in window;
+        const Voz = {
+            ativa: localStorage.getItem('nm_voz') !== 'off',
+            velocidade: parseFloat(localStorage.getItem('nm_voz_vel')) || 0.95,
+            nome: localStorage.getItem('nm_voz_nome') || '',
+            voz: null, fila: [], atual: null, timer: null, ultimo: {}, ultimaFrase: { texto: '', t: 0 }, variacao: {}
+        };
+        let avisouFim = false;
+
+        function pontuarVoz(v) {
+            const n = v.name.toLowerCase();
+            let p = v.lang.toLowerCase().replace('_', '-') === 'pt-br' ? 10 : 0;
+            if (/natural|neural|online/.test(n)) p += 8;
+            if (/google/.test(n)) p += 5;
+            if (/francisca|antonio|thalita|luciana|fernanda|camila|vitoria|felipe/.test(n)) p += 3;
+            return p;
         }
+        function carregarVozes() {
+            if (!suportaVoz) return;
+            const lista = speechSynthesis.getVoices().filter(v => v.lang.toLowerCase().startsWith('pt')).sort((a, b) => pontuarVoz(b) - pontuarVoz(a));
+            Voz.voz = lista.find(v => v.name === Voz.nome) || lista[0] || null;
+            const sel = document.getElementById('voz-select');
+            if (!sel) return;
+            sel.innerHTML = '';
+            if (!lista.length) { sel.innerHTML = '<option>Voz padrão do navegador</option>'; return; }
+            lista.forEach(v => { const o = document.createElement('option'); o.value = v.name; o.textContent = `${v.name} (${v.lang})`; sel.appendChild(o); });
+            sel.value = Voz.voz.name;
+        }
+        function atualizarPainelVoz() {
+            const panel = document.getElementById('voice-panel');
+            if (!suportaVoz) { if (panel) panel.style.display = 'none'; return; }
+            document.getElementById('voz-toggle').setAttribute('aria-pressed', String(Voz.ativa));
+            document.getElementById('voz-toggle-txt').textContent = Voz.ativa ? 'Voz ligada' : 'Voz desligada';
+            document.getElementById('voz-velocidade').value = String(Voz.velocidade);
+        }
+        function limparParaFala(t) {
+            return String(t).replace(/[\u{1F000}-\u{1FAFF}\u{2190}-\u{2BFF}\uFE0F\u200D]/gu, '').replace(/\s+/g, ' ').trim();
+        }
+        function primeiroNome() {
+            return ((pacienteSelecionado && pacienteSelecionado.nome) || (sessaoAtual && sessaoAtual.data && sessaoAtual.data.nome) || '').split(' ')[0];
+        }
+        function variar(chave, opcoes) {
+            let i; do { i = Math.floor(Math.random() * opcoes.length); } while (opcoes.length > 1 && i === Voz.variacao[chave]);
+            Voz.variacao[chave] = i; return opcoes[i];
+        }
+        // opções: canal, urgente (descarta pendentes, sem cortar a fala atual), validade (ms), intervalo (ms mínimo por canal), repetirApos
+        function falar(texto, o = {}) {
+            if (!suportaVoz || !Voz.ativa) return;
+            const t = limparParaFala(texto);
+            if (!t) return;
+            const agora = Date.now(), canal = o.canal || 'geral';
+            if (Voz.ultimaFrase.texto === t && agora - Voz.ultimaFrase.t < (o.repetirApos ?? 8000)) return;
+            if (o.intervalo && agora - (Voz.ultimo[canal] || 0) < o.intervalo) return;
+            Voz.ultimaFrase = { texto: t, t: agora };
+            Voz.ultimo[canal] = agora;
+            Voz.fila = o.urgente ? [] : Voz.fila.filter(i => i.canal !== canal);
+            Voz.fila.push({ texto: t, canal, criado: agora, validade: o.validade || 8000 });
+            if (Voz.fila.length > 3) Voz.fila.shift();
+            proximaFala();
+        }
+        function proximaFala() {
+            if (Voz.atual) return;
+            let item;
+            while ((item = Voz.fila.shift())) { if (Date.now() - item.criado <= item.validade) break; }
+            if (!item) return;
+            const u = new SpeechSynthesisUtterance(item.texto);
+            u.lang = Voz.voz ? Voz.voz.lang : 'pt-BR';
+            if (Voz.voz) u.voice = Voz.voz;
+            u.rate = Voz.velocidade; u.pitch = 1.05;
+            const fim = () => { if (Voz.atual !== u) return; clearTimeout(Voz.timer); Voz.atual = null; setTimeout(proximaFala, 350); };
+            u.onend = fim; u.onerror = fim;
+            Voz.atual = u;
+            Voz.timer = setTimeout(fim, 3000 + item.texto.length * 110 / Voz.velocidade);
+            speechSynthesis.speak(u);
+        }
+        function cancelarVoz() {
+            Voz.fila = []; clearTimeout(Voz.timer); Voz.atual = null;
+            if (suportaVoz) speechSynthesis.cancel();
+        }
+        function alternarVoz() {
+            Voz.ativa = !Voz.ativa;
+            localStorage.setItem('nm_voz', Voz.ativa ? 'on' : 'off');
+            if (!Voz.ativa) cancelarVoz();
+            atualizarPainelVoz();
+            if (Voz.ativa) falar('Voz ativada.', { urgente: true, repetirApos: 0 });
+        }
+        function definirVelocidadeVoz(v) { Voz.velocidade = parseFloat(v) || 0.95; localStorage.setItem('nm_voz_vel', String(Voz.velocidade)); testarVoz(); }
+        function escolherVozManual(nome) {
+            const v = speechSynthesis.getVoices().find(x => x.name === nome);
+            if (v) { Voz.voz = v; Voz.nome = nome; localStorage.setItem('nm_voz_nome', nome); testarVoz(); }
+        }
+        function testarVoz() {
+            const n = primeiroNome();
+            const ativa = Voz.ativa; Voz.ativa = true;
+            cancelarVoz();
+            falar(`Olá${n ? ', ' + n : ''}! Eu sou o seu instrutor. Vamos começar?`, { urgente: true, repetirApos: 0 });
+            Voz.ativa = ativa;
+        }
+        function fraseRepeticao(n, meta) {
+            const nome = primeiroNome(), v = nome ? ', ' + nome : '';
+            if (meta > 2 && n === meta - 1) return `Falta só uma repetição${v}! Relaxe o rosto um instante.`;
+            if (meta > 3 && n === Math.ceil(meta / 2)) return `Metade do caminho${v}! ${n} de ${meta} feitas. Relaxe o rosto.`;
+            return variar('rep', [`Repetição ${n} concluída. Pode relaxar o rosto.`, `Isso! ${n} de ${meta}. Respire e relaxe.`, `Muito bem${v}! São ${n} de ${meta}. Descanse um pouco.`]);
+        }
+        if (suportaVoz) { carregarVozes(); speechSynthesis.onvoiceschanged = carregarVozes; }
+        atualizarPainelVoz();
+        document.addEventListener('visibilitychange', () => { if (document.hidden) cancelarVoz(); });
 
         // --- EXERCÍCIOS FACIAIS ---
         let videoElement = document.getElementById('video-feed');
@@ -1896,7 +1964,7 @@
                 atualizarInstrutor(`Série diária concluída! A fisioterapeuta prescreveu ${metaRepeticoesAtual} repetições para hoje.`, "#16a34a", "✅");
                 document.getElementById('status-hold').innerText = "Meta Atingida";
                 document.getElementById('status-hold').style.color = "#16a34a";
-                falar(`Você já concluiu as ${metaRepeticoesAtual} repetições prescritas para hoje.`);
+                falar(`Você já concluiu as ${metaRepeticoesAtual} repetições prescritas para hoje.`, { urgente: true });
                 return;
             }
 
@@ -1905,13 +1973,13 @@
 
             if (exercicioAtual === 'sobrancelhas') {
                 atualizarInstrutor("Mantenha o rosto relaxado olhando para a câmera.", "#0f172a", "👨‍‍⚕️");
-                falar("Calibrando sobrancelhas. Mantenha o rosto relaxado.");
+                falar("Calibrando sobrancelhas. Mantenha o rosto relaxado.", { canal: 'calibracao', validade: 15000 });
             } else if (exercicioAtual === 'sorriso') {
                 atualizarInstrutor("Permaneça neutro para calibrar a abertura do sorriso.", "#0f172a", "👨‍⚕️");
-                falar("Permaneça neutro para calibrar o sorriso.");
+                falar("Permaneça neutro para calibrar o sorriso.", { canal: 'calibracao', validade: 15000 });
             } else if (exercicioAtual === 'biquinho') {
                 atualizarInstrutor("Mantenha os lábios relaxados para iniciar.", "#0f172a", "👨‍⚕️");
-                falar("Mantenha os lábios relaxados.");
+                falar("Mantenha os lábios relaxados.", { canal: 'calibracao', validade: 15000 });
             }
         }
 
@@ -1921,7 +1989,7 @@
 
             if (repsJaFeitas >= metaRepeticoesAtual) {
                 notificar(`Você já concluiu a meta diária prescrita pela fisioterapeuta (${metaRepeticoesAtual} repetições).`);
-                falar(`Você já atingiu a meta diária de ${metaRepeticoesAtual} repetições prescrita pela fisioterapeuta.`);
+                falar(`Você já atingiu a meta diária de ${metaRepeticoesAtual} repetições prescrita pela fisioterapeuta.`, { urgente: true });
                 return;
             }
 
@@ -1956,7 +2024,7 @@
             if (cameraMediaPipe) cameraMediaPipe.stop();
             if (canvasCtx) canvasCtx.clearRect(0, 0, canvasIa.width, canvasIa.height);
             atualizarInstrutor("Treino pausado.", "#0f172a", "👨‍‍⚕️");
-            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            cancelarVoz();
         }
 
         function calcularDistancia2D(p1, p2) {
@@ -2022,7 +2090,7 @@
                     baselineProporcao = soma / amostrasBaseline.length;
                     document.getElementById('status-hold').innerText = "Pronto! Inicie o movimento.";
                     if (estadoInstrucaoVoz !== "pronto") {
-                        falar("Calibração concluída. Pode iniciar o movimento.");
+                        falar("Calibração concluída. Pode iniciar o movimento.", { canal: 'estado', validade: 10000 });
                         estadoInstrucaoVoz = "pronto";
                     }
                 }
@@ -2046,16 +2114,18 @@
                 if (!emExecucao) {
                     emExecucao = true;
                     tempoControle = Date.now();
+                    avisouFim = false;
                 }
 
                 const decorridoMs = Date.now() - tempoControle;
                 const restanteSeg = Math.max(0, Math.ceil((tempoSustentacaoMs - decorridoMs) / 1000));
 
                 statusHold.innerText = `Sustente... ${restanteSeg}s`;
+                if (restanteSeg === 3 && tempoSustentacaoMs >= 10000 && !avisouFim) { avisouFim = true; falar("Falta pouco, continue firme.", { canal: 'estado', validade: 2500 }); }
                 statusHold.style.color = "#0284c7";
 
                 if (estadoInstrucaoVoz !== "sustente") {
-                    falar(`Muito bem! Mantenha a posição por ${segundosSustentacao} segundos.`);
+                    falar(variar('sust', [`Muito bem! Mantenha a posição por ${segundosSustentacao} segundos.`, `Isso! Segure por ${segundosSustentacao} segundos.`, `Perfeito, continue firme por ${segundosSustentacao} segundos.`]), { canal: 'estado', validade: 4000 });
                     estadoInstrucaoVoz = "sustente";
                 }
 
@@ -2072,11 +2142,11 @@
                         atualizarInstrutor("🎉 Parabéns! Você concluiu a meta diária deste exercício!", "#16a34a", "🏆");
                         statusHold.innerText = "Série Concluída!";
                         statusHold.style.color = "#16a34a";
-                        falar(`Parabéns! Você completou a série de ${metaRepeticoesAtual} repetições do exercício!`);
+                        falar(`Parabéns${primeiroNome() ? ', ' + primeiroNome() : ''}! Você completou as ${metaRepeticoesAtual} repetições deste exercício.`, { urgente: true });
                     } else {
                         statusHold.innerText = "Excelente! Descanse um pouco.";
                         statusHold.style.color = "#16a34a";
-                        falar(`Repetição ${repeticoes} concluída. Pode relaxar o rosto.`);
+                        falar(fraseRepeticao(repeticoes, metaRepeticoesAtual), { urgente: true });
                         setTimeout(() => {
                             bloqueioPosConclusao = false;
                             estadoInstrucaoVoz = "";
@@ -2091,7 +2161,7 @@
                     statusHold.innerText = "Movimento interrompido. Tente novamente.";
                     statusHold.style.color = "#ef4444";
                     if (estadoInstrucaoVoz !== "interrompido") {
-                        falar("Você relaxou antes do tempo. Tente novamente.");
+                        falar("Você relaxou antes do tempo. Tente de novo, sem pressa.", { canal: 'estado', intervalo: 6000, validade: 4000 });
                         estadoInstrucaoVoz = "interrompido";
                     }
                 }
