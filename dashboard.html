@@ -372,6 +372,36 @@
                 </div>
 
                 <div id="painel-fisio-graficos">
+                    <!-- RELATÓRIO DE DESEMPENHO EMG (EXCLUSIVO FISIOTERAPEUTA) -->
+<div class="card" style="margin-top: 1.5rem; border-left: 6px solid #00d2ff;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+        <div>
+            <h3 style="color: #0f172a; margin-bottom: 0.25rem;">📊 Relatório do Exercício EMG (Sensor)</h3>
+            <p style="color: #64748b; font-size: 0.9rem;">Métricas detalhadas do controle muscular e alcance do paciente nas sessões do sensor.</p>
+        </div>
+        <span class="badge-role" style="background: #00d2ff; color: #0f172a;">Acesso Restrito ao Fisioterapeuta</span>
+    </div>
+
+    <div class="grid-kpi" style="margin-bottom: 1rem;">
+        <div class="kpi-card" style="border-left-color: #00d2ff;">
+            <div class="kpi-title">Estrelas Coletadas Hoje</div>
+            <div class="kpi-value" id="emg-kpi-estrelas">0</div>
+        </div>
+        <div class="kpi-card" style="border-left-color: #8b5cf6;">
+            <div class="kpi-title">Pico Máximo de Contração</div>
+            <div class="kpi-value" id="emg-kpi-pico">0 ADC</div>
+        </div>
+        <div class="kpi-card" style="border-left-color: #facc15;">
+            <div class="kpi-title">Limiar Prescrito Atual</div>
+            <div class="kpi-value" id="emg-kpi-limiar">150 ADC</div>
+        </div>
+    </div>
+
+    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.25rem;">
+        <h4 style="color: #0369a1; font-size: 1rem; margin-bottom: 0.5rem;">💡 Avaliação Clínica do Exercício</h4>
+        <p id="emg-analise-clinica" style="color: #334155; font-size: 0.95rem;">Nenhum dado registrado para o paciente selecionado nesta sessão.</p>
+    </div>
+</div>
                     <div class="grid-kpi">
                         <div class="kpi-card">
                             <div class="kpi-title">Repetições Faciais Hoje</div>
@@ -1142,17 +1172,34 @@
 
             const dist = Math.abs(ballState.y - estrelaAlvo.y);
             if (dist < 35 && estrelaAlvo.aparente) {
-                ballState.estrelasColetadas++;
-                estrelaAlvo.aparente = false;
-                document.getElementById('emg-stars-count').textContent = ballState.estrelasColetadas;
-                const nome = primeiroNome();
-                atualizarInstrutorEMG(`Excelente${nome ? ', ' + nome : ''}! Você chegou à estrela.`, '⭐', '#22c55e', { canal: 'emg', urgente: true });
-                registrarProgressoPaciente(0, ballState.estrelasColetadas * 10, null, 'flappy');
-                setTimeout(() => {
-                    estrelaAlvo.aparente = true;
-                    atualizarInstrutorEMG('Agora relaxe a mão devagar para a bolinha descer.', '🔵', '#38bdf8', { canal: 'emg', validade: 4000 });
-                }, 3000);
-            }
+    ballState.estrelasColetadas++;
+    estrelaAlvo.aparente = false;
+    document.getElementById('emg-stars-count').textContent = ballState.estrelasColetadas;
+    const nome = primeiroNome();
+    atualizarInstrutorEMG(`Excelente${nome ? ', ' + nome : ''}! Você chegou à estrela.`, '⭐', '#22c55e', { canal: 'emg', urgente: true });
+    
+    // REGISTRO EXCLUSIVO DOS DADOS DO EMG NO PERFIL DO PACIENTE
+    if (pacienteSelecionado) {
+        if (!pacienteSelecionado.dadosEMG) {
+            pacienteSelecionado.dadosEMG = { estrelasHoje: 0, picoMaximo: 0 };
+        }
+        pacienteSelecionado.dadosEMG.estrelasHoje = ballState.estrelasColetadas;
+        pacienteSelecionado.dadosEMG.picoMaximo = Math.max(pacienteSelecionado.dadosEMG.picoMaximo || 0, maxEmgPico);
+        
+        // Salva as alterações no localStorage
+        const pacientes = lerPacientes();
+        const pIdx = pacientes.findIndex(p => p.id === pacienteSelecionado.id);
+        if (pIdx !== -1) {
+            pacientes[pIdx] = pacienteSelecionado;
+            salvarPacientes(pacientes);
+        }
+    }
+
+    setTimeout(() => {
+        estrelaAlvo.aparente = true;
+        atualizarInstrutorEMG('Agora relaxe a mão devagar para a bolinha descer.', '🔵', '#38bdf8', { canal: 'emg', validade: 4000 });
+    }, 3000);
+}
 
             if (estrelaAlvo.aparente) {
                 if (emg < limiarContracaoEMG) {
@@ -1443,7 +1490,33 @@
                 pacientes[pIdx] = pacienteSelecionado;
                 salvarPacientes(pacientes);
             }
+// --- RENDERIZAÇÃO DO RELATÓRIO EMG (EXCLUSIVO FISIO) ---
+if (!pacienteSelecionado.dadosEMG) {
+    pacienteSelecionado.dadosEMG = { estrelasHoje: 0, picoMaximo: 0 };
+}
 
+const emgEstrelas = pacienteSelecionado.dadosEMG.estrelasHoje || 0;
+const emgPico = pacienteSelecionado.dadosEMG.picoMaximo || 0;
+const emgLimiar = pacienteSelecionado.prescricaoExercicios.limiarEMG || 150;
+
+const elemEstrelas = document.getElementById("emg-kpi-estrelas");
+const elemPico = document.getElementById("emg-kpi-pico");
+const elemLimiar = document.getElementById("emg-kpi-limiar");
+const elemAnalise = document.getElementById("emg-analise-clinica");
+
+if (elemEstrelas) elemEstrelas.innerText = emgEstrelas;
+if (elemPico) elemPico.innerText = emgPico + " ADC";
+if (elemLimiar) elemLimiar.innerText = emgLimiar + " ADC";
+
+if (elemAnalise) {
+    if (emgEstrelas === 0 && emgPico === 0) {
+        elemAnalise.innerText = "O paciente ainda não realizou o exercício com o sensor EMG hoje.";
+    } else if (emgPico < emgLimiar) {
+        elemAnalise.innerHTML = `<span style="color: #ef4444; font-weight: bold;">Atenção:</span> O pico máximo de força (${emgPico} ADC) ficou abaixo do limiar prescrito (${emgLimiar} ADC). Considere ajustar o limiar na conduta médica.`;
+    } else {
+        elemAnalise.innerHTML = `<span style="color: #22c55e; font-weight: bold;">Bom desempenho:</span> O paciente atingiu a meta de força necessária (${emgPico} ADC) e coletou ${emgEstrelas} estrela(s) durante o treino.`;
+    }
+}
             renderizarTabelaHistoricoDiario();
             renderizarGraficos();
             renderizarChat();
