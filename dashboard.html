@@ -88,8 +88,8 @@
         .game-card:hover { transform: translateY(-4px); box-shadow: 0 15px 30px -5px rgba(0,0,0,0.1); }
         .game-thumb { height: 160px; color: white; display: flex; align-items: center; justify-content: center; font-size: 4rem; position: relative; }
         
-        .canvas-container { position: relative; width: 100%; max-width: 440px; height: 500px; margin: 0 auto; border-radius: 20px; overflow: hidden; border: 4px solid #0f172a; touch-action: manipulation; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
-        .canvas-container canvas { display: block; width: 100%; height: 100%; cursor: pointer; }
+        .canvas-container { position: relative; width: 100%; max-width: 440px; height: 500px; margin: 0 auto; border-radius: 20px; overflow: hidden; border: 4px solid #0f172a; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2); }
+        .canvas-container canvas { display: block; width: 100%; height: 100%; }
         
         .game-menu { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.92); backdrop-filter: blur(4px); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; z-index: 10; padding: 2rem; text-align: center; font-family: 'Fredoka', cursive, sans-serif; }
         .game-menu h3 { font-size: 2rem; color: #38bdf8; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
@@ -657,7 +657,7 @@
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
                         <div>
                             <h3 style="color: #0f172a; margin-bottom: 0.25rem;">🧤 Conexão da Luva Sensoriada</h3>
-                            <p style="color: #64748b; font-size: 0.9rem;">Conecte sua luva Bluetooth ou dê um clique/toque na tela para acionar os jogos.</p>
+                            <p style="color: #64748b; font-size: 0.9rem;">Conecte sua luva Bluetooth para iniciar e controlar os jogos terapêuticos.</p>
                         </div>
                         <div style="display: flex; align-items: center; gap: 1rem;">
                             <button class="btn btn-success" onclick="conectarSensorEMGBLE()">🔌 Conectar Luva</button>
@@ -671,7 +671,7 @@
                         <div>
                             <div class="game-thumb" style="background: linear-gradient(135deg, #38bdf8, #0284c7);">🐦</div>
                             <h3 style="margin-top:1rem; font-family:'Fredoka', sans-serif; color: #0f172a;">Flappy Pinça Pro</h3>
-                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Voo suave! Aperte a pinça/clique para voar e passar pelos portais com segurança.</p>
+                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Voo suave! Aperte a pinça para voar e passar pelos portais com segurança.</p>
                         </div>
                         <div style="padding: 0 1.25rem 1.25rem 1.25rem;">
                             <button class="btn" style="width: 100%; border-radius: 50px; font-weight: bold; background: #0284c7;" onclick="abrirJogo('flappy')">🎮 Jogar Flappy</button>
@@ -693,7 +693,7 @@
                         <div>
                             <div class="game-thumb" style="background: linear-gradient(135deg, #10b981, #047857);">🍓</div>
                             <h3 style="margin-top:1rem; font-family:'Fredoka', sans-serif; color: #0f172a;">Pique-Esconde Frutas</h3>
-                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Árvore bonita e interativa! A fruta aparece na árvore e só some quando o idoso aperta o ímã. Fique atento ao tempo de 10 segundos!</p>
+                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Árvore bonita e interativa! A fruta aparece na árvore e só some quando o ímã é aproximado. Fique atento ao tempo de 10 segundos!</p>
                         </div>
                         <div style="padding: 0 1.25rem 1.25rem 1.25rem;">
                             <button class="btn" style="width: 100%; border-radius: 50px; font-weight: bold; background: #047857;" onclick="abrirJogo('frutas')">🍓 Jogar Frutas</button>
@@ -704,7 +704,7 @@
                         <div>
                             <div class="game-thumb" style="background: linear-gradient(135deg, #ec4899, #be185d);">🎈</div>
                             <h3 style="margin-top:1rem; font-family:'Fredoka', sans-serif; color: #0f172a;">Estoura-Balões</h3>
-                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Balões coloridos sobem um a um devagar. Aperte quando estiver perto da linha limite! Limite de 5 balões perdidos.</p>
+                            <p style="color:#64748b; margin:0.5rem 0 1rem 0; padding: 0 1rem; font-size: 0.9rem;">Balões coloridos sobem um a um devagar. Faça a pinça quando estiverem perto da linha limite! Limite de 5 balões perdidos.</p>
                         </div>
                         <div style="padding: 0 1.25rem 1.25rem 1.25rem;">
                             <button class="btn" style="width: 100%; border-radius: 50px; font-weight: bold; background: #be185d;" onclick="abrirJogo('baloes')">🎈 Jogar Balões</button>
@@ -715,13 +715,13 @@
                 <div id="area-jogo" class="card" style="display: none; text-align: center;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <button class="btn btn-danger btn-pill" onclick="fecharJogo()">◄ Sair do Jogo</button>
-                        <span id="game-status-indicator" style="font-weight: bold; font-family: 'Fredoka', sans-serif; color: #0284c7;">Modo: Toque na Tela / Luva BLE</span>
+                        <span id="game-status-indicator" style="font-weight: bold; font-family: 'Fredoka', sans-serif; color: #0284c7;">Modo: Luva BLE</span>
                     </div>
 
                     <div class="canvas-container">
                         <div id="menu-flappy" class="game-menu" style="display: none;">
                             <h3 id="titulo-flappy">Jogo Terapêutico</h3>
-                            <p id="subtitulo-flappy">Clique ou use a luva para iniciar</p>
+                            <p id="subtitulo-flappy">Use a luva para iniciar</p>
                             <div id="explicacao-idoso" style="font-size:0.95rem; color:#f1f5f9; margin-bottom:1rem; background:rgba(255,255,255,0.1); padding:0.8rem; border-radius:10px; text-align:left; max-width:360px;"></div>
                             <button id="btn-iniciar-jogo" class="btn-menu" onclick="iniciarContagemJogo()">Iniciar Jogo</button>
                         </div>
@@ -1172,12 +1172,22 @@
                 }
                 if (btnConnect) btnConnect.style.display = 'none';
                 luvaConectada = true;
+                atualizarStatusJogo();
                 notificar('Luva conectada.', 'ok');
                 falar('Luva conectada. Aperte a mão para começar.', { urgente: true });
+                if (document.getElementById('emg')?.classList.contains('active')) {
+                    iniciarExercicioBolinhaEMG();
+                }
 
             } catch (error) {
                 console.error("Erro na conexão BLE:", error);
-                if (error.name === 'NotFoundError') definirStatusEMG('Desconectado', 'err');
+                if (error.name === 'NotFoundError') {
+                    definirStatusEMG('Desconectado', 'err');
+                    if (bleStatusText) {
+                        bleStatusText.innerText = "Status: Desconectado";
+                        bleStatusText.style.color = "#ef4444";
+                    }
+                }
                 else {
                     definirStatusEMG('Erro ao conectar', 'err');
                     notificar(error.message === 'sem-bluetooth' ? 'Este navegador não permite Bluetooth. Use o Chrome ou o Edge.' : 'Não foi possível conectar. Confira se a luva está ligada e por perto.', 'err');
@@ -1186,6 +1196,7 @@
         }
 
         function handleBLEDataNotification(event) {
+            if (!luvaConectada) return;
             const decoder = new TextDecoder('utf-8');
             const payload = decoder.decode(event.target.value);
             
@@ -1247,6 +1258,8 @@
             const statusText = document.getElementById('statusText');
             const bleStatusText = document.getElementById('ble-status-text');
             const btnConnect = document.getElementById('btnConnect');
+            const estavaConectada = luvaConectada;
+            const emgEstavaAtivo = document.getElementById('emg')?.classList.contains('active');
 
             if (statusText) definirStatusEMG('Desconectado', 'err');
             if (bleStatusText) {
@@ -1256,6 +1269,30 @@
             if (btnConnect) btnConnect.style.display = '';
             luvaConectada = false;
             emgSinalAtual = 0;
+            atualizarStatusJogo();
+
+            if (ballAnimationId) {
+                cancelAnimationFrame(ballAnimationId);
+                ballAnimationId = null;
+            }
+            if (ballCanvas && ballCtx) {
+                desenharCenarioBolinha();
+                if (emgEstavaAtivo) {
+                    atualizarInstrutorEMG('Luva desconectada. Conecte-a novamente para continuar o exercício.', '🔌', '#ef4444', { canal: 'emg', urgente: true });
+                }
+            }
+
+            const jogoEstavaAtivo = Boolean(jogoAtivo);
+            if (jogoEstavaAtivo) fecharJogo();
+            if (estavaConectada) {
+                const mensagem = jogoEstavaAtivo || emgEstavaAtivo
+                    ? 'Luva desconectada. O exercício foi interrompido. Conecte a luva para continuar.'
+                    : 'Luva desconectada. Conecte-a novamente para continuar.';
+                notificar(mensagem, 'err');
+                if (jogoEstavaAtivo || emgEstavaAtivo) {
+                    falar(mensagem, { urgente: true });
+                }
+            }
         }
 
 
@@ -1290,6 +1327,12 @@
             ballState.y = ballState.base;
             estrelaAlvo.aparente = true;
             if (ballAnimationId) cancelAnimationFrame(ballAnimationId);
+            ballAnimationId = null;
+            if (!luvaConectada) {
+                atualizarInstrutorEMG('Conecte a luva para começar o exercício.', '🔌', '#eab308', { canal: 'emg', intervalo: 20000 });
+                desenharCenarioBolinha();
+                return;
+            }
             loopBolinhaEMG();
         }
 
@@ -1320,6 +1363,10 @@
         }
 
         function loopBolinhaEMG() {
+            if (!luvaConectada) {
+                ballAnimationId = null;
+                return;
+            }
             atualizarLogicaBolinha();
             desenharCenarioBolinha();
             ballAnimationId = requestAnimationFrame(loopBolinhaEMG);
@@ -2516,6 +2563,10 @@ if (elemAnalise) {
         const ALIMENTOS_RUINS = ['💣', '👞', '🧱', '🦟'];
 
         function abrirJogo(tipo) {
+            if (!luvaConectada) {
+                notificar('Conecte a luva antes de iniciar um jogo terapêutico.', 'err');
+                return;
+            }
             jogoAtivo = tipo;
             document.getElementById('lista-jogos').style.display = 'none';
             document.getElementById('area-jogo').style.display = 'block';
@@ -2531,8 +2582,8 @@ if (elemAnalise) {
 
             if (tipo === 'flappy') {
                 titulo.innerText = '🐦 Flappy Pinça Pro';
-                subtitulo.innerText = 'Aperte a pinça ou toque na tela para voar!';
-                explicacao.innerHTML = '<strong>Como Jogar:</strong><br>• Aperte a pinça (ou toque na tela) para o passarinho subir.<br>• Solte para ele descer.<br>• Passe no meio dos canos com calma!';
+                subtitulo.innerText = 'Aperte a pinça para voar!';
+                explicacao.innerHTML = '<strong>Como Jogar:</strong><br>• Aperte a pinça para o passarinho subir.<br>• Solte para ele descer.<br>• Passe no meio dos canos com calma!';
             } else if (tipo === 'food') {
                 titulo.innerText = '🍔 Food Drop (Pou)';
                 subtitulo.innerText = 'Aproxime o ímã para o Pou abrir a boca e comer!';
@@ -2549,17 +2600,26 @@ if (elemAnalise) {
 
             resetarJogo();
             desenharCenario();
+            atualizarStatusJogo();
         }
 
         function fecharJogo() {
             if (gameLoopId) cancelAnimationFrame(gameLoopId);
             if (timerContagem) clearInterval(timerContagem);
+            gameLoopId = null;
+            timerContagem = null;
             jogoAtivo = null;
+            estadoJogo = 'MENU';
             document.getElementById('area-jogo').style.display = 'none';
             document.getElementById('lista-jogos').style.display = 'grid';
         }
 
         function iniciarContagemJogo() {
+            if (!luvaConectada) {
+                notificar('Conecte a luva antes de iniciar um jogo terapêutico.', 'err');
+                fecharJogo();
+                return;
+            }
             estadoJogo = 'CONTAGEM';
             tempoContagem = 3;
             
@@ -2582,6 +2642,12 @@ if (elemAnalise) {
                     subtitulo.innerText = `O jogo vai começar em: ${tempoContagem}`;
                 } else {
                     clearInterval(timerContagem);
+                    timerContagem = null;
+                    if (!luvaConectada) {
+                        fecharJogo();
+                        notificar('A luva foi desconectada. O jogo não pode ser iniciado.', 'err');
+                        return;
+                    }
                     menu.style.display = 'none';
                     resetarJogo();
                     estadoJogo = 'JOGANDO';
@@ -2592,7 +2658,7 @@ if (elemAnalise) {
         }
 
         function acionarAcaoJogo() {
-            if (estadoJogo !== 'JOGANDO') return;
+            if (!luvaConectada || estadoJogo !== 'JOGANDO') return;
 
             if (jogoAtivo === 'flappy') {
                 if (!flappyState.iniciado) {
@@ -2625,13 +2691,11 @@ if (elemAnalise) {
             }
         }
 
-        if (gameCanvas) {
-            gameCanvas.addEventListener('pointerdown', (e) => {
-                e.preventDefault();
-                if (estadoJogo === 'JOGANDO') {
-                    acionarAcaoJogo();
-                }
-            });
+        function atualizarStatusJogo() {
+            const indicador = document.getElementById('game-status-indicator');
+            if (!indicador) return;
+            indicador.textContent = luvaConectada ? 'Modo: Luva BLE conectada' : 'Luva desconectada';
+            indicador.style.color = luvaConectada ? '#0284c7' : '#ef4444';
         }
 
         function resetarJogo() {
@@ -2677,6 +2741,10 @@ if (elemAnalise) {
 
         function loopJogo() {
             if (estadoJogo !== 'JOGANDO') return;
+            if (!luvaConectada) {
+                fecharJogo();
+                return;
+            }
 
             atualizarJogo();
             desenharCenario();
