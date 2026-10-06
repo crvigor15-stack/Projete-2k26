@@ -1584,8 +1584,7 @@
                 ballState.estrelasColetadas++;
                 estrelaAlvo.aparente = false;
                 document.getElementById('emg-stars-count').textContent = ballState.estrelasColetadas;
-                const nome = primeiroNome();
-                atualizarInstrutorEMG(`Excelente${nome ? ', ' + nome : ''}! Você chegou à estrela.`, '⭐', '#22c55e', { canal: 'emg', urgente: true });
+                atualizarInstrutorEMG('Excelente! Você chegou à estrela.', '⭐', '#22c55e', { canal: 'emg', urgente: true });
 
                 if (pacienteSelecionado) {
                     if (!pacienteSelecionado.dadosEMG) {
@@ -2406,7 +2405,7 @@ if (elemAnalise) {
             return String(t).replace(/[\u{1F000}-\u{1FAFF}\u{2190}-\u{2BFF}\uFE0F\u200D]/gu, '').replace(/\s+/g, ' ').trim();
         }
         function primeiroNome() {
-            return ((pacienteSelecionado && pacienteSelecionado.nome) || (sessaoAtual && sessaoAtual.data && sessaoAtual.data.nome) || '').split(' ')[0];
+            return '';
         }
         function variar(chave, opcoes) {
             let i; do { i = Math.floor(Math.random() * opcoes.length); } while (opcoes.length > 1 && i === Voz.variacao[chave]);
@@ -2454,10 +2453,9 @@ if (elemAnalise) {
             if (Voz.ativa) falar('Voz ativada.', { urgente: true, repetirApos: 0 });
         }
         function fraseRepeticao(n, meta) {
-            const nome = primeiroNome(), v = nome ? ', ' + nome : '';
-            if (meta > 2 && n === meta - 1) return `Falta só uma repetição${v}! Relaxe o rosto um instante.`;
-            if (meta > 3 && n === Math.ceil(meta / 2)) return `Metade do caminho${v}! ${n} de ${meta} feitas. Relaxe o rosto.`;
-            return variar('rep', [`Repetição ${n} concluída. Pode relaxar o rosto.`, `Isso! ${n} de ${meta}. Respire e relaxe.`, `Muito bem${v}! São ${n} de ${meta}. Descanse um pouco.`]);
+            if (meta > 2 && n === meta - 1) return 'Falta só uma repetição! Relaxe o rosto um instante.';
+            if (meta > 3 && n === Math.ceil(meta / 2)) return `Metade do caminho! ${n} de ${meta} feitas. Relaxe o rosto.`;
+            return variar('rep', [`Repetição ${n} concluída. Pode relaxar o rosto.`, `Isso! ${n} de ${meta}. Respire e relaxe.`, `Muito bem! São ${n} de ${meta}. Descanse um pouco.`]);
         }
         if (suportaVoz) { carregarVozes(); speechSynthesis.onvoiceschanged = carregarVozes; }
         atualizarPainelVoz();
@@ -2706,9 +2704,8 @@ if (elemAnalise) {
             if (exercicioAtual === 'sobrancelhas') {
                 const distEsq = calcularDistancia2D(pOlhoEsq, pSobrancelhaEsq);
                 const distDir = calcularDistancia2D(pOlhoDir, pSobrancelhaDir);
-                const distTesta = (calcularDistancia2D(pSobrancelhaEsq, pTesta) + calcularDistancia2D(pSobrancelhaDir, pTesta)) / 2;
                 const distanciaMediaBrow = (distEsq + distDir) / 2;
-                valorAtual = (distanciaMediaBrow / escalaRosto) - (distTesta / escalaRosto);
+                valorAtual = distanciaMediaBrow / escalaRosto;
             } else if (exercicioAtual === 'sorriso' || exercicioAtual === 'biquinho') {
                 valorAtual = calcularDistancia2D(pCantoBocaEsq, pCantoBocaDir) / escalaRosto;
             }
@@ -2762,7 +2759,7 @@ if (elemAnalise) {
             let metaAtingida = false;
 
             if (exercicioAtual === 'sobrancelhas') {
-                metaAtingida = valorAtual > baselineProporcao + margem;
+                metaAtingida = valorAtual > baselineProporcao + Math.max(0.015, margem * 0.8);
             } else if (exercicioAtual === 'sorriso') {
                 metaAtingida = valorAtual > baselineProporcao * 1.12;
             } else if (exercicioAtual === 'biquinho') {
@@ -2811,7 +2808,7 @@ if (elemAnalise) {
                             statusHold.innerText = 'Série Concluída!';
                             statusHold.style.color = '#16a34a';
                         }
-                        falar(`Parabéns${primeiroNome() ? ', ' + primeiroNome() : ''}! Você completou as ${metaRepeticoesAtual} repetições deste exercício.`, { urgente: true });
+                        falar(`Parabéns! Você completou as ${metaRepeticoesAtual} repetições deste exercício.`, { urgente: true });
                     } else {
                         if (statusHold) {
                             statusHold.innerText = 'Excelente! Descanse um pouco.';
@@ -2836,7 +2833,7 @@ if (elemAnalise) {
                         statusHold.style.color = '#ef4444';
                     }
                     if (estadoInstrucaoVoz !== 'interrompido') {
-                        falar('Você relaxou antes do tempo. Tente de novo, sem pressa.', { canal: 'estado', intervalo: 6000, validade: 4000 });
+                        falar('Relaxe o rosto e tente novamente.', { canal: 'estado', intervalo: 6000, validade: 4000 });
                         estadoInstrucaoVoz = 'interrompido';
                     }
                 }
