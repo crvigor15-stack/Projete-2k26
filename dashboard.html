@@ -2502,7 +2502,7 @@ if (elemAnalise) {
             bloqueioPosConclusao = false;
             estadoInstrucaoVoz = "";
             calibracaoProntaEm = 0;
-            calibracaoEmAndamento = true;
+            calibracaoEmAndamento = false;
 
             const counter = document.getElementById('counter-reps');
             const target = document.getElementById('target-reps');
@@ -2732,13 +2732,17 @@ if (elemAnalise) {
             }
 
             const statusHold = document.getElementById('status-hold');
-            if (calibracaoEmAndamento || Date.now() < calibracaoProntaEm) {
+            if (calibracaoEmAndamento && Date.now() < calibracaoProntaEm) {
                 const segundosRestantes = Math.max(1, Math.ceil((calibracaoProntaEm - Date.now()) / 1000));
                 if (statusHold) {
                     statusHold.innerText = `Calibração: ${segundosRestantes}s`;
                     statusHold.style.color = '#64748b';
                 }
                 return;
+            }
+
+            if (calibracaoEmAndamento && Date.now() >= calibracaoProntaEm) {
+                calibracaoEmAndamento = false;
             }
 
             if (statusHold && statusHold.innerText !== 'Pode iniciar o movimento!') {
