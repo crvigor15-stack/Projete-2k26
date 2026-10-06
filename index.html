@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NeuroMotion - Autenticação</title>
+    <script type="module" src="firebase-config.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body {
@@ -215,37 +216,61 @@
     </div>
 
     <script>
-        function inicializarBancoDados() {
-            if (!localStorage.getItem('neuromotion_fisios')) {
-                const fisiosPadrao = [
-                    { id: 'f1', nome: 'Dr. Pedro Henrique Silva', crefito: '12345-F', email: 'fisio@neuromotion.com', senha: 'Fisio123!' }
-                ];
-                localStorage.setItem('neuromotion_fisios', JSON.stringify(fisiosPadrao));
+        async function obterRegistros(colecaoNome) {
+            const { db, collection, getDocs } = await window.firebaseReady;
+            const snapshot = await getDocs(collection(db, colecaoNome));
+            return snapshot.docs.map(item => ({ ...item.data(), id: item.id }));
+        }
+
+        async function inicializarBancoDados() {
+            const { db, collection, doc, getDocs, setDoc } = await window.firebaseReady;
+            const [fisios, pacientes] = await Promise.all([
+                getDocs(collection(db, 'fisios')),
+                getDocs(collection(db, 'pacientes'))
+            ]);
+
+            if (fisios.empty) {
+                await setDoc(doc(db, 'fisios', 'f1'), {
+                    id: 'f1',
+                    nome: 'Dr. Pedro Henrique Silva',
+                    crefito: '12345-F',
+                    email: 'fisio@neuromotion.com',
+                    senha: 'Fisio123!'
+                });
             }
 
-            if (!localStorage.getItem('neuromotion_pacientes')) {
-                const pacientesPadrao = [
-                    {
-                        id: 'p1',
-                        fisioId: 'f1',
-                        nome: 'João da Silva (Paciente Teste)',
-                        email: 'joao@paciente.com',
-                        senha: 'Paciente123!',
-                        telefone: '(35) 99876-5432',
-                        nascimento: '1995-03-12',
-                        diagnostico: 'Paralisia Facial Periférica à Direita (Paralisia de Bell)',
-                        cid: 'G51.0 - Paralisia de Bell',
-                        anamnese: 'Paciente apresenta paresia moderada a grave da musculatura mímica à direita (Escala House-Brackmann Grau IV). Redução da força de preensão no membro superior ipsilateral.',
-                        conduta: 'Evolução satisfatória. Mantenha a prática guiada pelo espelho de vídeo de forma diária.',
-                        simetria: 89.4,
-                        forca: 580
-                    }
-                ];
-                localStorage.setItem('neuromotion_pacientes', JSON.stringify(pacientesPadrao));
+            if (pacientes.empty) {
+                await setDoc(doc(db, 'pacientes', 'p1'), {
+                    id: 'p1',
+                    fisioId: 'f1',
+                    nome: 'João da Silva (Paciente Teste)',
+                    email: 'joao@paciente.com',
+                    senha: 'Paciente123!',
+                    telefone: '(35) 99876-5432',
+                    nascimento: '1995-03-12',
+                    diagnostico: 'Paralisia Facial Periférica à Direita (Paralisia de Bell)',
+                    cid: 'G51.0 - Paralisia de Bell',
+                    anamnese: 'Paciente apresenta paresia moderada a grave da musculatura mímica à direita (Escala House-Brackmann Grau IV). Redução da força de preensão no membro superior ipsilateral.',
+                    conduta: 'Evolução satisfatória. Mantenha a prática guiada pelo espelho de vídeo de forma diária.',
+                    simetria: 89.4,
+                    forca: 580
+                });
             }
         }
 
-        inicializarBancoDados();
+        function exibirErroPersistencia(boxId, acao, erro) {
+            console.error(`Falha ao ${acao} no Firestore:`, erro);
+            showMessage(boxId, `Não foi possível ${acao}. Verifique sua conexão e tente novamente.`, 'error');
+        }
+
+        async function criarSessao(role, data) {
+            const { db, doc, setDoc } = await window.firebaseReady;
+            const id = crypto.randomUUID();
+            const dadosSessao = { ...data };
+            delete dadosSessao.senha;
+            await setDoc(doc(db, 'sessoes', id), { role, data: dadosSessao });
+            window.location.href = `dashboard.html?session=${encodeURIComponent(id)}`;
+        }
 
         function toggleForm(tela) {
             document.querySelectorAll('.form-box').forEach(box => box.classList.remove('active'));
@@ -280,93 +305,113 @@
             document.getElementById('rule-special').className = hasSpecial ? 'valid' : '';
         });
 
-        document.getElementById('form-cadastro').addEventListener('submit', function(e) {
+        document.getElementById('form-cadastro').addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const nome = document.getElementById('cad-nome').value;
-            const crefito = document.getElementById('cad-crefito').value;
-            const email = document.getElementById('cad-email').value.toLowerCase().trim();
-            const senha = passwordInput.value;
+            try {
+                await inicializarBancoDados();
+                const nome = document.getElementById('cad-nome').value;
+                const crefito = document.getElementById('cad-crefito').value;
+                const email = document.getElementById('cad-email').value.toLowerCase().trim();
+                const senha = passwordInput.value;
 
-            const isStrong = senha.length >= 8 && /[A-Z]/.test(senha) && /[0-9]/.test(senha) && /[^A-Za-z0-9]/.test(senha);
-            if (!isStrong) {
-                showMessage('msg-cadastro', 'A senha informada não atende aos requisitos de segurança.', 'error');
-                return;
-            }
+                const isStrong = senha.length >= 8 && /[A-Z]/.test(senha) && /[0-9]/.test(senha) && /[^A-Za-z0-9]/.test(senha);
+                if (!isStrong) {
+                    showMessage('msg-cadastro', 'A senha informada não atende aos requisitos de segurança.', 'error');
+                    return;
+                }
 
-            let fisios = JSON.parse(localStorage.getItem('neuromotion_fisios')) || [];
-            if (fisios.find(f => f.email === email)) {
-                showMessage('msg-cadastro', 'Este e-mail já está cadastrado no sistema!', 'error');
-                return;
-            }
+                const fisios = await obterRegistros('fisios');
+                if (fisios.find(f => f.email === email)) {
+                    showMessage('msg-cadastro', 'Este e-mail já está cadastrado no sistema!', 'error');
+                    return;
+                }
 
-            const novoFisio = { id: 'f_' + Date.now(), nome, crefito, email, senha };
-            fisios.push(novoFisio);
-            localStorage.setItem('neuromotion_fisios', JSON.stringify(fisios));
+                const novoFisio = { id: 'f_' + Date.now(), nome, crefito, email, senha };
+                const { db, doc, setDoc } = await window.firebaseReady;
+                await setDoc(doc(db, 'fisios', novoFisio.id), novoFisio);
 
-            showMessage('msg-cadastro', 'Cadastro de Fisioterapeuta realizado com sucesso!', 'success');
-            document.getElementById('form-cadastro').reset();
-            
-            setTimeout(() => {
-                toggleForm('login');
-                showMessage('msg-login', 'Sua conta de Fisioterapeuta foi criada! Faça seu login.', 'success');
-            }, 1500);
-        });
+                showMessage('msg-cadastro', 'Cadastro de Fisioterapeuta realizado com sucesso!', 'success');
+                document.getElementById('form-cadastro').reset();
 
-        document.getElementById('form-login').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const email = document.getElementById('login-email').value.toLowerCase().trim();
-            const senha = document.getElementById('login-password').value;
-
-            const fisios = JSON.parse(localStorage.getItem('neuromotion_fisios')) || [];
-            const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
-
-            const fisioAchado = fisios.find(f => f.email === email && f.senha === senha);
-            if (fisioAchado) {
-                localStorage.setItem('neuromotion_sessao', JSON.stringify({ role: 'fisio', data: fisioAchado }));
-                showMessage('msg-login', 'Acesso autorizado (Fisioterapeuta)! Entrando...', 'success');
-                setTimeout(() => { window.location.href = "dashboard.html"; }, 1000);
-                return;
-            }
-
-            const pacienteAchado = pacientes.find(p => p.email === email && p.senha === senha);
-            if (pacienteAchado) {
-                localStorage.setItem('neuromotion_sessao', JSON.stringify({ role: 'paciente', data: pacienteAchado }));
-                showMessage('msg-login', 'Acesso autorizado (Paciente)! Entrando...', 'success');
-                setTimeout(() => { window.location.href = "dashboard.html"; }, 1000);
-                return;
-            }
-
-            showMessage('msg-login', 'E-mail ou senha incorretos. Verifique os dados.', 'error');
-        });
-
-        document.getElementById('form-recuperar').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const email = document.getElementById('recuperar-email').value.toLowerCase().trim();
-            const fisios = JSON.parse(localStorage.getItem('neuromotion_fisios')) || [];
-            const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes')) || [];
-
-            const usuario = fisios.find(f => f.email === email) || pacientes.find(p => p.email === email);
-
-            if (usuario) {
-                showMessage('msg-recuperar', `Conta localizada! Sua senha é: "${usuario.senha}"`, 'success');
-            } else {
-                showMessage('msg-recuperar', 'Nenhum e-mail correspondente foi localizado no sistema.', 'error');
+                setTimeout(() => {
+                    toggleForm('login');
+                    showMessage('msg-login', 'Sua conta de Fisioterapeuta foi criada! Faça seu login.', 'success');
+                }, 1500);
+            } catch (erro) {
+                exibirErroPersistencia('msg-cadastro', 'salvar o cadastro', erro);
             }
         });
 
-        function quickDevLogin(tipo) {
-            inicializarBancoDados();
-            if (tipo === 'fisio') {
-                const fisios = JSON.parse(localStorage.getItem('neuromotion_fisios'));
-                localStorage.setItem('neuromotion_sessao', JSON.stringify({ role: 'fisio', data: fisios[0] }));
-            } else {
-                const pacientes = JSON.parse(localStorage.getItem('neuromotion_pacientes'));
-                localStorage.setItem('neuromotion_sessao', JSON.stringify({ role: 'paciente', data: pacientes[0] }));
+        document.getElementById('form-login').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            try {
+                await inicializarBancoDados();
+                const email = document.getElementById('login-email').value.toLowerCase().trim();
+                const senha = document.getElementById('login-password').value;
+                const [fisios, pacientes] = await Promise.all([
+                    obterRegistros('fisios'),
+                    obterRegistros('pacientes')
+                ]);
+
+                const fisioAchado = fisios.find(f => f.email === email && f.senha === senha);
+                if (fisioAchado) {
+                    await criarSessao('fisio', fisioAchado);
+                    return;
+                }
+
+                const pacienteAchado = pacientes.find(p => p.email === email && p.senha === senha);
+                if (pacienteAchado) {
+                    await criarSessao('paciente', pacienteAchado);
+                    return;
+                }
+
+                showMessage('msg-login', 'E-mail ou senha incorretos. Verifique os dados.', 'error');
+            } catch (erro) {
+                exibirErroPersistencia('msg-login', 'realizar o login', erro);
             }
-            window.location.href = "dashboard.html";
+        });
+
+        document.getElementById('form-recuperar').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            try {
+                await inicializarBancoDados();
+                const email = document.getElementById('recuperar-email').value.toLowerCase().trim();
+                const [fisios, pacientes] = await Promise.all([
+                    obterRegistros('fisios'),
+                    obterRegistros('pacientes')
+                ]);
+                const usuario = fisios.find(f => f.email === email) || pacientes.find(p => p.email === email);
+
+                if (usuario) {
+                    showMessage('msg-recuperar', `Conta localizada! Sua senha é: "${usuario.senha}"`, 'success');
+                } else {
+                    showMessage('msg-recuperar', 'Nenhum e-mail correspondente foi localizado no sistema.', 'error');
+                }
+            } catch (erro) {
+                exibirErroPersistencia('msg-recuperar', 'consultar a conta', erro);
+            }
+        });
+
+        async function quickDevLogin(tipo) {
+            try {
+                await inicializarBancoDados();
+                const registros = await obterRegistros(tipo === 'fisio' ? 'fisios' : 'pacientes');
+                if (!registros.length) {
+                    throw new Error('Nenhum usuário disponível para o acesso de desenvolvimento.');
+                }
+                await criarSessao(tipo, registros[0]);
+            } catch (erro) {
+                exibirErroPersistencia('msg-login', 'iniciar a sessão de desenvolvimento', erro);
+            }
         }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await inicializarBancoDados();
+            } catch (erro) {
+                exibirErroPersistencia('msg-login', 'conectar ao banco de dados', erro);
+            }
+        });
     </script>
 </body>
 </html>
