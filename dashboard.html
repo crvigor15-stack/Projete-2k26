@@ -2481,6 +2481,8 @@ if (elemAnalise) {
         let tempoControle = 0;
         let bloqueioPosConclusao = false;
         let estadoInstrucaoVoz = "";
+        let calibracaoProntaEm = 0;
+        let calibracaoEmAndamento = false;
 
         let tempoSustentacaoMs = 10000;
 
@@ -2500,6 +2502,8 @@ if (elemAnalise) {
             tempoControle = 0;
             bloqueioPosConclusao = false;
             estadoInstrucaoVoz = "";
+            calibracaoProntaEm = 0;
+            calibracaoEmAndamento = true;
 
             const counter = document.getElementById('counter-reps');
             const target = document.getElementById('target-reps');
@@ -2517,10 +2521,6 @@ if (elemAnalise) {
 
         async function listarCamerasDisponiveis() {
             try {
-                await navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
-                    stream.getTracks().forEach(track => track.stop());
-                }).catch(() => {});
-
                 const devices = await navigator.mediaDevices.enumerateDevices();
                 const videoDevices = devices.filter(d => d.kind === 'videoinput');
                 const select = document.getElementById('select-camera-input');
@@ -2589,19 +2589,19 @@ if (elemAnalise) {
             }
 
             if (status) {
-                status.innerText = "Recalibrando...";
+                status.innerText = "Deixe o rosto neutro para calibrar...";
                 status.style.color = "#64748b";
             }
 
             if (exercicioAtual === 'sobrancelhas') {
-                atualizarInstrutor("Mantenha o rosto relaxado olhando para a câmera.", "#0f172a", "👨‍⚕️");
-                falar("Calibrando sobrancelhas. Mantenha o rosto relaxado.", { canal: 'calibracao', validade: 15000 });
+                atualizarInstrutor("Deixe o rosto neutro e olhe para a câmera para calibrar as sobrancelhas.", "#0f172a", "👨‍⚕️");
+                falar("Deixe o rosto neutro e olhe para a câmera para calibrar as sobrancelhas.", { canal: 'calibracao', validade: 15000 });
             } else if (exercicioAtual === 'sorriso') {
-                atualizarInstrutor("Permaneça neutro para calibrar a abertura do sorriso.", "#0f172a", "👨‍⚕️");
-                falar("Permaneça neutro para calibrar o sorriso.", { canal: 'calibracao', validade: 15000 });
+                atualizarInstrutor("Deixe o rosto neutro para calibrar a abertura do sorriso.", "#0f172a", "👨‍⚕️");
+                falar("Deixe o rosto neutro para calibrar a abertura do sorriso.", { canal: 'calibracao', validade: 15000 });
             } else if (exercicioAtual === 'biquinho') {
-                atualizarInstrutor("Mantenha os lábios relaxados para iniciar.", "#0f172a", "👨‍⚕️");
-                falar("Mantenha os lábios relaxados.", { canal: 'calibracao', validade: 15000 });
+                atualizarInstrutor("Mantenha os lábios relaxados e o rosto neutro para calibrar.", "#0f172a", "👨‍⚕️");
+                falar("Mantenha os lábios relaxados e o rosto neutro para calibrar.", { canal: 'calibracao', validade: 15000 });
             }
         }
 
@@ -2655,7 +2655,7 @@ if (elemAnalise) {
 
         function obterMargemMovimentoExercicio() {
             const base = baselineProporcao || 0.13;
-            if (exercicioAtual === 'sobrancelhas') return Math.max(0.035, base * 0.18);
+            if (exercicioAtual === 'sobrancelhas') return Math.max(0.045, base * 0.16);
             if (exercicioAtual === 'sorriso') return Math.max(0.04, base * 0.14);
             if (exercicioAtual === 'biquinho') return Math.max(0.04, base * 0.12);
             return 0.04;
@@ -2706,7 +2706,8 @@ if (elemAnalise) {
                 const distEsq = calcularDistancia2D(pOlhoEsq, pSobrancelhaEsq);
                 const distDir = calcularDistancia2D(pOlhoDir, pSobrancelhaDir);
                 const distTesta = (calcularDistancia2D(pSobrancelhaEsq, pTesta) + calcularDistancia2D(pSobrancelhaDir, pTesta)) / 2;
-                valorAtual = ((distEsq + distDir) / (2 * escalaRosto)) - (distTesta / (2 * escalaRosto));
+                const distanciaMediaBrow = (distEsq + distDir) / 2;
+                valorAtual = (distanciaMediaBrow / escalaRosto) - (distTesta / escalaRosto);
             } else if (exercicioAtual === 'sorriso' || exercicioAtual === 'biquinho') {
                 valorAtual = calcularDistancia2D(pCantoBocaEsq, pCantoBocaDir) / escalaRosto;
             }
@@ -2716,15 +2717,26 @@ if (elemAnalise) {
                 if (amostrasBaseline.length >= 15) {
                     const soma = amostrasBaseline.reduce((a, b) => a + b, 0);
                     baselineProporcao = soma / amostrasBaseline.length;
+                    calibracaoEmAndamento = false;
+                    calibracaoProntaEm = Date.now() + 1800;
                     const statusHold = document.getElementById('status-hold');
                     if (statusHold) {
-                        statusHold.innerText = "Pronto! Inicie o movimento.";
+                        statusHold.innerText = 'Ajustando... aguarde 2s';
                         statusHold.style.color = '#0284c7';
                     }
-                    if (estadoInstrucaoVoz !== "pronto") {
-                        falar("Calibração concluída. Pode iniciar o movimento.", { canal: 'estado', validade: 10000 });
-                        estadoInstrucaoVoz = "pronto";
+                    if (estadoInstrucaoVoz !== 'pronto') {
+                        falar('Calibração concluída. Aguarde dois segundos antes de iniciar o movimento.', { canal: 'estado', validade: 10000 });
+                        estadoInstrucaoVoz = 'pronto';
                     }
+                }
+                return;
+            }
+
+            const statusHold = document.getElementById('status-hold');
+            if (calibracaoEmAndamento || Date.now() < calibracaoProntaEm) {
+                if (statusHold) {
+                    statusHold.innerText = 'Ajustando... aguarde 2s';
+                    statusHold.style.color = '#64748b';
                 }
                 return;
             }
@@ -2740,7 +2752,6 @@ if (elemAnalise) {
                 metaAtingida = valorAtual < baselineProporcao * (1 - Math.min(0.22, margem * 1.2));
             }
 
-            const statusHold = document.getElementById('status-hold');
             const segundosSustentacao = tempoSustentacaoMs / 1000;
 
             if (metaAtingida && !bloqueioPosConclusao) {
