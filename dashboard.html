@@ -15,6 +15,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh@0.4.1633559619/face_mesh.js" crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
     
+    <script type="module" src="firebase-config.js"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { background-color: #f8fafc; color: #0f172a; display: flex; flex-direction: column; min-height: 100vh; }
@@ -834,12 +836,75 @@
     <!-- SCRIPTS DE NAVEGAÇÃO E LÓGICA DE DADOS -->
     <script>
         // --- UTILITÁRIOS ---
-        const CHAVE_PACIENTES = 'neuromotion_pacientes';
-        function lerPacientes() {
-            try { const v = JSON.parse(localStorage.getItem(CHAVE_PACIENTES)); return Array.isArray(v) ? v : []; }
-            catch { return []; }
+        let pacientesCache = [];
+        const filasSalvamentoPacientes = new Map();
+
+        async function carregarPacientesFirestore() {
+            const { db, collection, getDocs } = await window.firebaseReady;
+            const snapshot = await getDocs(collection(db, 'pacientes'));
+            pacientesCache = snapshot.docs.map(item => ({ ...item.data(), id: item.id }));
+            return pacientesCache;
         }
-        function salvarPacientes(lista) { localStorage.setItem(CHAVE_PACIENTES, JSON.stringify(lista)); }
+
+        function lerPacientes() {
+            return pacientesCache;
+        }
+
+        async function salvarPacienteFirestore(paciente) {
+            const id = String(paciente.id);
+            let dados;
+            try {
+                dados = JSON.parse(JSON.stringify(paciente));
+            } catch (erro) {
+                console.error('Falha ao preparar os dados do paciente para o Firestore:', erro);
+                notificar('Não foi possível preparar os dados do paciente para salvar.', 'err');
+                return false;
+            }
+            const filaAnterior = filasSalvamentoPacientes.get(id) || Promise.resolve();
+            const salvamento = filaAnterior.catch(() => {}).then(async () => {
+                const { db, doc, setDoc } = await window.firebaseReady;
+                await setDoc(doc(db, 'pacientes', id), dados);
+            });
+            filasSalvamentoPacientes.set(id, salvamento);
+            try {
+                await salvamento;
+                const index = pacientesCache.findIndex(item => item.id === paciente.id);
+                if (index === -1) pacientesCache.push(paciente);
+                else pacientesCache[index] = paciente;
+                return true;
+            } catch (erro) {
+                console.error('Falha ao salvar paciente no Firestore:', erro);
+                notificar('Não foi possível salvar os dados do paciente. Verifique sua conexão e tente novamente.', 'err');
+                return false;
+            } finally {
+                if (filasSalvamentoPacientes.get(id) === salvamento) {
+                    filasSalvamentoPacientes.delete(id);
+                }
+            }
+        }
+
+        async function excluirPacienteFirestore(id) {
+            const idDocumento = String(id);
+            const filaAnterior = filasSalvamentoPacientes.get(idDocumento) || Promise.resolve();
+            const exclusao = filaAnterior.catch(() => {}).then(async () => {
+                const { db, deleteDoc, doc } = await window.firebaseReady;
+                await deleteDoc(doc(db, 'pacientes', idDocumento));
+            });
+            filasSalvamentoPacientes.set(idDocumento, exclusao);
+            try {
+                await exclusao;
+                pacientesCache = pacientesCache.filter(paciente => paciente.id !== id);
+                return true;
+            } catch (erro) {
+                console.error('Falha ao excluir paciente no Firestore:', erro);
+                notificar('Não foi possível excluir o paciente. Verifique sua conexão e tente novamente.', 'err');
+                return false;
+            } finally {
+                if (filasSalvamentoPacientes.get(idDocumento) === exclusao) {
+                    filasSalvamentoPacientes.delete(idDocumento);
+                }
+            }
+        }
 
         function gerarPacienteTesteDemo() {
             const hoje = new Date();
@@ -888,14 +953,15 @@
             };
         }
 
-        function prepararPacienteDemo() {
+        async function prepararPacienteDemo() {
             const pacientes = lerPacientes();
             const existente = pacientes.find(p => p.id === 'demo-paciente-teste' || /paciente teste/i.test(p.nome || ''));
             if (existente) return existente;
 
             const demo = gerarPacienteTesteDemo();
-            pacientes.push(demo);
-            salvarPacientes(pacientes);
+            if (!await salvarPacienteFirestore(demo)) {
+                throw new Error('Não foi possível criar o paciente de demonstração.');
+            }
             return demo;
         }
 
@@ -928,6 +994,7 @@
         });
 
         let sessaoAtual = null;
+        let sessaoId = null;
         let pacienteSelecionado = null;
         let chartSimetriaInst = null;
         let chartPincaInst = null;
@@ -945,6 +1012,8 @@
         const MAX_DATA_POINTS = 50;
         const EMG_MAX_NIVEL = 4095;
         let maxEmgPico = 0;
+        let ultimoSalvamentoEmg = 0;
+        let temporizadorSalvamentoEmg = null;
         let limiarContracaoEMG = 150;
         let emgSinalAtual = 0;
 
@@ -975,6 +1044,22 @@
             return Math.min(100, Math.max(0, (valor / referencia) * 100));
         }
 
+        function agendarSalvamentoEmg(paciente) {
+            const agora = Date.now();
+            if (agora - ultimoSalvamentoEmg >= 5000) {
+                ultimoSalvamentoEmg = agora;
+                void salvarPacienteFirestore(paciente);
+            }
+
+            clearTimeout(temporizadorSalvamentoEmg);
+            temporizadorSalvamentoEmg = setTimeout(() => {
+                ultimoSalvamentoEmg = Date.now();
+                if (pacienteSelecionado?.id === paciente.id) {
+                    void salvarPacienteFirestore(paciente);
+                }
+            }, 5000);
+        }
+
         function registrarAtividadeEMGHoje() {
             if (!pacienteSelecionado) return;
 
@@ -1002,7 +1087,7 @@
             const pIdx = pacientes.findIndex(p => p.id === pacienteSelecionado.id);
             if (pIdx !== -1) {
                 pacientes[pIdx] = pacienteSelecionado;
-                salvarPacientes(pacientes);
+                agendarSalvamentoEmg(pacienteSelecionado);
             }
         }
 
@@ -1318,22 +1403,45 @@
             document.getElementById('sidebar-nav').classList.remove('open');
         }
 
-        document.addEventListener("DOMContentLoaded", () => {
-            const sessaoRaw = localStorage.getItem("neuromotion_sessao");
-            if (!sessaoRaw) {
-                window.location.href = "login.html";
+        document.addEventListener("DOMContentLoaded", async () => {
+            sessaoId = new URLSearchParams(window.location.search).get('session');
+            if (!sessaoId) {
+                window.location.href = "index.html";
                 return;
             }
 
-            try { sessaoAtual = JSON.parse(sessaoRaw); } catch { sessaoAtual = null; }
-            if (!sessaoAtual) {
-                localStorage.removeItem("neuromotion_sessao");
-                window.location.href = "login.html";
-                return;
+            try {
+                const { db, doc, getDoc } = await window.firebaseReady;
+                const snapshot = await getDoc(doc(db, 'sessoes', sessaoId));
+                if (!snapshot.exists()) {
+                    window.location.href = "index.html";
+                    return;
+                }
+                sessaoAtual = snapshot.data();
+                if (!sessaoAtual || !['fisio', 'paciente'].includes(sessaoAtual.role)) {
+                    window.location.href = "index.html";
+                    return;
+                }
+                await carregarPacientesFirestore();
+                await configurarInterfacePorPerfil();
+                await carregarPreferenciasVoz();
+                listarCamerasDisponiveis();
+            } catch (erro) {
+                console.error('Falha ao carregar dados do painel:', erro);
+                notificar('Não foi possível carregar os dados. Verifique sua conexão e tente novamente.', 'err');
             }
-            configurarInterfacePorPerfil();
-            listarCamerasDisponiveis();
         });
+
+        async function encerrarSessao() {
+            try {
+                const { db, deleteDoc, doc } = await window.firebaseReady;
+                if (sessaoId) await deleteDoc(doc(db, 'sessoes', sessaoId));
+                window.location.href = "index.html";
+            } catch (erro) {
+                console.error('Falha ao encerrar a sessão no Firestore:', erro);
+                notificar('Não foi possível encerrar a sessão. Tente novamente.', 'err');
+            }
+        }
 
         // --- INTEGRACÃO DO GRÁFICO E SENSOR EMG NO CANTO DA TELA ---
         function inicializarGraficoEMGOverlay() {
@@ -1645,7 +1753,7 @@
                     const pIdx = pacientes.findIndex(p => p.id === pacienteSelecionado.id);
                     if (pIdx !== -1) {
                         pacientes[pIdx] = pacienteSelecionado;
-                        salvarPacientes(pacientes);
+                        void salvarPacienteFirestore(pacienteSelecionado);
                     }
                 }
 
@@ -1784,7 +1892,7 @@
             }
         }
 
-        function configurarInterfacePorPerfil() {
+        async function configurarInterfacePorPerfil() {
             const isFisio = sessaoAtual.role === 'fisio';
             const badge = document.getElementById('user-badge');
 
@@ -1813,7 +1921,7 @@
                     pacienteSelecionado = null;
                     switchTab('selecao-paciente');
                 } else {
-                    const demo = prepararPacienteDemo();
+                    const demo = await prepararPacienteDemo();
                     carregarDadosPaciente(demo);
                     switchTab('dashboard');
                 }
@@ -1833,7 +1941,7 @@
                 document.getElementById('painel-fisio-graficos').style.display = "none";
                 document.getElementById('painel-paciente-interativo').style.display = "block";
 
-                const pacienteDemo = prepararPacienteDemo();
+                const pacienteDemo = await prepararPacienteDemo();
                 sessaoAtual.data = { ...(sessaoAtual.data || {}), nome: 'Fisioterapeuta Teste', clinica: 'ETE FMC' };
                 carregarDadosPaciente(pacienteDemo);
                 switchTab('dashboard');
@@ -1975,7 +2083,7 @@
             const pIdx = pacientes.findIndex(p => p.id === pacienteSelecionado.id);
             if (pIdx !== -1) {
                 pacientes[pIdx] = pacienteSelecionado;
-                salvarPacientes(pacientes);
+                void salvarPacienteFirestore(pacienteSelecionado);
             }
 
             atualizarHistoricoEMGSeNecessario();
@@ -2108,7 +2216,7 @@ if (elemAnalise) {
             });
         }
 
-        function excluirPaciente(id) {
+        async function excluirPaciente(id) {
             let pacientes = lerPacientes();
             const pacienteExcluir = pacientes.find(p => p.id === id);
 
@@ -2116,7 +2224,7 @@ if (elemAnalise) {
 
             if (confirm(`Tem certeza que deseja excluir o paciente "${pacienteExcluir.nome}"? Esta ação é definitiva para tratamentos encerrados.`)) {
                 pacientes = pacientes.filter(p => p.id !== id);
-                salvarPacientes(pacientes);
+                if (!await excluirPacienteFirestore(id)) return;
 
                 atualizarDropdownsPacientes();
                 renderizarListaPacientes();
@@ -2133,7 +2241,7 @@ if (elemAnalise) {
             }
         }
 
-        document.getElementById('form-novo-paciente').addEventListener('submit', (e) => {
+        document.getElementById('form-novo-paciente').addEventListener('submit', async (e) => {
             e.preventDefault();
             const novoP = {
                 id: 'pac_' + Date.now(),
@@ -2153,10 +2261,8 @@ if (elemAnalise) {
                 mensagensChat: []
             };
 
-            const pacientes = lerPacientes();
             novoP.historicoEMG = [];
-            pacientes.push(novoP);
-            salvarPacientes(pacientes);
+            if (!await salvarPacienteFirestore(novoP)) return;
 
             atualizarDropdownsPacientes();
             renderizarListaPacientes();
@@ -2166,7 +2272,7 @@ if (elemAnalise) {
             e.target.reset();
         });
 
-        function salvarPrescricaoExterna() {
+        async function salvarPrescricaoExterna() {
             const select = document.getElementById('select-paciente-conduta');
             const targetId = select.value;
 
@@ -2187,7 +2293,7 @@ if (elemAnalise) {
                     limiarEMG
                 };
 
-                salvarPacientes(pacientes);
+                if (!await salvarPacienteFirestore(pacientes[index])) return;
                 carregarDadosPaciente(pacientes[index]);
                 notificar(`Prescrição salva para ${pacientes[index].nome}.`, "ok");
             }
@@ -2227,7 +2333,7 @@ if (elemAnalise) {
             listEl.scrollTop = listEl.scrollHeight;
         }
 
-        function enviarMensagemChat() {
+        async function enviarMensagemChat() {
             const input = document.getElementById('chat-input-text');
             const texto = input.value.trim();
             if (!texto || !pacienteSelecionado) return;
@@ -2242,17 +2348,15 @@ if (elemAnalise) {
                 hora: horaStr
             };
 
-            if (!pacienteSelecionado.mensagensChat) {
-                pacienteSelecionado.mensagensChat = [];
-            }
-
-            pacienteSelecionado.mensagensChat.push(novaMensagem);
-
             const pacientes = lerPacientes();
             const index = pacientes.findIndex(p => p.id === pacienteSelecionado.id);
             if (index !== -1) {
-                pacientes[index] = pacienteSelecionado;
-                salvarPacientes(pacientes);
+                const pacienteAtualizado = {
+                    ...pacienteSelecionado,
+                    mensagensChat: [...(pacienteSelecionado.mensagensChat || []), novaMensagem]
+                };
+                if (!await salvarPacienteFirestore(pacienteAtualizado)) return;
+                pacienteSelecionado = pacienteAtualizado;
             }
 
             input.value = "";
@@ -2261,8 +2365,7 @@ if (elemAnalise) {
 
         function confirmarSair() {
             if (confirm("Deseja encerrar a sessão?")) {
-                localStorage.removeItem("neuromotion_sessao");
-                window.location.href = "index.html";
+                encerrarSessao();
             }
         }
 
@@ -2421,12 +2524,44 @@ if (elemAnalise) {
         // Fila de falas: nada é cortado no meio; falas velhas expiram e a mais recente de cada canal substitui a pendente.
         const suportaVoz = 'speechSynthesis' in window;
         const Voz = {
-            ativa: localStorage.getItem('nm_voz') !== 'off',
-            velocidade: parseFloat(localStorage.getItem('nm_voz_vel')) || 0.95,
-            nome: localStorage.getItem('nm_voz_nome') || '',
+            ativa: true,
+            velocidade: 0.95,
+            nome: '',
             voz: null, fila: [], atual: null, timer: null, ultimo: {}, ultimaFrase: { texto: '', t: 0 }, variacao: {}
         };
         let avisouFim = false;
+
+        async function carregarPreferenciasVoz() {
+            try {
+                const { db, doc, getDoc } = await window.firebaseReady;
+                const chaveUsuario = sessaoAtual.data?.id || sessaoId;
+                const snapshot = await getDoc(doc(db, 'configuracoes', chaveUsuario));
+                if (snapshot.exists()) {
+                    const preferencias = snapshot.data().voz || {};
+                    Voz.ativa = preferencias.ativa ?? true;
+                    Voz.velocidade = Number(preferencias.velocidade) || 0.95;
+                    Voz.nome = preferencias.nome || '';
+                }
+                carregarVozes();
+                atualizarPainelVoz();
+            } catch (erro) {
+                console.error('Falha ao carregar preferências de voz:', erro);
+                notificar('Não foi possível carregar as preferências de voz.', 'err');
+            }
+        }
+
+        async function salvarPreferenciasVoz() {
+            try {
+                const { db, doc, setDoc } = await window.firebaseReady;
+                const chaveUsuario = sessaoAtual.data?.id || sessaoId;
+                await setDoc(doc(db, 'configuracoes', chaveUsuario), {
+                    voz: { ativa: Voz.ativa, velocidade: Voz.velocidade, nome: Voz.nome }
+                }, { merge: true });
+            } catch (erro) {
+                console.error('Falha ao salvar preferências de voz:', erro);
+                notificar('Não foi possível salvar a preferência de voz.', 'err');
+            }
+        }
 
         function pontuarVoz(v) {
             const n = v.name.toLowerCase();
@@ -2493,12 +2628,12 @@ if (elemAnalise) {
             Voz.fila = []; clearTimeout(Voz.timer); Voz.atual = null;
             if (suportaVoz) speechSynthesis.cancel();
         }
-        function alternarVoz() {
+        async function alternarVoz() {
             Voz.ativa = !Voz.ativa;
-            localStorage.setItem('nm_voz', Voz.ativa ? 'on' : 'off');
             if (!Voz.ativa) cancelarVoz();
             atualizarPainelVoz();
             if (Voz.ativa) falar('Voz ativada.', { urgente: true, repetirApos: 0 });
+            await salvarPreferenciasVoz();
         }
         function fraseRepeticao(n, meta) {
             if (meta > 2 && n === meta - 1) return 'Falta só uma repetição! Relaxe o rosto um instante.';
@@ -2909,7 +3044,7 @@ if (elemAnalise) {
 
             if (pIndex !== -1) {
                 pacientes[pIndex] = targetP;
-                salvarPacientes(pacientes);
+                void salvarPacienteFirestore(targetP);
             }
             carregarDadosPaciente(targetP);
         }
