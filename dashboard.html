@@ -2491,6 +2491,30 @@ if (elemAnalise) {
             return 10;
         }
 
+        function resetarEstadoExercicioIA() {
+            repeticoes = 0;
+            metaRepeticoesAtual = obterMetaPrescritaExercicio(exercicioAtual);
+            baselineProporcao = null;
+            amostrasBaseline = [];
+            emExecucao = false;
+            tempoControle = 0;
+            bloqueioPosConclusao = false;
+            estadoInstrucaoVoz = "";
+
+            const counter = document.getElementById('counter-reps');
+            const target = document.getElementById('target-reps');
+            const status = document.getElementById('status-hold');
+
+            if (counter) counter.innerText = '0';
+            if (target) target.innerText = String(metaRepeticoesAtual);
+            if (status) {
+                status.innerText = 'Calibrando...';
+                status.style.color = '#64748b';
+            }
+            const display = document.getElementById('display-tempo-sustentacao');
+            if (display) display.innerText = `${(tempoSustentacaoMs || 10000) / 1000}s`;
+        }
+
         async function listarCamerasDisponiveis() {
             try {
                 await navigator.mediaDevices.getUserMedia({ video: true }).then(stream => {
@@ -2549,31 +2573,25 @@ if (elemAnalise) {
         }
 
         function recalibrar() {
-            repeticoes = 0;
-            metaRepeticoesAtual = obterMetaPrescritaExercicio(exercicioAtual);
-            
-            const repsJaFeitas = pacienteSelecionado?.detalhesExercicios?.[exercicioAtual] || 0;
-            
-            baselineProporcao = null;
-            amostrasBaseline = [];
-            emExecucao = false;
-            tempoControle = 0;
-            bloqueioPosConclusao = false;
-            estadoInstrucaoVoz = "";
+            resetarEstadoExercicioIA();
 
-            document.getElementById('counter-reps').innerText = "0";
-            document.getElementById('target-reps').innerText = metaRepeticoesAtual;
+            const repsJaFeitas = pacienteSelecionado?.detalhesExercicios?.[exercicioAtual] || 0;
+            const status = document.getElementById('status-hold');
 
             if (repsJaFeitas >= metaRepeticoesAtual) {
                 atualizarInstrutor(`Série diária concluída! A fisioterapeuta prescreveu ${metaRepeticoesAtual} repetições para hoje.`, "#16a34a", "✅");
-                document.getElementById('status-hold').innerText = "Meta Atingida";
-                document.getElementById('status-hold').style.color = "#16a34a";
+                if (status) {
+                    status.innerText = "Meta Atingida";
+                    status.style.color = "#16a34a";
+                }
                 falar(`Você já concluiu as ${metaRepeticoesAtual} repetições prescritas para hoje.`, { urgente: true });
                 return;
             }
 
-            document.getElementById('status-hold').innerText = "Recalibrando...";
-            document.getElementById('status-hold').style.color = "#64748b";
+            if (status) {
+                status.innerText = "Recalibrando...";
+                status.style.color = "#64748b";
+            }
 
             if (exercicioAtual === 'sobrancelhas') {
                 atualizarInstrutor("Mantenha o rosto relaxado olhando para a câmera.", "#0f172a", "👨‍⚕️");
@@ -2635,10 +2653,18 @@ if (elemAnalise) {
             return Math.hypot(p1.x - p2.x, p1.y - p2.y);
         }
 
+        function obterMargemMovimentoExercicio() {
+            const base = baselineProporcao || 0.13;
+            if (exercicioAtual === 'sobrancelhas') return Math.max(0.035, base * 0.18);
+            if (exercicioAtual === 'sorriso') return Math.max(0.04, base * 0.14);
+            if (exercicioAtual === 'biquinho') return Math.max(0.04, base * 0.12);
+            return 0.04;
+        }
+
         function processarResultadosFaciais(results) {
-            if (!canvasIa || !canvasCtx) return;
-            canvasIa.width = videoElement.videoWidth;
-            canvasIa.height = videoElement.videoHeight;
+            if (!canvasIa || !canvasCtx || !videoElement) return;
+            canvasIa.width = videoElement.videoWidth || 640;
+            canvasIa.height = videoElement.videoHeight || 480;
             canvasCtx.save();
             canvasCtx.clearRect(0, 0, canvasIa.width, canvasIa.height);
 
@@ -2663,7 +2689,7 @@ if (elemAnalise) {
         }
 
         function analisarMovimentoComInstrutor(lm) {
-            if (repeticoes >= metaRepeticoesAtual) return;
+            if (!lm || repeticoes >= metaRepeticoesAtual) return;
 
             const pOlhoEsq = lm[159], pSobrancelhaEsq = lm[70];
             const pOlhoDir = lm[386], pSobrancelhaDir = lm[300];
@@ -2681,9 +2707,7 @@ if (elemAnalise) {
                 const distDir = calcularDistancia2D(pOlhoDir, pSobrancelhaDir);
                 const distTesta = (calcularDistancia2D(pSobrancelhaEsq, pTesta) + calcularDistancia2D(pSobrancelhaDir, pTesta)) / 2;
                 valorAtual = ((distEsq + distDir) / (2 * escalaRosto)) - (distTesta / (2 * escalaRosto));
-            } else if (exercicioAtual === 'sorriso') {
-                valorAtual = calcularDistancia2D(pCantoBocaEsq, pCantoBocaDir) / escalaRosto;
-            } else if (exercicioAtual === 'biquinho') {
+            } else if (exercicioAtual === 'sorriso' || exercicioAtual === 'biquinho') {
                 valorAtual = calcularDistancia2D(pCantoBocaEsq, pCantoBocaDir) / escalaRosto;
             }
 
@@ -2692,7 +2716,11 @@ if (elemAnalise) {
                 if (amostrasBaseline.length >= 15) {
                     const soma = amostrasBaseline.reduce((a, b) => a + b, 0);
                     baselineProporcao = soma / amostrasBaseline.length;
-                    document.getElementById('status-hold').innerText = "Pronto! Inicie o movimento.";
+                    const statusHold = document.getElementById('status-hold');
+                    if (statusHold) {
+                        statusHold.innerText = "Pronto! Inicie o movimento.";
+                        statusHold.style.color = '#0284c7';
+                    }
                     if (estadoInstrucaoVoz !== "pronto") {
                         falar("Calibração concluída. Pode iniciar o movimento.", { canal: 'estado', validade: 10000 });
                         estadoInstrucaoVoz = "pronto";
@@ -2701,14 +2729,15 @@ if (elemAnalise) {
                 return;
             }
 
+            const margem = obterMargemMovimentoExercicio();
             let metaAtingida = false;
 
             if (exercicioAtual === 'sobrancelhas') {
-                metaAtingida = valorAtual > (baselineProporcao + 0.025);
+                metaAtingida = valorAtual > baselineProporcao + margem;
             } else if (exercicioAtual === 'sorriso') {
-                metaAtingida = valorAtual > (baselineProporcao * 1.15);
+                metaAtingida = valorAtual > baselineProporcao * 1.12;
             } else if (exercicioAtual === 'biquinho') {
-                metaAtingida = valorAtual < (baselineProporcao * 0.88);
+                metaAtingida = valorAtual < baselineProporcao * (1 - Math.min(0.22, margem * 1.2));
             }
 
             const statusHold = document.getElementById('status-hold');
@@ -2718,55 +2747,69 @@ if (elemAnalise) {
                 if (!emExecucao) {
                     emExecucao = true;
                     tempoControle = Date.now();
-                    avisouFim = false;
+                    estadoInstrucaoVoz = 'sustente';
                 }
 
                 const decorridoMs = Date.now() - tempoControle;
                 const restanteSeg = Math.max(0, Math.ceil((tempoSustentacaoMs - decorridoMs) / 1000));
 
-                statusHold.innerText = `Sustente... ${restanteSeg}s`;
-                if (restanteSeg === 3 && tempoSustentacaoMs >= 10000 && !avisouFim) { avisouFim = true; falar("Falta pouco, continue firme.", { canal: 'estado', validade: 2500 }); }
-                statusHold.style.color = "#0284c7";
+                if (statusHold) {
+                    statusHold.innerText = `Sustente... ${restanteSeg}s`;
+                    statusHold.style.color = '#0284c7';
+                }
 
-                if (estadoInstrucaoVoz !== "sustente") {
+                if (restanteSeg === 3 && tempoSustentacaoMs >= 10000 && !avisouFim) {
+                    avisouFim = true;
+                    falar('Falta pouco, continue firme.', { canal: 'estado', validade: 2500 });
+                }
+
+                if (estadoInstrucaoVoz !== 'sustente') {
                     falar(variar('sust', [`Muito bem! Mantenha a posição por ${segundosSustentacao} segundos.`, `Isso! Segure por ${segundosSustentacao} segundos.`, `Perfeito, continue firme por ${segundosSustentacao} segundos.`]), { canal: 'estado', validade: 4000 });
-                    estadoInstrucaoVoz = "sustente";
+                    estadoInstrucaoVoz = 'sustente';
                 }
 
                 if (decorridoMs >= tempoSustentacaoMs) {
                     repeticoes++;
                     document.getElementById('counter-reps').innerText = repeticoes;
-                    
+
                     bloqueioPosConclusao = true;
                     emExecucao = false;
 
                     registrarProgressoPaciente(1, 0, exercicioAtual, null);
 
                     if (repeticoes >= metaRepeticoesAtual) {
-                        atualizarInstrutor("🎉 Parabéns! Você concluiu a meta diária deste exercício!", "#16a34a", "🏆");
-                        statusHold.innerText = "Série Concluída!";
-                        statusHold.style.color = "#16a34a";
+                        atualizarInstrutor('🎉 Parabéns! Você concluiu a meta diária deste exercício!', '#16a34a', '🏆');
+                        if (statusHold) {
+                            statusHold.innerText = 'Série Concluída!';
+                            statusHold.style.color = '#16a34a';
+                        }
                         falar(`Parabéns${primeiroNome() ? ', ' + primeiroNome() : ''}! Você completou as ${metaRepeticoesAtual} repetições deste exercício.`, { urgente: true });
                     } else {
-                        statusHold.innerText = "Excelente! Descanse um pouco.";
-                        statusHold.style.color = "#16a34a";
+                        if (statusHold) {
+                            statusHold.innerText = 'Excelente! Descanse um pouco.';
+                            statusHold.style.color = '#16a34a';
+                        }
                         falar(fraseRepeticao(repeticoes, metaRepeticoesAtual), { urgente: true });
                         setTimeout(() => {
                             bloqueioPosConclusao = false;
-                            estadoInstrucaoVoz = "";
-                            statusHold.innerText = "Pronto para a próxima repetição.";
-                            statusHold.style.color = "#64748b";
+                            estadoInstrucaoVoz = '';
+                            if (statusHold) {
+                                statusHold.innerText = 'Pronto para a próxima repetição.';
+                                statusHold.style.color = '#64748b';
+                            }
                         }, 2500);
                     }
                 }
             } else if (!bloqueioPosConclusao) {
                 if (emExecucao) {
                     emExecucao = false;
-                    statusHold.innerText = "Movimento interrompido. Tente novamente.";
-                    statusHold.style.color = "#ef4444";
-                    if (estadoInstrucaoVoz !== "interrompido") {
-                        falar("Você relaxou antes do tempo. Tente de novo, sem pressa.", { canal: 'estado', intervalo: 6000, validade: 4000 });
-                        estadoInstrucaoVoz = "interrompido";
+                    if (statusHold) {
+                        statusHold.innerText = 'Movimento interrompido. Tente novamente.';
+                        statusHold.style.color = '#ef4444';
+                    }
+                    if (estadoInstrucaoVoz !== 'interrompido') {
+                        falar('Você relaxou antes do tempo. Tente de novo, sem pressa.', { canal: 'estado', intervalo: 6000, validade: 4000 });
+                        estadoInstrucaoVoz = 'interrompido';
                     }
                 }
             }
