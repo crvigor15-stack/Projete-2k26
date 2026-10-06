@@ -2481,6 +2481,7 @@ if (elemAnalise) {
         let estadoInstrucaoVoz = "";
         let calibracaoProntaEm = 0;
         let calibracaoEmAndamento = false;
+        let liberouCalibracao = false;
         const TEMPO_CALIBRACAO_MS = 5000;
 
         let tempoSustentacaoMs = 10000;
@@ -2503,6 +2504,7 @@ if (elemAnalise) {
             estadoInstrucaoVoz = "";
             calibracaoProntaEm = 0;
             calibracaoEmAndamento = false;
+            liberouCalibracao = false;
 
             const counter = document.getElementById('counter-reps');
             const target = document.getElementById('target-reps');
@@ -2748,10 +2750,12 @@ if (elemAnalise) {
             if (statusHold && statusHold.innerText !== 'Pode iniciar o movimento!') {
                 statusHold.innerText = 'Pode iniciar o movimento!';
                 statusHold.style.color = '#16a34a';
-                if (estadoInstrucaoVoz !== 'liberado') {
-                    falar('Calibração concluída. Você pode iniciar o movimento.', { canal: 'estado', validade: 8000, urgente: true });
-                    estadoInstrucaoVoz = 'liberado';
-                }
+            }
+
+            if (statusHold && statusHold.innerText === 'Pode iniciar o movimento!' && !liberouCalibracao) {
+                liberouCalibracao = true;
+                estadoInstrucaoVoz = 'liberado';
+                falar('Calibração concluída. Você pode iniciar o movimento.', { canal: 'estado', validade: 8000, urgente: true });
             }
 
             const margem = obterMargemMovimentoExercicio();
