@@ -664,8 +664,6 @@
                             <h3 style="margin-bottom: .75rem;">Desempenho</h3>
                             <div class="meter-row"><span>Força atual</span><strong id="valContracao">0 %</strong></div>
                             <div class="meter" role="presentation"><span id="emg-meter-fill"></span></div>
-                            <div class="detail-item"><span>Pico da sessão</span><strong id="valPico">0</strong></div>
-                            <button class="btn btn-ghost btn-block" style="margin-top: .5rem;" onclick="zerarMetricasEMG()">Reiniciar sessão</button>
                         </div>
                     </aside>
                 </div>
@@ -2483,6 +2481,7 @@ if (elemAnalise) {
         let estadoInstrucaoVoz = "";
         let calibracaoProntaEm = 0;
         let calibracaoEmAndamento = false;
+        const TEMPO_CALIBRACAO_MS = 5000;
 
         let tempoSustentacaoMs = 10000;
 
@@ -2717,15 +2716,15 @@ if (elemAnalise) {
                 if (amostrasBaseline.length >= 15) {
                     const soma = amostrasBaseline.reduce((a, b) => a + b, 0);
                     baselineProporcao = soma / amostrasBaseline.length;
-                    calibracaoEmAndamento = false;
-                    calibracaoProntaEm = Date.now() + 1800;
+                    calibracaoEmAndamento = true;
+                    calibracaoProntaEm = Date.now() + TEMPO_CALIBRACAO_MS;
                     const statusHold = document.getElementById('status-hold');
                     if (statusHold) {
-                        statusHold.innerText = 'Ajustando... aguarde 2s';
+                        statusHold.innerText = `Calibração: ${TEMPO_CALIBRACAO_MS / 1000}s`;
                         statusHold.style.color = '#0284c7';
                     }
                     if (estadoInstrucaoVoz !== 'pronto') {
-                        falar('Calibração concluída. Aguarde dois segundos antes de iniciar o movimento.', { canal: 'estado', validade: 10000 });
+                        falar('Calibração em andamento. Aguarde cinco segundos para iniciar o movimento.', { canal: 'estado', validade: 10000, urgente: true });
                         estadoInstrucaoVoz = 'pronto';
                     }
                 }
@@ -2734,11 +2733,21 @@ if (elemAnalise) {
 
             const statusHold = document.getElementById('status-hold');
             if (calibracaoEmAndamento || Date.now() < calibracaoProntaEm) {
+                const segundosRestantes = Math.max(1, Math.ceil((calibracaoProntaEm - Date.now()) / 1000));
                 if (statusHold) {
-                    statusHold.innerText = 'Ajustando... aguarde 2s';
+                    statusHold.innerText = `Calibração: ${segundosRestantes}s`;
                     statusHold.style.color = '#64748b';
                 }
                 return;
+            }
+
+            if (statusHold && statusHold.innerText !== 'Pode iniciar o movimento!') {
+                statusHold.innerText = 'Pode iniciar o movimento!';
+                statusHold.style.color = '#16a34a';
+                if (estadoInstrucaoVoz !== 'liberado') {
+                    falar('Calibração concluída. Você pode iniciar o movimento.', { canal: 'estado', validade: 8000, urgente: true });
+                    estadoInstrucaoVoz = 'liberado';
+                }
             }
 
             const margem = obterMargemMovimentoExercicio();
