@@ -123,7 +123,10 @@
         .chat-bubble { max-width: 75%; padding: 0.75rem 1rem; border-radius: 12px; font-size: 0.95rem; line-height: 1.4; position: relative; word-wrap: break-word; }
         .chat-bubble.enviada { align-self: flex-end; background: #3b82f6; color: white; border-bottom-right-radius: 2px; }
         .chat-bubble.recebida { align-self: flex-start; background: #e2e8f0; color: #0f172a; border-bottom-left-radius: 2px; }
+        .chat-bubble-header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-bottom: 0.3rem; }
         .chat-meta { font-size: 0.7rem; opacity: 0.8; margin-top: 0.25rem; text-align: right; display: block; }
+        .chat-delete-btn { background: rgba(15, 23, 42, 0.08); border: none; color: inherit; width: 24px; height: 24px; border-radius: 999px; font-size: 1rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background 0.15s ease; }
+        .chat-delete-btn:hover { background: rgba(239, 68, 68, 0.18); }
         .chat-input-area { display: flex; gap: 0.5rem; padding: 0.75rem; background: white; border-top: 1px solid #cbd5e1; }
         .chat-input-area input { flex: 1; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 0.95rem; }
 
@@ -651,8 +654,8 @@
                     <div class="emg-stage">
                         <canvas id="emgBallCanvas" class="emg-canvas-game" role="img" aria-label="Bolinha que sobe conforme a força da mão"></canvas>
                         <div class="emg-hud"><span class="emg-hud-label">Estrelas</span><strong id="emg-stars-count">0</strong></div>
-                        <div class="emg-overlay-chart">
-                            <div class="emg-overlay-title"><span>Sinal muscular</span><span id="emg-overlay-val"></span></div>
+                        <div class="emg-overlay-chart" aria-hidden="true">
+                            <div class="emg-overlay-title"><span>Força</span></div>
                         </div>
                     </div>
 
@@ -942,7 +945,7 @@
         let luvaConectada = false;
 
         const MAX_DATA_POINTS = 50;
-        const EMG_MAX_NIVEL = 4095;
+        const EMG_MAX_NIVEL = 2000;
         let maxEmgPico = 0;
         let limiarContracaoEMG = 150;
         let emgSinalAtual = 0;
@@ -961,7 +964,8 @@
 
         function formatarEMGEmVolts(valorRaw) {
             const valor = Number(valorRaw) || 0;
-            const microvolts = (valor / 4095) * 2000;
+            const escala = Math.max(Number(EMG_MAX_NIVEL) || 2000, 1);
+            const microvolts = (valor / escala) * 2000;
             if (microvolts < 1000) {
                 return `${microvolts.toFixed(1)} µV`;
             }
@@ -970,7 +974,7 @@
 
         function calcularAtividadeMuscularPercentual(valorSensor) {
             const valor = Number(valorSensor) || 0;
-            const referencia = Number(EMG_MAX_NIVEL) || 4095;
+            const referencia = Number(EMG_MAX_NIVEL) || 2000;
             return Math.min(100, Math.max(0, (valor / referencia) * 100));
         }
 
@@ -1095,139 +1099,144 @@
         }
 
         function gerarRelatorioPacientePDF() {
-            if (!pacienteSelecionado) {
-                notificar('Selecione um paciente antes de gerar o relatório.', 'err');
-                return;
-            }
+            try {
+                if (!pacienteSelecionado) {
+                    notificar('Selecione um paciente antes de gerar o relatório.', 'err');
+                    return;
+                }
 
-            if (!window.jspdf || !window.jspdf.jsPDF) {
-                notificar('O módulo de PDF ainda está carregando. Tente novamente em instantes.', 'err');
-                return;
-            }
+                if (!window.jspdf || !window.jspdf.jsPDF) {
+                    notificar('O módulo de PDF ainda está carregando. Tente novamente em instantes.', 'err');
+                    return;
+                }
 
-            const nomePaciente = (pacienteSelecionado.nome || 'Paciente Teste');
-            const nomeFisioterapeuta = 'Dra. Ana Costa';
-            const nomeClinica = 'ETE FMC';
+                const nomePaciente = (pacienteSelecionado.nome || 'Paciente Teste');
+                const nomeFisioterapeuta = 'Dra. Ana Costa';
+                const nomeClinica = 'ETE FMC';
 
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-            const hoje = new Date();
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+                const hoje = new Date();
 
-            const labelsQuinzenal = ['01/09', '16/09', '01/10', '16/10', '31/10', '15/11'];
-            const dadosForca = [31, 38, 44, 52, 62, 71];
-            const dadosPinca = [18, 24, 32, 41, 53, 67];
-            const dadosFacial = [42, 48, 56, 65, 74, 82];
+                const labelsQuinzenal = ['01/09', '16/09', '01/10', '16/10', '31/10', '15/11'];
+                const dadosForca = [31, 38, 44, 52, 62, 71];
+                const dadosPinca = [18, 24, 32, 41, 53, 67];
+                const dadosFacial = [42, 48, 56, 65, 74, 82];
 
-            const canvasForca = document.createElement('canvas');
-            const canvasPinca = document.createElement('canvas');
-            const canvasFacial = document.createElement('canvas');
+                const canvasForca = document.createElement('canvas');
+                const canvasPinca = document.createElement('canvas');
+                const canvasFacial = document.createElement('canvas');
 
-            canvasForca.width = 1200;
-            canvasForca.height = 520;
-            canvasPinca.width = 1200;
-            canvasPinca.height = 520;
-            canvasFacial.width = 1200;
-            canvasFacial.height = 520;
+                canvasForca.width = 1200;
+                canvasForca.height = 520;
+                canvasPinca.width = 1200;
+                canvasPinca.height = 520;
+                canvasFacial.width = 1200;
+                canvasFacial.height = 520;
 
-            const chartFallbackForca = new Chart(canvasForca, {
-                type: 'line',
-                data: { labels: labelsQuinzenal, datasets: [{ data: dadosForca, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.16)', fill: true, tension: 0.35, pointRadius: 4 }] },
-                options: { responsive: false, animation: false, devicePixelRatio: 2, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-            });
-            const chartFallbackPinca = new Chart(canvasPinca, {
-                type: 'line',
-                data: { labels: labelsQuinzenal, datasets: [{ data: dadosPinca, borderColor: '#059669', backgroundColor: 'rgba(5,150,105,0.16)', fill: true, tension: 0.35, pointRadius: 4 }] },
-                options: { responsive: false, animation: false, devicePixelRatio: 2, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-            });
-            const chartFallbackFacial = new Chart(canvasFacial, {
-                type: 'line',
-                data: { labels: labelsQuinzenal, datasets: [{ data: dadosFacial, borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,0.16)', fill: true, tension: 0.35, pointRadius: 4 }] },
-                options: { responsive: false, animation: false, devicePixelRatio: 2, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
-            });
+                const chartFallbackForca = new Chart(canvasForca, {
+                    type: 'line',
+                    data: { labels: labelsQuinzenal, datasets: [{ data: dadosForca, borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.16)', fill: true, tension: 0.35, pointRadius: 4 }] },
+                    options: { responsive: false, animation: false, devicePixelRatio: 2, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                });
+                const chartFallbackPinca = new Chart(canvasPinca, {
+                    type: 'line',
+                    data: { labels: labelsQuinzenal, datasets: [{ data: dadosPinca, borderColor: '#059669', backgroundColor: 'rgba(5,150,105,0.16)', fill: true, tension: 0.35, pointRadius: 4 }] },
+                    options: { responsive: false, animation: false, devicePixelRatio: 2, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+                });
+                const chartFallbackFacial = new Chart(canvasFacial, {
+                    type: 'line',
+                    data: { labels: labelsQuinzenal, datasets: [{ data: dadosFacial, borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,0.16)', fill: true, tension: 0.35, pointRadius: 4 }] },
+                    options: { responsive: false, animation: false, devicePixelRatio: 2, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 100 } } }
+                });
 
-            doc.setFillColor(8, 35, 56);
-            doc.rect(0, 0, 595, 82, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(20);
-            doc.text(String(nomeClinica), 48, 34);
-            doc.setFontSize(9);
-            doc.setFont('helvetica', 'normal');
-            doc.text('Centro de Reabilitação e Motricidade Facial', 48, 52);
-            doc.text(`Fisioterapeuta responsável: ${nomeFisioterapeuta}`, 350, 52);
-
-            doc.setTextColor(15, 23, 42);
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(20);
-            doc.text('Laudo de Evolução Funcional', 48, 106);
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'normal');
-            doc.text(`Paciente: ${nomePaciente}`, 48, 122);
-            doc.text(`Data do laudo: ${hoje.toLocaleDateString('pt-BR')}`, 330, 122);
-
-            doc.setFillColor(248, 250, 252);
-            doc.roundedRect(48, 138, 500, 150, 12, 12, 'F');
-            doc.setDrawColor(148, 163, 184);
-            doc.roundedRect(48, 138, 500, 150, 12, 12, 'S');
-            doc.setTextColor(15, 23, 42);
-            doc.setFontSize(11.5);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Avaliação clínica', 64, 162);
-            doc.setFontSize(9.5);
-            doc.setFont('helvetica', 'normal');
-
-            const textosLaudo = [
-                'No período de acompanhamento de 15 dias, observou-se evolução funcional progressiva em força muscular, mobilidade facial e coordenação do movimento.',
-                'A força demonstrou tendência de aumento, com maior estabilidade na contração e melhor resposta à execução das atividades terapêuticas propostas.',
-                'Em relação à motricidade fina e ao movimento de pinça, identificou-se melhora na precisão, controle e capacidade de execução de tarefas que exigem manipulação fina e sincronização motora.',
-                'A recuperação facial apresentou avanço na mobilidade e na simetria funcional, com ganhos na expressão e maior participação dos músculos envolvidos na reabilitação orofacial.',
-                'Conclui-se que o paciente apresentou resposta positiva ao protocolo terapêutico, com evolução clínica favorável e indicação de continuidade do tratamento para consolidação dos ganhos.'
-            ];
-
-            let yLaudo = 178;
-            textosLaudo.forEach((texto) => {
-                const linhas = doc.splitTextToSize(texto, 465);
-                doc.text(linhas, 64, yLaudo);
-                yLaudo += linhas.length * 13 + 6;
-            });
-
-            const cardsX = [48, 214, 380];
-            const cardsTit = ['Força', 'Pinça', 'Facial'];
-            const cardsVal = ['71%', '67%', '82%'];
-            const cardsCor = [[37,99,235],[5,150,105],[124,58,237]];
-            const cardsBg = [[219,234,254],[220,252,231],[237,233,254]];
-
-            cardsX.forEach((x, i) => {
-                doc.setFillColor(cardsBg[i][0], cardsBg[i][1], cardsBg[i][2]);
-                doc.roundedRect(x, 302, 138, 54, 10, 10, 'F');
-                doc.setDrawColor(cardsCor[i][0], cardsCor[i][1], cardsCor[i][2]);
-                doc.roundedRect(x, 302, 138, 54, 10, 10, 'S');
-                doc.setTextColor(15, 23, 42);
-                doc.setFontSize(8.2);
-                doc.setFont('helvetica', 'normal');
-                doc.text(String(cardsTit[i]).toUpperCase(), x + 14, 320);
-                doc.setFontSize(20);
+                doc.setFillColor(8, 35, 56);
+                doc.rect(0, 0, 595, 82, 'F');
+                doc.setTextColor(255, 255, 255);
                 doc.setFont('helvetica', 'bold');
-                doc.text(String(cardsVal[i]), x + 14, 345);
-            });
+                doc.setFontSize(20);
+                doc.text(String(nomeClinica), 48, 34);
+                doc.setFontSize(9);
+                doc.setFont('helvetica', 'normal');
+                doc.text('Centro de Reabilitação e Motricidade Facial', 48, 52);
+                doc.text(`Fisioterapeuta responsável: ${nomeFisioterapeuta}`, 350, 52);
 
-            const larguraGrafico = 228;
-            const alturaGrafico = 118;
-            const yGraficos = 382;
+                doc.setTextColor(15, 23, 42);
+                doc.setFont('helvetica', 'bold');
+                doc.setFontSize(20);
+                doc.text('Laudo de Evolução Funcional', 48, 106);
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Paciente: ${nomePaciente}`, 48, 122);
+                doc.text(`Data do laudo: ${hoje.toLocaleDateString('pt-BR')}`, 330, 122);
 
-            adicionarGraficoAoPDF(doc, chartSimetriaInst || chartFallbackForca, 48, yGraficos, larguraGrafico, alturaGrafico, 'Força muscular');
-            adicionarGraficoAoPDF(doc, chartPincaInst || chartFallbackPinca, 300, yGraficos, larguraGrafico, alturaGrafico, 'Movimento de pinça');
-            adicionarGraficoAoPDF(doc, chartEMGInst || chartFallbackFacial, 48, 512, 482, 144, 'Recuperação facial (%)');
+                doc.setFillColor(248, 250, 252);
+                doc.roundedRect(48, 138, 500, 150, 12, 12, 'F');
+                doc.setDrawColor(148, 163, 184);
+                doc.roundedRect(48, 138, 500, 150, 12, 12, 'S');
+                doc.setTextColor(15, 23, 42);
+                doc.setFontSize(11.5);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Avaliação clínica', 64, 162);
+                doc.setFontSize(9.5);
+                doc.setFont('helvetica', 'normal');
 
-            doc.setTextColor(100, 116, 139);
-            doc.setFontSize(8.5);
-            doc.text('Documento gerado automaticamente pela plataforma NeuroMotion.', 48, 770);
+                const textosLaudo = [
+                    'No período de acompanhamento de 15 dias, observou-se evolução funcional progressiva em força muscular, mobilidade facial e coordenação do movimento.',
+                    'A força demonstrou tendência de aumento, com maior estabilidade na contração e melhor resposta à execução das atividades terapêuticas propostas.',
+                    'Em relação à motricidade fina e ao movimento de pinça, identificou-se melhora na precisão, controle e capacidade de execução de tarefas que exigem manipulação fina e sincronização motora.',
+                    'A recuperação facial apresentou avanço na mobilidade e na simetria funcional, com ganhos na expressão e maior participação dos músculos envolvidos na reabilitação orofacial.',
+                    'Conclui-se que o paciente apresentou resposta positiva ao protocolo terapêutico, com evolução clínica favorável e indicação de continuidade do tratamento para consolidação dos ganhos.'
+                ];
 
-            const nomeArquivo = `${(nomePaciente || 'paciente').toLowerCase().replace(/\s+/g, '-')}-ete-fmc-laudo.pdf`;
-            const blobPdf = doc.output('blob');
-            const urlPdf = URL.createObjectURL(blobPdf);
-            abrirModalRelatorio(urlPdf, nomeArquivo);
-            notificar('Preview do relatório aberta. Use o botão de download abaixo.', 'ok');
+                let yLaudo = 178;
+                textosLaudo.forEach((texto) => {
+                    const linhas = doc.splitTextToSize(texto, 465);
+                    doc.text(linhas, 64, yLaudo);
+                    yLaudo += linhas.length * 13 + 6;
+                });
+
+                const cardsX = [48, 214, 380];
+                const cardsTit = ['Força', 'Pinça', 'Facial'];
+                const cardsVal = ['71%', '67%', '82%'];
+                const cardsCor = [[37,99,235],[5,150,105],[124,58,237]];
+                const cardsBg = [[219,234,254],[220,252,231],[237,233,254]];
+
+                cardsX.forEach((x, i) => {
+                    doc.setFillColor(cardsBg[i][0], cardsBg[i][1], cardsBg[i][2]);
+                    doc.roundedRect(x, 302, 138, 54, 10, 10, 'F');
+                    doc.setDrawColor(cardsCor[i][0], cardsCor[i][1], cardsCor[i][2]);
+                    doc.roundedRect(x, 302, 138, 54, 10, 10, 'S');
+                    doc.setTextColor(15, 23, 42);
+                    doc.setFontSize(8.2);
+                    doc.setFont('helvetica', 'normal');
+                    doc.text(String(cardsTit[i]).toUpperCase(), x + 14, 320);
+                    doc.setFontSize(20);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text(String(cardsVal[i]), x + 14, 345);
+                });
+
+                const larguraGrafico = 228;
+                const alturaGrafico = 118;
+                const yGraficos = 382;
+
+                adicionarGraficoAoPDF(doc, chartSimetriaInst || chartFallbackForca, 48, yGraficos, larguraGrafico, alturaGrafico, 'Força muscular');
+                adicionarGraficoAoPDF(doc, chartPincaInst || chartFallbackPinca, 300, yGraficos, larguraGrafico, alturaGrafico, 'Movimento de pinça');
+                adicionarGraficoAoPDF(doc, chartEMGInst || chartFallbackFacial, 48, 512, 482, 144, 'Recuperação facial (%)');
+
+                doc.setTextColor(100, 116, 139);
+                doc.setFontSize(8.5);
+                doc.text('Documento gerado automaticamente pela plataforma NeuroMotion.', 48, 770);
+
+                const nomeArquivo = `${(nomePaciente || 'paciente').toLowerCase().replace(/\s+/g, '-')}-ete-fmc-laudo.pdf`;
+                const blobPdf = doc.output('blob');
+                const urlPdf = URL.createObjectURL(blobPdf);
+                abrirModalRelatorio(urlPdf, nomeArquivo);
+                notificar('Preview do relatório aberta. Use o botão de download abaixo.', 'ok');
+            } catch (erro) {
+                console.error('Erro ao gerar relatório PDF:', erro);
+                notificar('Não foi possível gerar o relatório em PDF. Verifique o navegador e tente novamente.', 'err');
+            }
         }
 
         let ballAnimationId = null;
@@ -1528,7 +1537,7 @@
                     : 'Luva desconectada. Conecte-a novamente para continuar.';
                 notificar(mensagem, 'err');
                 if (jogoEstavaAtivo || emgEstavaAtivo) {
-                    falar(mensagem, { urgente: true });
+                    falar(mensagem, { urgente: true, canal: 'emg', intervalo: 30000, repetirApos: 30000, validade: 15000 });
                 }
             }
         }
@@ -1587,7 +1596,7 @@
             ballState.y = Math.min(Math.max(ballState.y, ballState.topo), ballState.base);
         }
 
-        function atualizarInstrutorEMG(texto, emoji, cor, fala = { canal: 'emg', intervalo: 5000, validade: 3000 }) {
+        function atualizarInstrutorEMG(texto, emoji, cor, fala = { canal: 'emg', intervalo: 12000, repetirApos: 20000, validade: 8000 }) {
             const txt = document.getElementById('emg-instrucao-texto');
             const avatar = document.getElementById('emg-avatar-icon');
             const box = document.getElementById('emg-instructor-box');
@@ -2192,6 +2201,21 @@ if (elemAnalise) {
             }
         }
 
+        function apagarMensagemChat(indiceMensagem) {
+            if (!pacienteSelecionado || !Array.isArray(pacienteSelecionado.mensagensChat)) return;
+            pacienteSelecionado.mensagensChat.splice(indiceMensagem, 1);
+
+            const pacientes = lerPacientes();
+            const index = pacientes.findIndex(p => p.id === pacienteSelecionado.id);
+            if (index !== -1) {
+                pacientes[index] = pacienteSelecionado;
+                salvarPacientes(pacientes);
+            }
+
+            renderizarChat();
+            notificar('Mensagem apagada.', 'info');
+        }
+
         function renderizarChat() {
             const listEl = document.getElementById('chat-messages-list');
             if (!listEl) return;
@@ -2210,16 +2234,29 @@ if (elemAnalise) {
                 return;
             }
 
-            mensagens.forEach(m => {
+            mensagens.forEach((m, index) => {
                 const bubble = document.createElement('div');
                 const ehMinha = m.autorRole === meuPapel;
                 bubble.className = `chat-bubble ${ehMinha ? 'enviada' : 'recebida'}`;
-                
+
+                const deleteButton = ehMinha
+                    ? `<button type="button" class="chat-delete-btn" data-index="${index}" aria-label="Apagar mensagem">×</button>`
+                    : '';
+
                 bubble.innerHTML = `
-                    <strong>${escaparHtml(m.autorNome)}</strong><br>
+                    <div class="chat-bubble-header">
+                        <strong>${escaparHtml(m.autorNome)}</strong>
+                        ${deleteButton}
+                    </div>
                     ${escaparHtml(m.texto)}
                     <span class="chat-meta">${escaparHtml(m.hora)}</span>
                 `;
+
+                const btn = bubble.querySelector('.chat-delete-btn');
+                if (btn) {
+                    btn.addEventListener('click', () => apagarMensagemChat(Number(btn.dataset.index)));
+                }
+
                 listEl.appendChild(bubble);
             });
 
@@ -2464,10 +2501,17 @@ if (elemAnalise) {
             const t = limparParaFala(texto);
             if (!t) return;
             const agora = Date.now(), canal = o.canal || 'geral';
-            if (Voz.ultimaFrase.texto === t && agora - Voz.ultimaFrase.t < (o.repetirApos ?? 8000)) return;
-            if (o.intervalo && agora - (Voz.ultimo[canal] || 0) < o.intervalo) return;
+            const chaveCanal = `${canal}:${t.toLowerCase()}`;
+            const repetirMinimo = o.repetirApos ?? 12000;
+            const intervaloMinimo = o.intervalo ?? 10000;
+
+            if (Voz.ultimaFrase.texto === t && agora - Voz.ultimaFrase.t < repetirMinimo) return;
+            if (agora - (Voz.ultimo[canal] || 0) < intervaloMinimo) return;
+            if (agora - (Voz.ultimo[chaveCanal] || 0) < repetirMinimo) return;
+
             Voz.ultimaFrase = { texto: t, t: agora };
             Voz.ultimo[canal] = agora;
+            Voz.ultimo[chaveCanal] = agora;
             Voz.fila = o.urgente ? [] : Voz.fila.filter(i => i.canal !== canal);
             Voz.fila.push({ texto: t, canal, criado: agora, validade: o.validade || 8000 });
             if (Voz.fila.length > 3) Voz.fila.shift();
@@ -2936,6 +2980,20 @@ if (elemAnalise) {
         function abrirJogo(tipo) {
             if (!luvaConectada) {
                 notificar('Conecte a luva antes de iniciar um jogo terapêutico.', 'err');
+                const menu = document.getElementById('menu-flappy');
+                const titulo = document.getElementById('titulo-flappy');
+                const subtitulo = document.getElementById('subtitulo-flappy');
+                const explicacao = document.getElementById('explicacao-idoso');
+                if (menu && titulo && subtitulo && explicacao) {
+                    document.getElementById('lista-jogos').style.display = 'none';
+                    document.getElementById('area-jogo').style.display = 'block';
+                    menu.style.display = 'flex';
+                    titulo.innerText = '🧤 Luva desconectada';
+                    subtitulo.innerText = 'Conecte a luva para iniciar o jogo.';
+                    explicacao.innerHTML = '<strong>O que aconteceu:</strong><br>• A luva sensoriada está desconectada.<br>• Conecte a luva Bluetooth e tente novamente.';
+                    document.getElementById('btn-iniciar-jogo').style.display = 'none';
+                    atualizarStatusJogo();
+                }
                 return;
             }
             jogoAtivo = tipo;
