@@ -657,25 +657,7 @@
                         </div>
                     </div>
 
-                    <aside class="emg-side">
-                        <div class="card">
-                            <div class="emg-side-head">
-                                <h3>Luva sensora</h3>
-                                <span id="statusText" class="pill st-err" aria-live="polite">Desconectado</span>
-                            </div>
-                            <div class="emg-actions">
-                                <button class="btn btn-emg btn-block" id="btnConnect" onclick="conectarSensorEMGBLE()">Conectar luva</button>
-                                <button class="btn btn-ghost btn-block" onclick="pararLeituraEMG()">Desconectar</button>
-                            </div>
-                        </div>
-
-                        <div class="instructor-card" id="emg-instructor-box">
-                            <div class="instructor-avatar" id="emg-avatar-icon">🔌</div>
-                            <div class="instructor-info">
-                                <h4>Instrutor</h4>
-                                <p id="emg-instrucao-texto">Conecte a luva para começar o exercício.</p>
-                            </div>
-                        </div>
+                    <aside class="emg-side">a
 
                         <div class="card">
                             <h3 style="margin-bottom: .75rem;">Desempenho</h3>
@@ -683,9 +665,7 @@
                             <div class="meter" role="presentation"><span id="emg-meter-fill"></span></div>
                         </div>
 
-                        <div class="card">
-                            <h3 style="margin-bottom: .5rem;">Simulação do exercício</h3>
-                            <p style="color: var(--muted); font-size: .9rem; margin-bottom: .75rem;">Veja a bolinha subir e descer em cinco repetições, sem conectar a luva.</p>
+                        <div class="card">  
                             <div class="meter-row" style="margin-bottom: .75rem;"><span>Repetições</span><strong id="emg-reps-count" aria-live="polite">0/5</strong></div>
                             <button type="button" class="btn btn-success btn-block" id="btnSimularEMG" onclick="iniciarSimulacaoBolinhaEMG()">Iniciar</button>
                             <p id="emg-simulacao-status" role="status" style="color: var(--muted); font-size: .85rem; margin-top: .5rem;">Pronto para iniciar.</p>
@@ -1207,7 +1187,7 @@
                 yLaudo += linhas.length * 11 + 4;
             });
 
-              const cardsX = [60, 226, 392];
+              const cardsX = [60, 226, 392]i;
              const cardsTit = ['Força', 'Pinça', 'Facial'];
             const cardsVal = ['71%', '67%', '82%'];
             const cardsCor = [[37,99,235],[5,150,105],[124,58,237]];
