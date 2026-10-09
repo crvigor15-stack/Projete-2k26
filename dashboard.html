@@ -295,6 +295,15 @@
         .report-modal-actions { display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1rem 1.25rem 1.25rem; background: #fff; }
         @media (max-width: 1100px) { .emg-layout { grid-template-columns: 1fr; } }
         @media (max-width: 640px) { .report-preview-frame { height: 58vh; min-height: 380px; } .report-modal-actions { flex-direction: column-reverse; } .report-modal-actions .btn { width: 100%; } }
+
+        /* ===== Gráfico EMG estilo Serial Plotter ===== */
+        .plotter-card { border-left: 6px solid #00d2ff; }
+        .plotter-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; flex-wrap: wrap; }
+        .plotter-head p { color: var(--muted); font-size: .9rem; margin-top: .25rem; max-width: 60ch; }
+        .plotter-readout { text-align: right; }
+        .plotter-readout-label { display: block; color: var(--muted); font-size: .8rem; }
+        .plotter-readout strong { font-size: 1.75rem; font-variant-numeric: tabular-nums; color: var(--ink); }
+        .plotter-box { position: relative; width: 100%; height: clamp(220px, 34vh, 320px); margin-top: 1rem; background: #0b1b2b; border-radius: var(--r-md); padding: 10px; }
     </style>
 </head>
 <body>
@@ -642,55 +651,31 @@
 
             <!-- ABA: EXERCÍCIO COM SENSOR (visão do paciente) -->
             <div id="emg" class="tab-content">
-                <header>
-                    <h2>Exercício com sensor</h2>
-                    <p>Aperte a mão para erguer a bolinha até a estrela. Relaxe devagar para ela descer.</p>
-                </header>
-
-                <div class="emg-layout">
-                    <div class="emg-stage">
-                        <canvas id="emgBallCanvas" class="emg-canvas-game" role="img" aria-label="Bolinha que sobe conforme a força da mão"></canvas>
-                        <div class="emg-hud"><span class="emg-hud-label">Estrelas</span><strong id="emg-stars-count">0</strong></div>
-                        <div class="emg-overlay-chart">
-                            <div class="emg-overlay-title"><span>Sinal muscular</span><span id="emg-overlay-val"></span></div>
-                            <div style="position: relative; width: 100%; height: 80px;"><canvas id="emgChart"></canvas></div>
+                <div class="card" style="margin-bottom: 1.5rem; border-left: 6px solid #8b5cf6;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h3 style="color: #0f172a; margin-bottom: 0.25rem;">🧤 Conexão da Luva Sensoriada</h3>
+                            <p style="color: #64748b; font-size: 0.9rem;">Conecte sua luva Bluetooth para começar o exercício da bolinha.</p>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                            <button id="btnConnect" class="btn btn-success" onclick="conectarSensorEMGBLE()">🔌 Conectar Luva</button>
+                            <span id="statusText" class="pill st-err" role="status" aria-live="polite">Desconectado</span>
                         </div>
                     </div>
+                </div>
 
-                    <aside class="emg-side">
-                        <div class="card">
-                            <div class="emg-side-head">
-                                <h3>Luva sensora</h3>
-                                <span id="statusText" class="pill st-err" aria-live="polite">Desconectado</span>
-                            </div>
-                            <div class="emg-actions">
-                                <button class="btn btn-emg btn-block" id="btnConnect" onclick="conectarSensorEMGBLE()">Conectar luva</button>
-                                <button class="btn btn-ghost btn-block" onclick="pararLeituraEMG()">Desconectar</button>
-                            </div>
+                <div class="card plotter-card">
+                    <div class="plotter-head">
+                        <div>
+                            <h3>Sinal muscular</h3>
+                            <p>Mesmo sinal do Serial Plotter: leitura bruta do sensor (0 a 4095), atualizada em tempo real.</p>
                         </div>
-
-                        <div class="instructor-card" id="emg-instructor-box">
-                            <div class="instructor-avatar" id="emg-avatar-icon">🔌</div>
-                            <div class="instructor-info">
-                                <h4>Instrutor</h4>
-                                <p id="emg-instrucao-texto">Conecte a luva para começar o exercício.</p>
-                            </div>
+                        <div class="plotter-readout">
+                            <span class="plotter-readout-label">Leitura atual</span>
+                            <strong id="emg-overlay-val">--</strong>
                         </div>
-
-                        <div class="card">
-                            <h3 style="margin-bottom: .75rem;">Desempenho</h3>
-                            <div class="meter-row"><span>Força atual</span><strong id="valContracao">0 %</strong></div>
-                            <div class="meter" role="presentation"><span id="emg-meter-fill"></span></div>
-                        </div>
-
-                        <div class="card">
-                            <h3 style="margin-bottom: .5rem;">Simulação do exercício</h3>
-                            <p style="color: var(--muted); font-size: .9rem; margin-bottom: .75rem;">Veja a bolinha subir e descer em cinco repetições, sem conectar a luva.</p>
-                            <div class="meter-row" style="margin-bottom: .75rem;"><span>Repetições</span><strong id="emg-reps-count" aria-live="polite">0/5</strong></div>
-                            <button type="button" class="btn btn-success btn-block" id="btnSimularEMG" onclick="iniciarSimulacaoBolinhaEMG()">Iniciar</button>
-                            <p id="emg-simulacao-status" role="status" style="color: var(--muted); font-size: .85rem; margin-top: .5rem;">Pronto para iniciar.</p>
-                        </div>
-                    </aside>
+                    </div>
+                    <div class="plotter-box"><canvas id="emgChart" role="img" aria-label="Gráfico do sinal EMG em tempo real"></canvas></div>
                 </div>
             </div>
 
@@ -950,7 +935,7 @@
         let emgChart = null;
         let luvaConectada = false;
 
-        const MAX_DATA_POINTS = 50;
+        const MAX_DATA_POINTS = 300;
         const EMG_MAX_NIVEL = 4095;
         let maxEmgPico = 0;
         let limiarContracaoEMG = 150;
@@ -1370,13 +1355,12 @@
                 data: {
                     labels: Array(MAX_DATA_POINTS).fill(''),
                     datasets: [{
-                        label: 'Força do sensor',
+                        label: 'EMG bruto (ADC)',
                         data: Array(MAX_DATA_POINTS).fill(0),
                         borderColor: '#00d2ff',
-                        backgroundColor: 'rgba(0, 210, 255, 0.2)',
-                        borderWidth: 2,
-                        fill: true,
-                        tension: 0.3,
+                        borderWidth: 1.5,
+                        fill: false,
+                        tension: 0,
                         pointRadius: 0
                     }]
                 },
@@ -1384,17 +1368,19 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     animation: false,
+                    normalized: true,
                     scales: {
                         x: { display: false },
                         y: {
-                            min: 0,
-                            max: 4095,
-                            grid: { color: 'rgba(255, 255, 255, 0.1)' },
-                            ticks: { display: false }
+                            grace: '10%',
+                            grid: { color: 'rgba(255, 255, 255, 0.12)' },
+                            ticks: { display: true, color: '#9fb3c8', maxTicksLimit: 6 },
+                            title: { display: true, text: 'Leitura ADC', color: '#9fb3c8' }
                         }
                     },
                     plugins: {
-                        legend: { display: false }
+                        legend: { display: false },
+                        tooltip: { enabled: false }
                     }
                 }
             });
@@ -1459,12 +1445,14 @@
             const payload = decoder.decode(event.target.value);
             
             const parts = payload.split(',');
-            if (parts.length === 2) {
+            if (parts.length >= 2) {
                 const hallValue = parseInt(parts[0], 10);
                 const emgValue = parseInt(parts[1], 10);
+                // 3º valor = EMG bruto (o mesmo do Serial Plotter). Se não vier, usa o filtrado.
+                const emgBrutoValue = parts.length >= 3 ? parseInt(parts[2], 10) : emgValue;
 
                 if (!isNaN(hallValue) && !isNaN(emgValue)) {
-                    atualizarInterfaceEMG(hallValue, emgValue);
+                    atualizarInterfaceEMG(hallValue, emgValue, isNaN(emgBrutoValue) ? emgValue : emgBrutoValue);
                     
                     const imaAproximou = (hallValue < LIMIAR_HALL_IMA && hallAnterior >= LIMIAR_HALL_IMA);
                     if (imaAproximou) {
@@ -1476,11 +1464,11 @@
             }
         }
 
-        function atualizarInterfaceEMG(hall, emg) {
+        function atualizarInterfaceEMG(hall, emg, emgBruto = emg) {
             emgSinalAtual = emg;
 
             const emgOverlayVal = document.getElementById('emg-overlay-val');
-            if (emgOverlayVal) emgOverlayVal.innerText = formatarEMGEmVolts(emg);
+            if (emgOverlayVal) emgOverlayVal.innerText = String(emgBruto);
 
             const valContracao = document.getElementById('valContracao');
             const valPico = document.getElementById('valPico');
@@ -1497,9 +1485,9 @@
             }
 
             if (emgChart) {
-                emgChart.data.datasets[0].data.push(emg);
+                emgChart.data.datasets[0].data.push(emgBruto);
                 emgChart.data.datasets[0].data.shift();
-                emgChart.update();
+                emgChart.update('none');
             }
         }
 
@@ -1741,7 +1729,7 @@
             if (dist < 35 && estrelaAlvo.aparente) {
                 ballState.estrelasColetadas++;
                 estrelaAlvo.aparente = false;
-                document.getElementById('emg-stars-count').textContent = ballState.estrelasColetadas;
+                const _stars = document.getElementById('emg-stars-count'); if (_stars) _stars.textContent = ballState.estrelasColetadas;
                 atualizarInstrutorEMG('Excelente! Você chegou à estrela.', '⭐', '#22c55e', { canal: 'emg', urgente: true });
 
                 if (pacienteSelecionado) {
